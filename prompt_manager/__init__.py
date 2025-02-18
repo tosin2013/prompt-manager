@@ -2,11 +2,81 @@
 Prompt Manager: Development workflow management system with memory tracking.
 """
 
-from typing import Dict, Optional, Any, Union
+from typing import Dict, Optional, Any, Union, List
 from pathlib import Path
+from enum import Enum
 import yaml
 import datetime
 import uuid
+
+
+class TaskStatus(Enum):
+    """Enumeration of possible task statuses."""
+    NOT_STARTED = "NOT_STARTED"
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    BLOCKED = "BLOCKED"
+
+
+class Task:
+    """Represents a task in the workflow."""
+    
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        prompt_template: str,
+        priority: int = 1,
+        status: TaskStatus = TaskStatus.NOT_STARTED
+    ) -> None:
+        """Initialize a new task."""
+        self.name = name
+        self.description = description
+        self.prompt_template = prompt_template
+        self.priority = priority
+        self.status = status
+        self.status_notes: List[str] = []
+        self.created_at = datetime.datetime.now()
+        self.updated_at = self.created_at
+        self.id = str(uuid.uuid4())
+
+    def update_status(self, status: TaskStatus, note: Optional[str] = None) -> None:
+        """Update task status with optional note."""
+        self.status = status
+        if note:
+            self.status_notes.append(note)
+        self.updated_at = datetime.datetime.now()
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert task to dictionary for serialization."""
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "prompt_template": self.prompt_template,
+            "priority": self.priority,
+            "status": self.status.value,
+            "status_notes": self.status_notes,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat()
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "Task":
+        """Create task from dictionary."""
+        task = cls(
+            name=data["name"],
+            description=data["description"],
+            prompt_template=data["prompt_template"],
+            priority=data["priority"],
+            status=TaskStatus(data["status"])
+        )
+        task.id = data["id"]
+        task.status_notes = data["status_notes"]
+        task.created_at = datetime.datetime.fromisoformat(data["created_at"])
+        task.updated_at = datetime.datetime.fromisoformat(data["updated_at"])
+        return task
 
 
 class MemoryBank:
@@ -47,54 +117,68 @@ class MemoryBank:
         if not self.is_active:
             return
 
+        if file_name not in [f.name for f in self.docs_path.glob("*.md")]:
+            raise ValueError(f"Invalid file name: {file_name}")
+
+        if mode not in ["append", "replace"]:
+            raise ValueError(f"Invalid mode: {mode}")
+
         file_path = self.docs_path / file_name
-        if mode == "append":
-            with file_path.open("a") as f:
-                f.write(f"\n## {section}\n{content}\n")
+        current_content = file_path.read_text() if file_path.exists() else ""
+
+        # Find section in current content
+        section_header = f"## {section}"
+        section_start = current_content.find(section_header)
+
+        if section_start == -1:
+            # Section doesn't exist, append it
+            new_content = current_content.rstrip() + f"\n\n{section_header}\n{content}\n"
         else:
-            with file_path.open("w") as f:
-                f.write(f"## {section}\n{content}\n")
+            # Find end of section (next ## or end of file)
+            next_section = current_content.find("\n##", section_start + 1)
+            if next_section == -1:
+                next_section = len(current_content)
 
-    def validate_context(self) -> bool:
-        """Validate that all required context files exist and have content."""
-        if not self.is_active:
-            return False
+            if mode == "append":
+                # Append to existing section
+                section_content = current_content[section_start:next_section].rstrip()
+                new_section = f"{section_content}\n{content}"
+            else:  # replace
+                new_section = f"{section_header}\n{content}"
 
-        for file in self.required_files:
-            file_path = self.docs_path / file
-            if not file_path.exists():
-                return False
-            if file_path.stat().st_size == 0:
-                return False
-        return True
+            new_content = (
+                current_content[:section_start] +
+                new_section +
+                current_content[next_section:]
+            )
 
-    def reset_context(self) -> None:
-        """Reset all context files while preserving essential information."""
-        if not self.is_active:
-            return
+        # Update token count
+        self.increment_tokens(len(new_content) - len(current_content))
 
-        # Backup product context before reset
-        product_context = ""
-        product_file = self.docs_path / "productContext.md"
-        if product_file.exists():
-            with product_file.open() as f:
-                product_context = f.read()
-
-        # Reset all files
-        self.initialize()
-
-        # Restore product context
-        if product_context:
-            with product_file.open('w') as f:
-                f.write(product_context)
+        # Write updated content
+        with file_path.open('w') as f:
+            f.write(new_content)
 
     def check_token_limit(self) -> bool:
-        """Check if token limit has been exceeded."""
+        """Check if current token count exceeds limit."""
         return self.current_tokens >= self.max_tokens
 
     def increment_tokens(self, count: int) -> None:
         """Increment token count."""
         self.current_tokens += count
+
+    def decrement_tokens(self, count: int) -> None:
+        """Decrement token count."""
+        self.current_tokens = max(0, self.current_tokens - count)
+
+    def reset(self) -> None:
+        """Reset memory bank state."""
+        self.is_active = False
+        self.current_tokens = 0
+        for file in self.required_files:
+            file_path = self.docs_path / file
+            if file_path.exists():
+                file_path.unlink()
 
 
 class PromptManager:
@@ -102,75 +186,176 @@ class PromptManager:
 
     def __init__(
         self,
-        project_name: str,
+        project_name: str = "",
         memory_path: Optional[Union[str, Path]] = None,
         config: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Initialize PromptManager with project configuration."""
         self.project_name = project_name
         default_path = Path.cwd() / "cline_docs"
-        self.memory = MemoryBank(memory_path or default_path)
+        self.memory_bank = MemoryBank(memory_path or default_path)
         self.config = config or {}
-        self.tasks: Dict[str, Dict[str, Any]] = {}
+        self.tasks: Dict[str, Task] = {}
         self.debug_mode = False
+        self.is_initialized = False
         self.initialize()
 
     def initialize(self) -> None:
         """Initialize the prompt manager and memory bank."""
-        # Create base directory first
-        print(f"Creating directory at: {self.memory.docs_path}")
-        self.memory.docs_path.mkdir(parents=True, exist_ok=True)
-        
-        # Initialize memory bank
-        self.memory.initialize()
-        
-        # Create project data file
-        project_file = self.memory.docs_path / "project_data.yaml"
-        project_data = {
-            "project_name": self.project_name,
-            "tasks": []
-        }
-        
-        print(f"Creating project file at: {project_file}")
-        with project_file.open('w') as f:
-            yaml.dump(project_data, f)
-            
+        self.memory_bank.initialize()
         self._load_config()
+        self.is_initialized = True
 
     def _load_config(self) -> None:
         """Load configuration from file if it exists."""
-        config_file = self.memory.docs_path / "config.yaml"
-        if config_file.exists():
-            with config_file.open() as f:
+        config_path = self.memory_bank.docs_path / "config.yaml"
+        if config_path.exists():
+            with config_path.open() as f:
                 self.config.update(yaml.safe_load(f) or {})
 
     def add_task(
         self,
-        name: str,
-        description: str,
-        prompt_template: str,
+        name_or_task: Union[str, Task],
+        description: Optional[str] = None,
+        prompt_template: Optional[str] = None,
         priority: int = 1,
-    ) -> None:
-        """Add a new task to the workflow."""
-        task = {
-            "name": name,
-            "description": description,
-            "prompt_template": prompt_template,
-            "priority": priority,
-            "status": "Not Started",
-            "created_at": datetime.datetime.now().isoformat(),
-            "id": str(uuid.uuid4()),
-        }
-        self.tasks[name] = task
-
-    def get_task(self, name: str) -> Optional[Dict[str, Any]]:
-        """Get task details by name."""
-        return self.tasks.get(name)
-
-    def update_task_status(self, name: str, status: str) -> None:
-        """Update task status."""
+    ) -> Task:
+        """Add a new task to the workflow.
+        
+        Args:
+            name_or_task: Either a Task object or a task name string
+            description: Task description (only used if name_or_task is a string)
+            prompt_template: Prompt template (only used if name_or_task is a string)
+            priority: Task priority (only used if name_or_task is a string)
+            
+        Returns:
+            Task: The added task
+            
+        Raises:
+            ValueError: If task name already exists, required parameters are missing,
+                      or priority is invalid
+        """
+        if isinstance(name_or_task, Task):
+            task = name_or_task
+            name = task.name
+            if task.priority < 1:
+                raise ValueError("Priority must be a positive integer")
+        else:
+            if not description or not prompt_template:
+                raise ValueError("Description and prompt_template are required when adding a task by name")
+            if priority < 1:
+                raise ValueError("Priority must be a positive integer")
+            name = name_or_task
+            task = Task(
+                name=name,
+                description=description,
+                prompt_template=prompt_template,
+                priority=priority,
+            )
+            
         if name in self.tasks:
-            self.tasks[name]["status"] = status
+            raise ValueError(f"Task {name} already exists")
+            
+        self.tasks[name] = task
+        return task
+
+    def get_task(self, name: str) -> Task:
+        """Get task details by name."""
+        if name not in self.tasks:
+            raise KeyError(f"Task {name} not found")
+        return self.tasks[name]
+
+    def update_task(
+        self,
+        name: str,
+        description: Optional[str] = None,
+        prompt_template: Optional[str] = None,
+        priority: Optional[int] = None,
+    ) -> Task:
+        """Update task details."""
+        task = self.get_task(name)
+        if description is not None:
+            task.description = description
+        if prompt_template is not None:
+            task.prompt_template = prompt_template
+        if priority is not None:
+            task.priority = priority
+        return task
+
+    def update_task_status(
+        self,
+        name: str,
+        status: Union[str, TaskStatus],
+        notes: Optional[str] = None
+    ) -> Task:
+        """Update task status.
+        
+        Args:
+            name: Name of the task to update
+            status: New status (either TaskStatus enum or string)
+            notes: Optional notes about the status update
+            
+        Returns:
+            Task: The updated task
+            
+        Raises:
+            KeyError: If task does not exist
+            ValueError: If status string is invalid
+        """
+        task = self.get_task(name)
+        if isinstance(status, str):
+            try:
+                status = TaskStatus(status.upper())
+            except ValueError:
+                raise ValueError(f"Invalid status: {status}")
+        task.update_status(status, notes)
+        return task
+
+    def delete_task(self, name: str) -> None:
+        """Delete a task."""
+        if name not in self.tasks:
+            raise KeyError(f"Task {name} not found")
+        del self.tasks[name]
+
+    def list_tasks(
+        self,
+        status: Optional[TaskStatus] = None,
+        sort_by: Optional[str] = None
+    ) -> List[Task]:
+        """List tasks with optional filtering and sorting."""
+        tasks = list(self.tasks.values())
+
+        if status:
+            tasks = [t for t in tasks if t.status == status]
+
+        if sort_by:
+            if sort_by == "priority":
+                tasks.sort(key=lambda t: t.priority)
+            elif sort_by == "created":
+                tasks.sort(key=lambda t: t.created_at)
+            elif sort_by == "updated":
+                tasks.sort(key=lambda t: t.updated_at)
+
+        return tasks
+
+    def export_tasks(self, path: Union[str, Path]) -> None:
+        """Export tasks to a JSON file."""
+        path = Path(path)
+        data = {
+            "project_name": self.project_name,
+            "tasks": [task.to_dict() for task in self.tasks.values()]
+        }
+        with path.open('w') as f:
+            yaml.dump(data, f)
+
+    def import_tasks(self, path: Union[str, Path]) -> None:
+        """Import tasks from a JSON file."""
+        path = Path(path)
+        with path.open() as f:
+            data = yaml.safe_load(f)
+            for task_data in data.get("tasks", []):
+                task = Task.from_dict(task_data)
+                self.tasks[task.name] = task
 
     def enable_debug(self) -> None:
         """Enable debug mode."""
@@ -197,7 +382,7 @@ class PromptManager:
         task = self.get_task(task_name)
         if task:
             try:
-                return task["prompt_template"].format(**kwargs)
+                return task.prompt_template.format(**kwargs)
             except KeyError as e:
                 self.debug_log(f"Missing prompt variable: {e}")
                 return None
@@ -205,56 +390,44 @@ class PromptManager:
 
     def load_project(self):
         """Load existing project data if available"""
-        project_data = self.memory.docs_path / "project_data.yaml"
+        project_data = self.memory_bank.docs_path / "project_data.yaml"
         if project_data.exists():
             with open(project_data, "r") as f:
                 data = yaml.safe_load(f)
                 for task_data in data.get("tasks", []):
-                    task = {
-                        "name": task_data["name"],
-                        "description": task_data["description"],
-                        "prompt_template": task_data["prompt_template"],
-                        "priority": task_data["priority"],
-                        "status": task_data["status"],
-                        "created_at": task_data["created_at"],
-                        "id": task_data["id"],
-                    }
-                    self.tasks[task["name"]] = task
+                    task = Task.from_dict(task_data)
+                    self.tasks[task.name] = task
 
     def save_project(self):
         """Save project data to YAML"""
         project_data = {
             "project_name": self.project_name,
-            "tasks": list(self.tasks.values()),
+            "tasks": [task.to_dict() for task in self.tasks.values()],
         }
-        with open(self.memory.docs_path / "project_data.yaml", "w") as f:
+        with open(self.memory_bank.docs_path / "project_data.yaml", "w") as f:
             yaml.dump(project_data, f)
 
-    def add_task_to_project(self, name: str, description: str, prompt_template: str) -> Dict[str, Any]:
+    def add_task_to_project(self, name: str, description: str, prompt_template: str) -> Task:
         """Add a new task to the project"""
-        task = {
-            "name": name,
-            "description": description,
-            "prompt_template": prompt_template,
-            "priority": 1,
-            "status": "Not Started",
-            "created_at": datetime.datetime.now().isoformat(),
-            "id": str(uuid.uuid4()),
-        }
+        task = Task(
+            name=name,
+            description=description,
+            prompt_template=prompt_template,
+        )
         self.tasks[name] = task
         self.update_markdown_files()
         self.save_project()
         return task
 
-    def get_task_from_project(self, name: str) -> Optional[Dict[str, Any]]:
+    def get_task_from_project(self, name: str) -> Optional[Task]:
         """Get a task by name"""
         return self.tasks.get(name)
 
-    def update_progress(self, task_name: str, status: str, note: str):
+    def update_progress(self, task_name: str, status: TaskStatus, note: str):
         """Update task progress"""
         task = self.get_task(task_name)
         if task:
-            task["status"] = status
+            task.update_status(status, note)
             self.update_markdown_files()
             self.save_project()
 
@@ -269,36 +442,37 @@ class PromptManager:
         """Update project_plan.md"""
         content = f"# {self.project_name}\n\n## Tasks\n"
         for task in self.tasks.values():
-            content += f"### {task['name']}\n"
-            content += f"- Status: {task['status']}\n"
-            content += f"- Description: {task['description']}\n\n"
+            content += f"### {task.name}\n"
+            content += f"- Status: {task.status.value}\n"
+            content += f"- Description: {task.description}\n\n"
 
-        with open(self.memory.docs_path / "project_plan.md", "w") as f:
+        with open(self.memory_bank.docs_path / "project_plan.md", "w") as f:
             f.write(content)
 
     def _update_task_breakdown(self):
         """Update task_breakdown.md"""
         content = "# Task Breakdown\n\n"
         for task in self.tasks.values():
-            content += f"## {task['name']}\n"
-            content += f"Description: {task['description']}\n\n"
+            content += f"## {task.name}\n"
+            content += f"Description: {task.description}\n\n"
             content += "### Prompt Template\n```\n"
-            content += task["prompt_template"]
+            content += task.prompt_template
             content += "\n```\n\n"
 
-        with open(self.memory.docs_path / "task_breakdown.md", "w") as f:
+        with open(self.memory_bank.docs_path / "task_breakdown.md", "w") as f:
             f.write(content)
 
     def _update_progress_tracking(self):
         """Update progress_tracking.md"""
         content = f"# Progress Tracking - {self.project_name}\n\n"
         for task in self.tasks.values():
-            content += f"## {task['name']}\n"
-            content += f"Status: {task['status']}\n\n"
+            content += f"## {task.name}\n"
+            content += f"Status: {task.status.value}\n\n"
             content += "### Progress Notes\n"
+            content += "\n".join(task.status_notes)
             content += "\n"
 
-        with open(self.memory.docs_path / "progress_tracking.md", "w") as f:
+        with open(self.memory_bank.docs_path / "progress_tracking.md", "w") as f:
             f.write(content)
 
     def _update_mermaid_diagrams(self):
@@ -309,20 +483,22 @@ class PromptManager:
         content += "## Task Status\n```mermaid\ngraph TD\n"
         for task in self.tasks.values():
             style = {
-                "Not Started": "fill:#fff",
-                "In Progress": "fill:#yellow",
-                "Complete": "fill:#green",
-            }.get(task["status"], "fill:#fff")
+                TaskStatus.NOT_STARTED: "fill:#fff",
+                TaskStatus.IN_PROGRESS: "fill:#yellow",
+                TaskStatus.COMPLETED: "fill:#green",
+                TaskStatus.FAILED: "fill:#red",
+                TaskStatus.BLOCKED: "fill:#gray",
+            }.get(task.status, "fill:#fff")
 
-            content += f"    {task['name']}[{task['name']}]:::status{task['status']}\n"
+            content += f"    {task.name}[{task.name}]:::status{task.status.value}\n"
         content += "```\n\n"
 
-        with open(self.memory.docs_path / "mermaid_diagrams.md", "w") as f:
+        with open(self.memory_bank.docs_path / "mermaid_diagrams.md", "w") as f:
             f.write(content)
 
     def execute_task(self, task_name: str, execution_result: str) -> bool:
         """Execute a task and handle any failures"""
-        if self.memory.check_token_limit():
+        if self.memory_bank.check_token_limit():
             self._handle_memory_reset()
             return
 
@@ -332,21 +508,20 @@ class PromptManager:
 
         try:
             # Update active context with current task
-            self.memory.update_context(
+            self.memory_bank.update_context(
                 "activeContext.md",
                 "Current Tasks",
-                f"- {task_name}: {task['description']}",
+                f"- {task_name}: {task.description}",
             )
 
             # Execute task
             if "error" in execution_result.lower():
                 self._handle_task_failure(task, execution_result)
             else:
-                task["status"] = "Completed"
-                self.update_progress(task_name, "Completed", execution_result)
+                task.update_status(TaskStatus.COMPLETED, execution_result)
 
                 # Update progress in memory bank
-                self.memory.update_context(
+                self.memory_bank.update_context(
                     "progress.md", "Completed", f"- {task_name}: {execution_result}"
                 )
 
@@ -359,30 +534,30 @@ class PromptManager:
     def _handle_memory_reset(self):
         """Handle memory bank reset"""
         # Document current state
-        active_tasks = [t for t in self.tasks.values() if t["status"] == "In Progress"]
+        active_tasks = [t for t in self.tasks.values() if t.status == TaskStatus.IN_PROGRESS]
         next_steps = "\n".join(
-            [f"- Continue {t['name']}: {t['description']}" for t in active_tasks]
+            [f"- Continue {t.name}: {t.description}" for t in active_tasks]
         )
 
-        self.memory.update_context("activeContext.md", "Next Steps", next_steps)
+        self.memory_bank.update_context("activeContext.md", "Next Steps", next_steps)
 
         # Update progress
-        self.memory.update_context(
+        self.memory_bank.update_context(
             "progress.md",
             "In Progress",
-            "\n".join([f"- {t['name']}: {t['status']}" for t in self.tasks.values()]),
+            "\n".join([f"- {t.name}: {t.status.value}" for t in self.tasks.values()]),
         )
 
         # Reset token count
-        self.memory.current_tokens = 0
+        self.memory_bank.current_tokens = 0
 
-    def _handle_task_failure(self, task: Dict[str, Any], error_message: str):
+    def _handle_task_failure(self, task: Task, error_message: str):
         """Handle task failure with progressive debugging"""
         # Update active context with failure
-        self.memory.update_context(
+        self.memory_bank.update_context(
             "activeContext.md",
             "Recent Changes",
-            f"- Failed: {task['name']}\n  Error: {error_message}",
+            f"- Failed: {task.name}\n  Error: {error_message}",
         )
 
         # Try debugging first
@@ -405,7 +580,7 @@ class PromptManager:
 
         return False
 
-    def _attempt_debugging(self, task: Dict[str, Any], error_message: str) -> Dict[str, Any]:
+    def _attempt_debugging(self, task: Task, error_message: str) -> Dict[str, Any]:
         """Attempt to debug a task failure using layered debugging approach"""
         # First try single-file debugging
         debug_result = self._debug_environment_layer(task, error_message)
@@ -419,31 +594,31 @@ class PromptManager:
 
         return {"success": False, "message": "All debugging attempts failed", "fix_attempt": "No successful fix found"}
 
-    def _debug_environment_layer(self, task: Dict[str, Any], error_message: str) -> Dict[str, Any]:
+    def _debug_environment_layer(self, task: Task, error_message: str) -> Dict[str, Any]:
         """Debug environment-related issues"""
         prompt = self._get_debug_prompt("Layered Debug Analysis")
         # Here you would integrate with your LLM to analyze environment issues
         return {"success": False, "message": "Environment layer checked", "fix_attempt": "No issues found"}
 
-    def _debug_code_logic_layer(self, task: Dict[str, Any], error_message: str) -> Dict[str, Any]:
+    def _debug_code_logic_layer(self, task: Task, error_message: str) -> Dict[str, Any]:
         """Debug code logic issues"""
         prompt = self._get_debug_prompt("Root Cause Analysis")
         # Here you would integrate with your LLM to analyze code logic
         return {"success": False, "message": "Code logic layer checked", "fix_attempt": "No issues found"}
 
-    def _attempt_firecrawl_research(self, task: Dict[str, Any]) -> Dict[str, Any]:
+    def _attempt_firecrawl_research(self, task: Task) -> Dict[str, Any]:
         """Attempt to research solutions using Firecrawl"""
         research_prompt = self._get_debug_prompt("Firecrawl Research")
         # Here you would integrate with Firecrawl to search for solutions
         return {"success": False, "message": "Firecrawl research attempted", "fix_attempt": "Research logged"}
 
-    def _perform_rca(self, task: Dict[str, Any]) -> Dict[str, Any]:
+    def _perform_rca(self, task: Task) -> Dict[str, Any]:
         """Perform Root Cause Analysis"""
         rca_prompt = self._get_debug_prompt("Root Cause Analysis")
         # Here you would integrate with your LLM to perform RCA
         return {"success": False, "message": "RCA performed", "fix_attempt": "Analysis logged"}
 
-    def _escalate_to_human(self, task: Dict[str, Any]):
+    def _escalate_to_human(self, task: Task):
         """Escalate the issue to human intervention"""
         escalation_note = {
             "timestamp": datetime.datetime.now().isoformat(),
@@ -454,7 +629,7 @@ class PromptManager:
 
     def _get_debug_prompt(self, prompt_type: str) -> str:
         """Get a specific type of debugging prompt"""
-        with open(self.memory.docs_path / "debugging_prompts.md", "r") as f:
+        with open(self.memory_bank.docs_path / "debugging_prompts.md", "r") as f:
             content = f.read()
             # Parse the content to find the specific prompt type
             # This is a simplified version - you'd want to implement proper YAML parsing
@@ -487,7 +662,7 @@ if __name__ == "__main__":
         pm.add_task_to_project(args.name, args.description, args.prompt)
     elif args.command == "update-progress":
         pm = PromptManager("")  # Load existing project
-        pm.update_progress(args.name, args.status, args.note)
+        pm.update_progress(args.name, TaskStatus(args.status), args.note)
     elif args.command == "execute-task":
         pm = PromptManager("")  # Load existing project
         pm.execute_task(args.name, args.execution_result)

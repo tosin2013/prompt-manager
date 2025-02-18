@@ -1,104 +1,145 @@
-"""Command-line interface for Prompt Manager."""
-
+"""
+Command-line interface for the Prompt Manager.
+"""
 import click
 from pathlib import Path
-from . import PromptManager
+from prompt_manager import PromptManager, Task, TaskStatus
+from typing import Optional
+import sys
 
 
 @click.group()
+@click.version_option(version="0.1.0")
 def cli():
     """Prompt Manager CLI - Development workflow management system."""
     pass
 
 
-@cli.command()
-@click.argument('project_name')
-@click.option('--memory-path', '-m', type=click.Path(), 
-              help='Path to store memory files')
-def init(project_name: str, memory_path: str = None):
-    """Initialize a new project with Prompt Manager."""
-    click.echo(f"Current working directory: {Path.cwd()}")
-    if memory_path:
-        memory_path = Path(memory_path)
-    manager = PromptManager(project_name, config={"memory_path": memory_path} if memory_path else None)
-    click.echo(f"Initialized project '{project_name}'")
-    if memory_path:
-        click.echo(f"Memory files will be stored in: {memory_path}")
-    click.echo(f"Memory path: {manager.memory.docs_path}")
+# Global variable to store the current project path
+_current_project_path = None
+
+def _get_manager():
+    """Get a PromptManager instance with the current project."""
+    global _current_project_path
+    if _current_project_path is None:
+        _current_project_path = Path.cwd()
+    return PromptManager("", memory_path=_current_project_path / "prompt_manager_data")
 
 
 @cli.command()
-@click.argument('task_name')
-@click.argument('description')
-@click.argument('prompt_template')
-@click.option('--priority', '-p', type=int, default=1,
-              help='Task priority (lower is higher priority)')
-def add_task(task_name: str, description: str, prompt_template: str, 
-             priority: int):
-    """Add a new task to the workflow."""
-    manager = PromptManager("default")
-    manager.add_task(task_name, description, prompt_template)
-    click.echo(f"Added task '{task_name}'")
+@click.argument("path", type=click.Path(exists=True))
+def analyze_repo(path: str):
+    """Analyze a repository for project context."""
+    click.echo(f"Analyzing repository at: {path}")
+    
+    # Initialize PromptManager with repository path
+    manager = PromptManager("", memory_path=Path(path))
+    
+    try:
+        # Perform repository analysis
+        manager.initialize()
+        click.echo("Repository analysis complete")
+    except Exception as e:
+        click.echo(f"Error: {str(e)}")
 
 
 @cli.command()
-@click.argument('task_name')
-def get_task(task_name: str):
-    """Get details about a task."""
-    manager = PromptManager("default")
-    task = manager.get_task(task_name)
-    if task:
-        click.echo(f"Task: {task_name}")
-        click.echo(f"Description: {task.description}")
-        click.echo(f"Status: {task.status}")
-    else:
-        click.echo(f"Task '{task_name}' not found", err=True)
+@click.option("--path", type=click.Path(), default=".")
+def init(path: str):
+    """Initialize a new project."""
+    try:
+        global _current_project_path
+        _current_project_path = Path(path)
+        manager = _get_manager()
+        manager.initialize()
+        click.echo("Project initialized successfully")
+    except Exception as e:
+        click.echo(f"Error initializing project: {str(e)}", err=True)
+        sys.exit(1)
 
 
 @cli.command()
-@click.argument('task_name')
-@click.argument('status')
-@click.argument('note')
-def update_progress(task_name: str, status: str, note: str):
+@click.argument("name")
+@click.argument("description")
+@click.argument("prompt")
+@click.option("--priority", type=int, default=1)
+def add_task(name: str, description: str, prompt: str, priority: int = 1):
+    """Add a new task."""
+    try:
+        if priority < 1:
+            raise ValueError("Priority must be a positive integer")
+            
+        manager = _get_manager()
+        task = manager.add_task(name, description, prompt, priority)
+        click.echo(f"Task {task.name} added successfully")
+    except Exception as e:
+        click.echo(f"Error adding task: {str(e)}", err=True)
+        sys.exit(1)
+
+
+@cli.command()
+@click.argument("name")
+@click.argument("status", type=click.Choice([s.value for s in TaskStatus]))
+def update_progress(name: str, status: str):
     """Update task progress."""
-    manager = PromptManager("default")
-    manager.update_progress(task_name, status, note)
-    click.echo(f"Updated progress for task '{task_name}'")
+    try:
+        manager = _get_manager()
+        task = manager.update_task_status(name, status)
+        click.echo(f"Task {task.name} status updated to {task.status.value}")
+    except Exception as e:
+        click.echo(f"Error updating task: {str(e)}", err=True)
+        sys.exit(1)
 
 
 @cli.command()
-@click.argument('repo_path', type=click.Path(exists=True))
-def analyze_repo(repo_path: str):
-    """Analyze an existing GitHub repository."""
-    click.echo(f"Analyzing repository at: {repo_path}")
-    
-    # Convert to absolute path
-    repo_path = Path(repo_path).resolve()
-    
-    # Check if it's a git repository
-    if not (repo_path / ".git").exists():
-        click.echo("Error: Not a git repository", err=True)
-        return
-    
-    # Initialize PromptManager with repo name
-    repo_name = repo_path.name
-    manager = PromptManager(repo_name)
-    
-    # Add .gitignore entry if needed
-    gitignore_path = repo_path / ".gitignore"
-    if gitignore_path.exists():
-        with open(gitignore_path) as f:
-            if "cline_docs/" not in f.read():
-                with open(gitignore_path, "a") as f:
-                    f.write("\n# Cline documentation\ncline_docs/\n")
-    else:
-        with open(gitignore_path, "w") as f:
-            f.write("# Cline documentation\ncline_docs/\n")
-    
-    click.echo(f"Initialized Cline for repository: {repo_name}")
-    click.echo(f"Memory files will be stored in: {manager.memory.docs_path}")
-    click.echo("Added cline_docs/ to .gitignore")
+@click.option('--status', type=click.Choice([s.value for s in TaskStatus], case_sensitive=False),
+              help='Filter tasks by status')
+@click.option('--sort-by', type=click.Choice(['priority', 'created', 'updated'], case_sensitive=False),
+              help='Sort tasks by field')
+def list_tasks(status: Optional[str] = None, sort_by: Optional[str] = None):
+    """List tasks with optional filtering and sorting."""
+    try:
+        manager = _get_manager()
+        task_status = TaskStatus(status.upper()) if status else None
+        tasks = manager.list_tasks(status=task_status, sort_by=sort_by)
+        
+        if not tasks:
+            click.echo("No tasks found")
+            return
+        
+        # Print header
+        click.echo("\nTasks:")
+        click.echo("=" * 50)
+        
+        for task in tasks:
+            click.echo(f"\nName: {task.name}")
+            click.echo(f"Status: {task.status.value}")
+            click.echo(f"Description: {task.description}")
+            click.echo(f"Priority: {task.priority}")
+            click.echo(f"Created: {task.created_at.strftime('%Y-%m-%d %H:%M:%S')}")
+            click.echo(f"Updated: {task.updated_at.strftime('%Y-%m-%d %H:%M:%S')}")
+            if task.status_notes:
+                click.echo("Status Notes:")
+                for note in task.status_notes:
+                    click.echo(f"  - {note}")
+            click.echo("-" * 50)
+    except Exception as e:
+        click.echo(f"Error listing tasks: {str(e)}", err=True)
+        sys.exit(1)
 
 
-if __name__ == '__main__':
+@cli.command()
+@click.option("--output", type=click.Path(), required=True)
+def export_tasks(output: str):
+    """Export tasks to a file."""
+    try:
+        manager = _get_manager()
+        manager.export_tasks(Path(output))
+        click.echo("Tasks exported successfully")
+        click.echo(f"Output file: {output}")
+    except Exception as e:
+        click.echo(f"Error exporting tasks: {str(e)}")
+
+
+if __name__ == "__main__":
     cli()
