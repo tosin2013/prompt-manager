@@ -6,9 +6,19 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write      # Required for creating releases and uploading artifacts
+  actions: read       # Required for reading workflow runs
+  packages: write     # Required if you plan to publish to GitHub Packages
+  id-token: write    # Required for creating releases
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read    # Required for checking out code
+      actions: read     # Required for reading workflow runs
+      
     strategy:
       matrix:
         python-version: [3.8, 3.9, "3.10"]
@@ -45,7 +55,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
-    
+    permissions:
+      contents: write    # Required for creating releases
+      actions: read      # Required for reading workflow runs
+      
     steps:
     - uses: actions/checkout@v3
     
@@ -63,4 +76,4 @@ jobs:
         prerelease: false
         generate_release_notes: true
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
