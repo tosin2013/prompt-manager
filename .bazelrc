@@ -1,0 +1,22 @@
+# Build options
+build --incompatible_strict_action_env
+build --enable_platform_specific_config
+
+# Python options
+build --python_version=PY3
+
+# Test options
+test --test_output=errors
+test --test_verbose_timeout_warnings
+test --test_env=PYTHONPATH
+
+# Coverage options
+coverage --instrument_test_targets
+coverage --combined_report=lcov
+coverage --coverage_report_generator=@bazel_tools//tools/test/CoverageOutputGenerator/java/com/google/devtools/coverageoutputgenerator:Main
+
+# Development convenience
+build --watchfs
+
+# Use a static Python interpreter
+build --python_path=/usr/local/bin/python3
