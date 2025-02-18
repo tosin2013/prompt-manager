@@ -23,8 +23,8 @@ def _get_manager():
     global _current_project_path
     if _current_project_path is None:
         _current_project_path = Path.cwd()
-    return PromptManager("", memory_path=_current_project_path / "prompt_manager_data")
-
+    manager = PromptManager("", memory_path=_current_project_path / "prompt_manager_data")
+    return manager
 
 @cli.command()
 @click.argument("path", type=click.Path(exists=True))
@@ -79,12 +79,12 @@ def add_task(name: str, description: str, prompt: str, priority: int = 1):
 
 @cli.command()
 @click.argument("name")
-@click.argument("status", type=click.Choice([s.value for s in TaskStatus]))
+@click.argument("status", type=click.Choice([s.value for s in TaskStatus], case_sensitive=False))
 def update_progress(name: str, status: str):
     """Update task progress."""
     try:
         manager = _get_manager()
-        task = manager.update_task_status(name, status)
+        task = manager.update_task_status(name, status.upper())
         click.echo(f"Task {task.name} status updated to {task.status.value}")
     except Exception as e:
         click.echo(f"Error updating task: {str(e)}", err=True)

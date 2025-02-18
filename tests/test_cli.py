@@ -55,7 +55,7 @@ def test_update_progress(cli_runner, test_data_dir):
         "IN_PROGRESS"
     ])
     assert result.exit_code == 0
-    assert "Task status updated" in result.output
+    assert "status updated to IN_PROGRESS" in result.output
 
 def test_list_tasks(cli_runner, test_data_dir):
     """Test task listing command."""

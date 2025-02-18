@@ -204,6 +204,7 @@ class PromptManager:
         """Initialize the prompt manager and memory bank."""
         self.memory_bank.initialize()
         self._load_config()
+        self.load_tasks()  # Load existing tasks
         self.is_initialized = True
 
     def _load_config(self) -> None:
@@ -212,6 +213,24 @@ class PromptManager:
         if config_path.exists():
             with config_path.open() as f:
                 self.config.update(yaml.safe_load(f) or {})
+
+    def load_tasks(self) -> None:
+        """Load tasks from storage."""
+        tasks_path = self.memory_bank.docs_path / "tasks.yaml"
+        if tasks_path.exists():
+            with tasks_path.open() as f:
+                data = yaml.safe_load(f) or {}
+                self.tasks = {
+                    name: Task.from_dict(task_data)
+                    for name, task_data in data.items()
+                }
+
+    def save_tasks(self) -> None:
+        """Save tasks to storage."""
+        tasks_path = self.memory_bank.docs_path / "tasks.yaml"
+        with tasks_path.open('w') as f:
+            data = {name: task.to_dict() for name, task in self.tasks.items()}
+            yaml.dump(data, f)
 
     def add_task(
         self,
@@ -257,6 +276,7 @@ class PromptManager:
             raise ValueError(f"Task {name} already exists")
             
         self.tasks[name] = task
+        self.save_tasks()
         return task
 
     def get_task(self, name: str) -> Task:
@@ -280,6 +300,7 @@ class PromptManager:
             task.prompt_template = prompt_template
         if priority is not None:
             task.priority = priority
+        self.save_tasks()
         return task
 
     def update_task_status(
@@ -309,6 +330,7 @@ class PromptManager:
             except ValueError:
                 raise ValueError(f"Invalid status: {status}")
         task.update_status(status, notes)
+        self.save_tasks()
         return task
 
     def delete_task(self, name: str) -> None:
@@ -316,6 +338,7 @@ class PromptManager:
         if name not in self.tasks:
             raise KeyError(f"Task {name} not found")
         del self.tasks[name]
+        self.save_tasks()
 
     def list_tasks(
         self,
@@ -356,6 +379,7 @@ class PromptManager:
             for task_data in data.get("tasks", []):
                 task = Task.from_dict(task_data)
                 self.tasks[task.name] = task
+        self.save_tasks()
 
     def enable_debug(self) -> None:
         """Enable debug mode."""
