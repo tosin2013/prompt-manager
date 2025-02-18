@@ -141,5 +141,39 @@ def export_tasks(output: str):
         click.echo(f"Error exporting tasks: {str(e)}")
 
 
+@cli.command()
+@click.argument("project_description")
+@click.option("--framework", default="Next.js", help="Framework to use (e.g., Next.js, React, Vue)")
+def generate_bolt_tasks(project_description: str, framework: str):
+    """Generate a sequence of bolt.new development tasks."""
+    try:
+        manager = _get_manager()
+        tasks = manager.generate_bolt_tasks(project_description)
+        
+        # Update framework for setup task
+        tasks[0].framework = framework
+        
+        # Add tasks to manager
+        for task in tasks:
+            manager.add_task(task)
+        
+        click.echo("\nGenerated Bolt.new Development Tasks:")
+        click.echo("=" * 60)
+        
+        for task in tasks:
+            click.echo(f"\n{task.name} (Priority: {task.priority})")
+            click.echo("-" * len(task.name))
+            click.echo(f"Status: {task.status.value}")
+            
+            # Show bolt.new prompt
+            click.echo("\nBolt.new Prompt:")
+            click.echo(task.to_bolt_prompt())
+            click.echo("\n" + "=" * 60)
+            
+    except Exception as e:
+        click.echo(f"Error generating bolt tasks: {str(e)}", err=True)
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     cli()

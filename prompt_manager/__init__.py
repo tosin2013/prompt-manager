@@ -79,6 +79,81 @@ class Task:
         return task
 
 
+class BoltTask(Task):
+    """Represents a task specifically for bolt.new development."""
+
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        prompt_template: str,
+        framework: Optional[str] = None,
+        dependencies: Optional[List[str]] = None,
+        ui_components: Optional[List[str]] = None,
+        api_endpoints: Optional[List[Dict[str, str]]] = None,
+        priority: int = 1,
+        status: TaskStatus = TaskStatus.NOT_STARTED
+    ) -> None:
+        """Initialize a new bolt.new task."""
+        super().__init__(name, description, prompt_template, priority, status)
+        self.framework = framework
+        self.dependencies = dependencies or []
+        self.ui_components = ui_components or []
+        self.api_endpoints = api_endpoints or []
+        
+    def to_bolt_prompt(self) -> str:
+        """Generate a bolt.new-compatible prompt."""
+        prompt_parts = [
+            f"# {self.name}",
+            "\n## Project Requirements",
+            f"\n{self.description}",
+            "\n## Technical Stack",
+            f"\nFramework: {self.framework}" if self.framework else "",
+            "\nDependencies:",
+            *[f"- {dep}" for dep in self.dependencies],
+            "\n## UI Components:",
+            *[f"- {comp}" for comp in self.ui_components],
+            "\n## API Endpoints:",
+            *[f"- {endpoint['method']} {endpoint['path']}: {endpoint['description']}" 
+              for endpoint in self.api_endpoints],
+            "\n## Development Instructions:",
+            self.prompt_template
+        ]
+        return "\n".join(filter(None, prompt_parts))
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert task to dictionary for serialization."""
+        base_dict = super().to_dict()
+        bolt_dict = {
+            "framework": self.framework,
+            "dependencies": self.dependencies,
+            "ui_components": self.ui_components,
+            "api_endpoints": self.api_endpoints
+        }
+        return {**base_dict, **bolt_dict}
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'BoltTask':
+        """Create task from dictionary."""
+        task = super().from_dict(data)
+        bolt_task = cls(
+            name=task.name,
+            description=task.description,
+            prompt_template=task.prompt_template,
+            priority=task.priority,
+            status=task.status,
+            framework=data.get("framework"),
+            dependencies=data.get("dependencies", []),
+            ui_components=data.get("ui_components", []),
+            api_endpoints=data.get("api_endpoints", [])
+        )
+        bolt_task.status_notes = task.status_notes
+        bolt_task.created_at = task.created_at
+        bolt_task.updated_at = task.updated_at
+        bolt_task.id = task.id
+        return bolt_task
+
+
 class MemoryBank:
     """Manages persistent memory and context for the development workflow."""
 
@@ -660,6 +735,117 @@ class PromptManager:
             if prompt_type in content:
                 return f"Using {prompt_type} prompt"
             return "Default debugging prompt"
+
+    def generate_bolt_tasks(self, project_description: str) -> List[BoltTask]:
+        """Generate a sequence of bolt.new development tasks."""
+        tasks = []
+        
+        # 1. Project Setup Task
+        setup_task = BoltTask(
+            name="Initial Project Setup",
+            description=f"Set up the development environment for: {project_description}",
+            prompt_template="""
+Please create a new project with the following setup:
+1. Initialize the project with the specified framework
+2. Install all required dependencies
+3. Set up the basic project structure
+4. Configure development tools (ESLint, Prettier, etc.)
+5. Create a development server
+            """.strip(),
+            framework="Next.js",  # Default, can be overridden
+            dependencies=[
+                "typescript",
+                "tailwindcss",
+                "eslint",
+                "prettier"
+            ],
+            priority=1
+        )
+        tasks.append(setup_task)
+        
+        # 2. UI Components Task
+        ui_task = BoltTask(
+            name="UI Component Development",
+            description="Create the core UI components for the application",
+            prompt_template="""
+Please implement the following UI components:
+1. Create reusable base components
+2. Implement the layout structure
+3. Add responsive styling
+4. Ensure accessibility compliance
+5. Add interactive elements
+            """.strip(),
+            ui_components=[
+                "Layout",
+                "Navigation",
+                "Forms",
+                "Cards",
+                "Modals"
+            ],
+            priority=2
+        )
+        tasks.append(ui_task)
+        
+        # 3. API Integration Task
+        api_task = BoltTask(
+            name="API Integration",
+            description="Implement backend API endpoints and data management",
+            prompt_template="""
+Please implement the following API features:
+1. Set up API routes
+2. Implement data models
+3. Add authentication
+4. Create CRUD operations
+5. Add error handling
+            """.strip(),
+            api_endpoints=[
+                {"method": "GET", "path": "/api/items", "description": "List all items"},
+                {"method": "POST", "path": "/api/items", "description": "Create new item"},
+                {"method": "PUT", "path": "/api/items/:id", "description": "Update item"},
+                {"method": "DELETE", "path": "/api/items/:id", "description": "Delete item"}
+            ],
+            priority=3
+        )
+        tasks.append(api_task)
+        
+        # 4. Testing Task
+        test_task = BoltTask(
+            name="Testing Implementation",
+            description="Add comprehensive testing suite",
+            prompt_template="""
+Please implement tests for:
+1. Unit tests for components
+2. Integration tests for API
+3. End-to-end testing
+4. Performance testing
+5. Accessibility testing
+            """.strip(),
+            dependencies=[
+                "jest",
+                "cypress",
+                "@testing-library/react"
+            ],
+            priority=4
+        )
+        tasks.append(test_task)
+        
+        # 5. Deployment Task
+        deploy_task = BoltTask(
+            name="Deployment Setup",
+            description="Configure deployment and CI/CD",
+            prompt_template="""
+Please set up deployment:
+1. Configure build process
+2. Set up environment variables
+3. Add deployment scripts
+4. Configure CI/CD
+5. Add monitoring
+            """.strip(),
+            priority=5
+        )
+        tasks.append(deploy_task)
+        
+        return tasks
 
 
 if __name__ == "__main__":

@@ -109,3 +109,32 @@ def test_version_command(cli_runner):
     result = cli_runner.invoke(cli, ["--version"])
     assert result.exit_code == 0
     assert "version" in result.output.lower()
+
+def test_generate_bolt_tasks(cli_runner, test_data_dir):
+    """Test bolt.new task generation command."""
+    # First initialize a project
+    result = cli_runner.invoke(cli, ["init", "--path", str(test_data_dir)])
+    assert result.exit_code == 0
+
+    # Generate bolt tasks
+    result = cli_runner.invoke(cli, [
+        "generate-bolt-tasks",
+        "Create a blog application",
+        "--framework", "Next.js"
+    ])
+    assert result.exit_code == 0
+    
+    # Verify output contains all tasks
+    assert "Initial Project Setup" in result.output
+    assert "UI Component Development" in result.output
+    assert "API Integration" in result.output
+    assert "Testing Implementation" in result.output
+    assert "Deployment Setup" in result.output
+    
+    # Verify framework is set correctly
+    assert "Framework: Next.js" in result.output
+    
+    # Verify prompt formatting
+    assert "Project Requirements" in result.output
+    assert "Technical Stack" in result.output
+    assert "Development Instructions" in result.output
