@@ -14,10 +14,10 @@ A powerful AI-assisted workflow management system with advanced task tracking an
 
 ## Installation
 
-You can install the latest release (v0.3.15) using pip:
+You can install the latest release (v0.3.16) using pip:
 
 ```bash
-pip install tosins-prompt-manager==0.3.15
+pip install tosins-prompt-manager==0.3.16
 ```
 
 Or download directly from GitHub releases:
@@ -27,7 +27,7 @@ git clone https://github.com/tosin2013/prompt-manager.git
 cd prompt-manager
 
 # Checkout the latest release
-git checkout v0.3.15
+git checkout v0.3.16
 
 # Install in editable mode
 pip install -e .
@@ -203,14 +203,16 @@ The GitHub Action will automatically:
 - Create a GitHub release
 - Upload build artifacts
 
-## Latest Release (v0.3.15)
+## Latest Release (v0.3.16)
 
 ### What's New
+- Added comprehensive CLI command documentation
+- Updated Python version support (3.9-3.13)
+- Package renamed to tosins-prompt-manager
 - **LLM Enhancement**: Autonomous code improvement and pull request generation
 - **bolt.new Integration**: Generate structured development tasks for web applications
 - **Enhanced Task Management**: Improved task tracking and organization
 - **Memory Bank Updates**: Better context management for web development
-- **New Documentation**: Comprehensive guide for bolt.new features and LLM Enhancement
 
 ### Breaking Changes
 None

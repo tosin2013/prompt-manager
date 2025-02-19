@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="tosins-prompt-manager",
-    version="0.3.15",  # Match the latest tag
+    version="0.3.16",  # Match the latest tag
     packages=find_packages(exclude=[
         "*.tests", "*.tests.*", "tests.*", "tests",
         "*.egg-info", "*.egg-info.*",

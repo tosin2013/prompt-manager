@@ -7,19 +7,25 @@
 
 module(
     name = "prompt_manager",
-    version = "0.1.0",
+    version = "0.3.16",
 )
 
 bazel_dep(name = "rules_python", version = "0.40.0")
 
+# Python toolchains
 python = use_extension("@rules_python//python:defs.bzl", "py_runtime_pair")
+
+# Python 3.9
 python.toolchain(
+    name = "python39",
     python_version = "3.9",
 )
 
-pip = use_extension("@rules_python//python:defs.bzl", "pip_parse")
-pip.parse(
-    name = "pip",
-    requirements_lock = "//:requirements.txt",
+# Python 3.13
+python.toolchain(
+    name = "python313",
+    python_version = "3.13",
 )
-use_repo(pip, "pip")
+
+# Make the toolchains available
+use_repo(python, "python39_toolchain", "python313_toolchain")
