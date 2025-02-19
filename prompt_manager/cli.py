@@ -175,5 +175,108 @@ def generate_bolt_tasks(project_description: str, framework: str):
         sys.exit(1)
 
 
+@cli.command()
+@click.option("--interactive", "-i", is_flag=True, help="Start in interactive mode")
+def startup(interactive: bool):
+    """Start the prompt manager with optional interactive mode."""
+    try:
+        if interactive:
+            click.echo("Welcome to Prompt Manager! Let's get started.")
+            click.echo("\nAvailable commands:")
+            click.echo("1. Initialize new project")
+            click.echo("2. Generate bolt.new tasks")
+            click.echo("3. List existing tasks")
+            click.echo("4. Add new task")
+            click.echo("5. Import tasks from file")
+            click.echo("6. Reset Memory Bank")
+            click.echo("0. Exit")
+
+            while True:
+                choice = click.prompt("\nEnter command number", type=int)
+                
+                if choice == 0:
+                    click.echo("Goodbye!")
+                    break
+                elif choice == 1:
+                    path = click.prompt("Enter project path (or '.' for current directory)", default=".")
+                    name = click.prompt("Enter project name")
+                    init(path)
+                    click.echo(f"Project {name} initialized at {path}")
+                elif choice == 2:
+                    desc = click.prompt("Enter project description")
+                    framework = click.prompt("Enter framework (default: Next.js)", default="Next.js")
+                    generate_bolt_tasks(desc, framework)
+                elif choice == 3:
+                    status = click.prompt("Filter by status (optional)", default="")
+                    sort_by = click.prompt("Sort by (optional)", default="")
+                    list_tasks(status or None, sort_by or None)
+                elif choice == 4:
+                    name = click.prompt("Task name")
+                    desc = click.prompt("Task description")
+                    prompt = click.prompt("Prompt template")
+                    priority = click.prompt("Priority (default: 1)", type=int, default=1)
+                    add_task(name, desc, prompt, priority)
+                elif choice == 5:
+                    path = click.prompt("Enter file path")
+                    import_tasks(path)
+                elif choice == 6:
+                    if click.confirm("Are you sure you want to reset the Memory Bank?"):
+                        manager = _get_manager()
+                        manager.memory_bank.reset()
+                        click.echo("Memory Bank reset successfully")
+                else:
+                    click.echo("Invalid choice. Please try again.")
+        else:
+            manager = _get_manager()
+            manager.initialize()
+            click.echo("Prompt Manager started successfully")
+    except Exception as e:
+        click.echo(f"Error during startup: {str(e)}", err=True)
+        sys.exit(1)
+
+
+@cli.command()
+def reflect():
+    """Analyze LLM's interaction patterns and effectiveness."""
+    manager = _get_manager()
+    click.echo("Analyzing LLM interaction patterns...")
+    
+    patterns = manager.analyze_patterns()
+    click.echo("\nMost effective prompt patterns:")
+    for pattern in patterns:
+        click.echo(f"- {pattern}")
+    
+    suggestions = manager.generate_suggestions()
+    click.echo("\nOptimization suggestions:")
+    for suggestion in suggestions:
+        click.echo(f"- {suggestion}")
+
+
+@cli.command()
+def learn_mode():
+    """Enable autonomous learning mode for the LLM."""
+    manager = _get_manager()
+    click.echo("Enabling autonomous learning mode...")
+    manager.start_learning_session()
+    click.echo("Learning mode enabled")
+
+
+@cli.command()
+def meta_program():
+    """Allow LLM to modify its own tooling."""
+    manager = _get_manager()
+    click.echo("Entering meta-programming mode...")
+    
+    utilities = manager.generate_custom_utilities()
+    click.echo("\nGenerated custom utilities:")
+    for util in utilities:
+        click.echo(f"- {util}")
+    
+    commands = manager.create_custom_commands()
+    click.echo("\nCreated custom commands:")
+    for cmd in commands:
+        click.echo(f"- {cmd}")
+
+
 if __name__ == "__main__":
     cli()

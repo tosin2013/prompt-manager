@@ -2,6 +2,36 @@
 
 The Memory Bank system now integrates with bolt.new through the Prompt Manager, enabling AI-powered task generation for web application development. This integration leverages the Memory Bank's context awareness to create detailed, contextually relevant development tasks.
 
+## Installation
+
+### For Users
+
+You can install the latest release (v0.3.0) using pip:
+
+```bash
+# Install from GitHub release
+pip install https://github.com/tosin2013/prompt-manager/releases/download/v0.3.0/prompt_manager-0.3.0.tar.gz
+
+# Or install directly from the repository
+pip install git+https://github.com/tosin2013/prompt-manager.git@v0.3.0
+```
+
+### For Development
+
+If you're working on the project locally:
+
+```bash
+# Clone the repository
+git clone https://github.com/tosin2013/prompt-manager.git
+cd prompt-manager
+
+# Install in editable mode
+pip install -e .
+
+# Install development dependencies
+pip install -r requirements.txt
+```
+
 ## Core Features
 
 - Structured task generation for web applications

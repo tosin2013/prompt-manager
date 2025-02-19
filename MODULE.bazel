@@ -12,7 +12,14 @@ module(
 
 bazel_dep(name = "rules_python", version = "0.40.0")
 
-python = use_extension("@rules_python//python:extensions.bzl", "python")
+python = use_extension("@rules_python//python:defs.bzl", "py_runtime_pair")
 python.toolchain(
     python_version = "3.9",
 )
+
+pip = use_extension("@rules_python//python:defs.bzl", "pip_parse")
+pip.parse(
+    name = "pip",
+    requirements_lock = "//:requirements.txt",
+)
+use_repo(pip, "pip")

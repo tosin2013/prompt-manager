@@ -1,2 +1,3 @@
 pyyaml>=6.0.1
 typing-extensions>=4.7.1
+pytest>=7.4.0

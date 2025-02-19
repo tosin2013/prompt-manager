@@ -10,417 +10,375 @@ The Memory Bank system is now integrated with the Prompt Manager (`prompt_manage
 - Automated progress tracking
 - Token usage monitoring
 
-### Project Initialization
+## Installation
 
-When starting a new project:
+### For Users
 
-```python
-# Initialize Prompt Manager with Memory Bank
-from prompt_manager import PromptManager
+You can install the latest release (v0.3.0) using pip:
 
-# Create new project
-pm = PromptManager("project_name")
-# Memory Bank is automatically initialized
+```bash
+# Install from GitHub release
+pip install https://github.com/tosin2013/prompt-manager/releases/download/v0.3.0/prompt_manager-0.3.0.tar.gz
+
+# Or install directly from the repository
+pip install git+https://github.com/tosin2013/prompt-manager.git@v0.3.0
 ```
 
-The Memory Bank will create the following structure:
+### For Development
+
+If you're working on the project locally:
+
+```bash
+# Clone the repository
+git clone https://github.com/tosin2013/prompt-manager.git
+cd prompt-manager
+
+# Install in editable mode
+pip install -e .
+
+# Install development dependencies
+pip install -r requirements.txt
+```
+
+## Project Structure
+
+### Memory Bank Files
+
+The Memory Bank maintains the following structure:
 
 ```
 cline_docs/
-├── productContext.md
-├── activeContext.md
-├── systemPatterns.md
-├── techContext.md
-└── progress.md
+├── productContext.md   # Project goals and requirements
+├── activeContext.md    # Current development state
+├── systemPatterns.md   # Architectural patterns and decisions
+├── techContext.md      # Technical specifications
+└── progress.md         # Task progress tracking
 ```
 
-### Core Workflows
+### Project Initialization
 
-#### 1. Starting Tasks
+Initialize a new project with Memory Bank:
 
-1. Check Memory Bank status:
 ```python
-if pm.memory_bank.is_active:
-    print("[MEMORY BANK: ACTIVE]")
+from prompt_manager import PromptManager
+
+# Initialize with default path (./cline_docs)
+pm = PromptManager("project_name")
+
+# Or specify a custom path and config
+pm = PromptManager(
+    "project_name",
+    memory_path="/path/to/docs",
+    config={
+        "auto_start_tasks": False,  # Prevent tasks from starting automatically
+        "memory_path": "/path/to/docs"  # Alternative way to specify memory path
+    }
+)
 ```
 
-2. Before any development:
+## Task Management
+
+### Creating Tasks
+
 ```python
-# Add new task
-pm.add_task(
-    name="task_name",
-    description="task_description",
-    prompt_template="your_prompt"
+# Create a basic task
+task = pm.add_task(
+    name="implement-feature",
+    description="Implement new feature X",
+    prompt_template="Implementation steps:\n1. ...",
+    priority=1  # Optional, defaults to 1
 )
 
-# Memory Bank automatically updates activeContext.md
+# Create a bolt.new web development task
+bolt_task = pm.add_task(
+    BoltTask(
+        name="ui-components",
+        description="Create core UI components",
+        prompt_template="Development steps:\n1. ...",
+        framework="Next.js",
+        dependencies=["react", "typescript"],
+        ui_components=["Button", "Card"],
+        api_endpoints=[{
+            "method": "GET",
+            "path": "/api/data",
+            "description": "Fetch data"
+        }]
+    )
+)
 ```
 
-#### 2. During Development
-
-1. Execute tasks:
-```python
-# Execute task - Memory Bank updates automatically
-pm.execute_task("task_name", "execution_result")
-```
-
-2. Monitor token usage:
-```python
-# Check token limit
-if pm.memory_bank.check_token_limit():
-    print("Memory reset required")
-```
-
-#### 3. Memory Bank Updates
-
-When you hear "update memory bank":
+### Managing Task Status
 
 ```python
-# Handle memory reset
-pm.memory_bank._handle_memory_reset()
+# Update task status
+pm.update_task_status(
+    name="implement-feature",
+    status="IN_PROGRESS",  # Can use string or TaskStatus enum
+    notes="Started implementation"  # Optional notes
+)
+
+# Get task details
+task = pm.get_task("implement-feature")
+print(f"Status: {task.status}")
+
+# List tasks with filtering
+tasks = pm.list_tasks(
+    status=TaskStatus.IN_PROGRESS,  # Optional filter
+    sort_by="priority"  # Optional sorting
+)
 ```
+
+### Task Persistence
+
+```python
+# Tasks are automatically saved after modifications
+# But you can manually save/load:
+pm.save_tasks()
+pm.load_tasks()
+
+# Export tasks to JSON
+pm.export_tasks("tasks.json")
+
+# Import tasks from JSON
+pm.import_tasks("tasks.json")
+```
+
+## Memory Bank Operations
 
 ### Context Management
 
-#### 1. Update Product Context
 ```python
+# Update product context
 pm.memory_bank.update_context(
     "productContext.md",
-    "Project Purpose",
+    "Project Goals",
     """
-    Project aims to:
-    - Goal 1
-    - Goal 2
-    """
+    1. Implement feature X
+    2. Optimize performance
+    """,
+    mode="append"  # or "replace" to overwrite
 )
-```
 
-#### 2. Track Active Context
-```python
+# Update technical context
 pm.memory_bank.update_context(
-    "activeContext.md",
-    "Current Tasks",
-    "- Implementing feature X\n- Debugging issue Y"
-)
-```
-
-#### 3. Document System Patterns
-```python
-pm.memory_bank.update_context(
-    "systemPatterns.md",
+    "techContext.md",
     "Architecture",
     """
-    System uses:
-    - Pattern A
-    - Pattern B
+    - Next.js frontend
+    - Python backend
+    - PostgreSQL database
+    """
+)
+
+# Update active context
+pm.memory_bank.update_context(
+    "activeContext.md",
+    "Current Sprint",
+    """
+    Working on:
+    - UI components
+    - API integration
     """
 )
 ```
 
-### Advanced Features
-
-### 1. Debugging System
-
-The Prompt Manager includes a sophisticated debugging system that you can leverage:
+### Token Management
 
 ```python
-# Start a debug session
-debug_session = pm.debug_manager.start_debug_session()
+# Check token limit
+if pm.memory_bank.check_token_limit():
+    # Handle memory reset if needed
+    pm.memory_bank.reset()
 
-# Reproduce and analyze issues
-pm.debug_manager.reproduce_issue(error_message, steps)
-
-# Break down and test components
-pm.debug_manager.divide_and_conquer(components)
-
-# Create and run tests
-pm.debug_manager.create_pytest_tests(component, requirements)
+# Manually track tokens
+pm.memory_bank.increment_tokens(100)
+pm.memory_bank.decrement_tokens(50)
 ```
 
-#### Layered Debugging Approach:
+## Command Line Interface
 
-1. **Single File Debug**
-```python
-# Debug issues in a single file
-debug_result = pm._attempt_single_file_debug(task, error_message)
-```
+The Memory Bank can be managed via CLI. Here are all the available commands:
 
-2. **Multi-File Debug**
-```python
-# Debug across multiple files
-debug_result = pm._attempt_multi_file_debug(task, error_message)
-```
-
-3. **Environment Debug**
-```python
-# Debug environment issues
-debug_result = pm._debug_environment_layer(task, error_message)
-```
-
-4. **Integration Debug**
-```python
-# Debug integration issues
-debug_result = pm._debug_integration_layer(task, error_message)
-```
-
-### 2. Documentation Management
-
-The system maintains comprehensive documentation:
-
-```python
-# Update all documentation
-pm.update_markdown_files()
-
-# Update specific documents
-pm._update_project_plan()
-pm._update_task_breakdown()
-pm._update_progress_tracking()
-pm._update_mermaid_diagrams()
-```
-
-### 3. Task Management
-
-Comprehensive task management capabilities:
-
-```python
-# Add new task
-pm.add_task(
-    name="task_name",
-    description="Task description",
-    prompt_template="Prompt template"
-)
-
-# Get task
-task = pm.get_task("task_name")
-
-# Update progress
-pm.update_progress(
-    task_name="task_name",
-    status="In Progress",
-    note="Progress update"
-)
-```
-
-### 4. Advanced Error Handling
-
-Progressive error handling system:
-
-```python
-# 1. Initial debugging
-debug_result = pm._attempt_debugging(task, error_message)
-
-# 2. Firecrawl research (after 3 failed attempts)
-if task.failure_count == 4:
-    research_result = pm._attempt_firecrawl_research(task)
-
-# 3. Root Cause Analysis (after 4 failed attempts)
-if task.failure_count >= 5:
-    rca_result = pm._perform_rca(task)
-
-# 4. Human escalation (if all else fails)
-pm._escalate_to_human(task)
-```
-
-### 5. Dependency Analysis
-
-Tools for analyzing project structure:
-
-```python
-# Analyze dependencies
-pm._analyze_dependencies(task, error_message)
-
-# Map cross-file root causes
-pm._map_cross_file_root_cause(task, error_message)
-```
-
-### Command Line Interface
-
-The Prompt Manager provides a comprehensive CLI:
+### Project Setup
 
 ```bash
-# Create new project
-python prompt_manager.py --new "project_name"
+# Initialize a new project
+prompt-manager init "my-project"
 
-# Add task
-python prompt_manager.py --add-task "task_name" "description" "prompt"
+# Initialize in a specific directory
+prompt-manager init --path /path/to/project
 
-# Execute task
-python prompt_manager.py --execute "task_name" "result"
-
-# Update documentation
-python prompt_manager.py --update-docs
-
-# Start debugging
-python prompt_manager.py --debug "task_name" "error_message"
-
-# Run tests
-python prompt_manager.py --test "component_name"
-
-# Analyze dependencies
-python prompt_manager.py --analyze-deps "task_name"
+# Analyze an existing repository
+prompt-manager analyze-repo /path/to/repo
 ```
 
-### Integration with Memory Bank
+### Task Management
 
-All these features integrate with the Memory Bank system:
-
-1. **Debugging Integration**
-```python
-# Start debug session with memory tracking
-debug_session = pm.debug_manager.start_debug_session()
-pm.memory_bank.update_context(
-    "activeContext.md",
-    "Debug Sessions",
-    f"Started debug session: {debug_session['id']}"
-)
-```
-
-2. **Documentation Integration**
-```python
-# Update documentation with memory tracking
-pm.update_markdown_files()
-pm.memory_bank.update_context(
-    "systemPatterns.md",
-    "Documentation",
-    "Updated system documentation"
-)
-```
-
-3. **Task Integration**
-```python
-# Execute task with memory tracking
-pm.execute_task("task_name", "result")
-# Memory Bank automatically tracks task status
-```
-
-### Automated Actions
-
-As Cline, you should automatically:
-
-1. Initialize new projects:
 ```bash
-python -c "from prompt_manager import PromptManager; PromptManager('new_project')"
+# Add a new task
+prompt-manager add-task "task-name" "Task description" "Prompt template" --priority 1
+
+# Generate bolt.new web development tasks
+prompt-manager generate-bolt-tasks "Create a blog with authentication" --framework Next.js
+
+# List all tasks
+prompt-manager list-tasks
+
+# List tasks with filtering
+prompt-manager list-tasks --status IN_PROGRESS
+prompt-manager list-tasks --sort-by priority
+
+# Update task progress
+prompt-manager update-progress "task-name" "completed"
+
+# Execute a task
+prompt-manager execute-task "task-name" "execution result"
 ```
 
-2. Execute tasks:
+### Data Management
+
 ```bash
-python -c "
-from prompt_manager import PromptManager
-pm = PromptManager('project_name')
-pm.execute_task('task_name', 'result')
-"
+# Export tasks to JSON
+prompt-manager export-tasks tasks.json
+
+# Import tasks from JSON
+prompt-manager import-tasks tasks.json
+
+# Update Memory Bank
+prompt-manager update-memory
+
+# Reset Memory Bank
+prompt-manager reset-memory
 ```
 
-3. Handle memory resets:
+### Configuration
+
+You can create a `prompt_manager.yaml` in your project root to set default configurations:
+
+```yaml
+project:
+  name: "my-project"
+  memory_path: "./docs/memory"
+  auto_start_tasks: false
+
+tasks:
+  default_priority: 1
+  auto_save: true
+
+memory_bank:
+  token_limit: 2000000
+  backup_enabled: true
+  backup_path: "./backups"
+```
+
+## Interactive Startup
+
+You can start the Prompt Manager in interactive mode, which will guide you through available commands:
+
 ```bash
-python -c "
-from prompt_manager import PromptManager
-pm = PromptManager('project_name')
-pm._handle_memory_reset()
-"
+# Start in interactive mode
+prompt-manager startup -i
 ```
 
-### Best Practices
+This will present a menu of options:
+1. Initialize new project
+2. Generate bolt.new tasks
+3. List existing tasks
+4. Add new task
+5. Import tasks from file
+6. Reset Memory Bank
+0. Exit
 
-1. **Context Updates**
-   - Update context after significant changes
-   - Document failures and debugging attempts
-   - Track progress systematically
+The interactive mode will prompt you for any required information for each command, making it easier to get started without remembering all the command-line arguments.
 
-2. **Token Management**
-   - Monitor token usage regularly
-   - Plan work around memory resets
-   - Document state before resets
+Example interactive session:
+```
+$ prompt-manager startup -i
+Welcome to Prompt Manager! Let's get started.
 
-3. **Task Execution**
-   - Create detailed task descriptions
-   - Update progress consistently
-   - Handle failures gracefully
+Available commands:
+1. Initialize new project
+2. Generate bolt.new tasks
+3. List existing tasks
+4. Add new task
+5. Import tasks from file
+6. Reset Memory Bank
+0. Exit
 
-### Best Practices for Advanced Features
+Enter command number: 1
+Enter project path (or '.' for current directory): .
+Enter project name: my-web-app
+Project my-web-app initialized at .
 
-1. **Debugging**
-   - Start with single-file debugging
-   - Progress to multi-file if needed
-   - Use Firecrawl research for tough issues
-   - Perform RCA for persistent problems
+Enter command number: 2
+Enter project description: Create a blog with user authentication
+Enter framework (default: Next.js): Next.js
+Generated 5 development tasks...
+```
 
-2. **Documentation**
-   - Keep all documentation types updated
-   - Use Mermaid diagrams for visualization
-   - Track progress systematically
-   - Document debugging attempts
+## Debugging Support
 
-3. **Task Management**
-   - Create detailed task descriptions
-   - Use appropriate prompt templates
-   - Track progress consistently
-   - Handle failures progressively
+### Task Execution and Error Handling
 
-4. **Memory Management**
-   - Monitor token usage during debugging
-   - Document debug sessions
-   - Track system patterns
-   - Update technical context
-
-### Error Handling
-
-1. **Task Failures**
 ```python
 try:
-    pm.execute_task("task_name", "result")
+    # Execute a task
+    pm.execute_task("implement-feature", "Implementation completed successfully")
 except Exception as e:
-    pm.memory_bank.update_context(
-        "activeContext.md",
-        "Recent Changes",
-        f"Error in {task_name}: {str(e)}"
-    )
+    # Error handling is automatic, but you can manually trigger:
+    pm._handle_task_failure(task, str(e))
 ```
 
-2. **Context Validation**
+### Progressive Debugging
+
+The system uses a layered debugging approach:
+
+1. Environment Layer
 ```python
-if not pm.memory_bank.is_active:
-    pm.memory_bank.initialize()
+pm._debug_environment_layer(task, error_message)
 ```
 
-### Memory Reset Protocol
-
-When approaching token limit (2M tokens):
-
-1. Document current state
-2. Save all progress
-3. Clear token count
-4. Begin fresh context
-
+2. Code Logic Layer
 ```python
-# Handle reset
-pm._handle_memory_reset()
+pm._debug_code_logic_layer(task, error_message)
 ```
 
-Remember: After every memory reset, you begin completely fresh. Your only link to previous work is the Memory Bank and the Prompt Manager. Maintain them as if your functionality depends on it - because it does.
-
-### Integration Commands
-
-As Cline, you can run these commands directly:
-
-1. Create new project:
-```bash
-python prompt_manager.py --new "project_name"
+3. Root Cause Analysis
+```python
+pm._perform_rca(task)
 ```
 
-2. Add task:
-```bash
-python prompt_manager.py --add-task "task_name" "description" "prompt"
+## Best Practices
+
+1. **Regular Updates**: Keep the Memory Bank updated with all decisions and changes
+2. **Clear Context**: Provide detailed context in each update
+3. **Token Management**: Monitor token usage to prevent memory overflow
+4. **Task Organization**: Use priorities and clear descriptions
+5. **Error Documentation**: Document all errors and their resolutions
+6. **System Patterns**: Keep system patterns updated with architectural decisions
+
+## Error Recovery
+
+If the Memory Bank becomes corrupted or needs a reset:
+
+1. Backup current state:
+```python
+pm.export_tasks("backup_tasks.json")
 ```
 
-3. Execute task:
-```bash
-python prompt_manager.py --execute "task_name" "result"
+2. Reset Memory Bank:
+```python
+pm.memory_bank.reset()
 ```
 
-4. Update memory bank:
-```bash
-python prompt_manager.py --update-memory
+3. Restore from backup:
+```python
+pm.import_tasks("backup_tasks.json")
 ```
 
-Always verify the Memory Bank is active before proceeding with any development task.
+Always verify the Memory Bank is active before proceeding with any development task:
+```python
+if pm.memory_bank.is_active:
+    print("Memory Bank is ready")
+else:
+    print("Memory Bank needs initialization")

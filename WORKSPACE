@@ -10,6 +10,9 @@ http_archive(
     url = "https://github.com/bazelbuild/rules_python/releases/download/0.20.0/rules_python-0.20.0.tar.gz",
 )
 
+load("@rules_python//python:repositories.bzl", "py_repositories")
+py_repositories()
+
 # Python package management
 load("@rules_python//python:pip.bzl", "pip_parse")
 

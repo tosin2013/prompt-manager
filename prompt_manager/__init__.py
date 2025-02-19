@@ -8,150 +8,157 @@ from enum import Enum
 import yaml
 import datetime
 import uuid
+import os
+import logging
+import json
+from .llm_enhancement import LLMEnhancement
 
 
 class TaskStatus(Enum):
     """Enumeration of possible task statuses."""
-    NOT_STARTED = "NOT_STARTED"
-    IN_PROGRESS = "IN_PROGRESS"
-    COMPLETED = "COMPLETED"
-    FAILED = "FAILED"
-    BLOCKED = "BLOCKED"
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    FAILED = "failed"
 
 
-class Task:
-    """Represents a task in the workflow."""
-    
+class PromptManager:
     def __init__(
         self,
-        name: str,
-        description: str,
-        prompt_template: str,
-        priority: int = 1,
-        status: TaskStatus = TaskStatus.NOT_STARTED
+        project_name: str = "",
+        memory_path: Optional[Union[str, Path]] = None,
+        config: Optional[Dict[str, Any]] = None,
     ) -> None:
-        """Initialize a new task."""
-        self.name = name
-        self.description = description
-        self.prompt_template = prompt_template
-        self.priority = priority
-        self.status = status
-        self.status_notes: List[str] = []
-        self.created_at = datetime.datetime.now()
-        self.updated_at = self.created_at
-        self.id = str(uuid.uuid4())
+        """Initialize PromptManager.
 
-    def update_status(self, status: TaskStatus, note: Optional[str] = None) -> None:
-        """Update task status with optional note."""
-        self.status = status
-        if note:
-            self.status_notes.append(note)
-        self.updated_at = datetime.datetime.now()
+        Args:
+            project_name: Name of the project.
+            memory_path: Optional path to memory storage.
+            config: Optional configuration dictionary.
+        """
+        self.project_name = project_name
+        self.memory_path = memory_path
+        self.config = config or {}
+        self.memory_bank = MemoryBank(memory_path or Path.cwd() / "cline_docs")
+        self.llm_enhancement = LLMEnhancement(self.memory_bank)
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert task to dictionary for serialization."""
-        return {
-            "id": self.id,
-            "name": self.name,
-            "description": self.description,
-            "prompt_template": self.prompt_template,
-            "priority": self.priority,
-            "status": self.status.value,
-            "status_notes": self.status_notes,
-            "created_at": self.created_at.isoformat(),
-            "updated_at": self.updated_at.isoformat()
-        }
+    def start_learning_session(self) -> None:
+        """Start an autonomous learning session."""
+        self.llm_enhancement.start_learning_session()
 
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Task":
-        """Create task from dictionary."""
-        task = cls(
-            name=data["name"],
-            description=data["description"],
-            prompt_template=data["prompt_template"],
-            priority=data["priority"],
-            status=TaskStatus(data["status"])
+    def analyze_patterns(self) -> List[str]:
+        """Analyze successful interaction patterns."""
+        return self.llm_enhancement.analyze_patterns()
+
+    def generate_suggestions(self) -> List[str]:
+        """Generate optimization suggestions."""
+        return self.llm_enhancement.generate_suggestions()
+
+    def generate_custom_utilities(self) -> List[str]:
+        """Generate custom utilities based on project needs."""
+        return self.llm_enhancement.generate_custom_utilities()
+
+    def create_custom_commands(self) -> List[str]:
+        """Create custom CLI commands based on usage patterns."""
+        return self.llm_enhancement.create_custom_commands()
+
+    def process_prompt(self, prompt: str) -> Optional[str]:
+        """Process a single prompt and return the response.
+
+        Args:
+            prompt: Input prompt to process.
+
+        Returns:
+            Processed response or None if processing fails.
+        """
+        try:
+            response = self._generate_response(prompt)
+            self._save_response(prompt, response)
+            return response
+        except Exception as e:
+            logging.error(f"Error processing prompt: {str(e)}")
+            return None
+
+    def _generate_response(self, prompt: str) -> str:
+        """Generate a response for the given prompt.
+
+        Args:
+            prompt: Input prompt.
+
+        Returns:
+            Generated response.
+        """
+        return f"Response to: {prompt}"
+
+    def _save_response(self, prompt: str, response: str) -> None:
+        """Save prompt-response pair to output directory.
+
+        Args:
+            prompt: Original prompt.
+            response: Generated response.
+        """
+        timestamp = datetime.datetime.now().isoformat()
+        output_path = os.path.join(
+            self.config.get("output_dir", "outputs"),
+            f"response_{timestamp}.txt",
         )
-        task.id = data["id"]
-        task.status_notes = data["status_notes"]
-        task.created_at = datetime.datetime.fromisoformat(data["created_at"])
-        task.updated_at = datetime.datetime.fromisoformat(data["updated_at"])
-        return task
 
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        with open(output_path, "w") as f:
+            f.write(f"Prompt: {prompt}\nResponse: {response}")
 
-class BoltTask(Task):
-    """Represents a task specifically for bolt.new development."""
+    def process_batch(self, prompts: List[str]) -> List[Optional[str]]:
+        """Process a batch of prompts.
 
-    def __init__(
-        self,
-        name: str,
-        description: str,
-        prompt_template: str,
-        framework: Optional[str] = None,
-        dependencies: Optional[List[str]] = None,
-        ui_components: Optional[List[str]] = None,
-        api_endpoints: Optional[List[Dict[str, str]]] = None,
-        priority: int = 1,
-        status: TaskStatus = TaskStatus.NOT_STARTED
-    ) -> None:
-        """Initialize a new bolt.new task."""
-        super().__init__(name, description, prompt_template, priority, status)
-        self.framework = framework
-        self.dependencies = dependencies or []
-        self.ui_components = ui_components or []
-        self.api_endpoints = api_endpoints or []
-        
-    def to_bolt_prompt(self) -> str:
-        """Generate a bolt.new-compatible prompt."""
-        prompt_parts = [
-            f"# {self.name}",
-            "\n## Project Requirements",
-            f"\n{self.description}",
-            "\n## Technical Stack",
-            f"\nFramework: {self.framework}" if self.framework else "",
-            "\nDependencies:",
-            *[f"- {dep}" for dep in self.dependencies],
-            "\n## UI Components:",
-            *[f"- {comp}" for comp in self.ui_components],
-            "\n## API Endpoints:",
-            *[f"- {endpoint['method']} {endpoint['path']}: {endpoint['description']}" 
-              for endpoint in self.api_endpoints],
-            "\n## Development Instructions:",
-            self.prompt_template
-        ]
-        return "\n".join(filter(None, prompt_parts))
+        Args:
+            prompts: List of prompts to process.
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert task to dictionary for serialization."""
-        base_dict = super().to_dict()
-        bolt_dict = {
-            "framework": self.framework,
-            "dependencies": self.dependencies,
-            "ui_components": self.ui_components,
-            "api_endpoints": self.api_endpoints
-        }
-        return {**base_dict, **bolt_dict}
+        Returns:
+            List of responses (None for failed prompts).
+        """
+        return [self.process_prompt(prompt) for prompt in prompts]
 
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'BoltTask':
-        """Create task from dictionary."""
-        task = super().from_dict(data)
-        bolt_task = cls(
-            name=task.name,
-            description=task.description,
-            prompt_template=task.prompt_template,
-            priority=task.priority,
-            status=task.status,
-            framework=data.get("framework"),
-            dependencies=data.get("dependencies", []),
-            ui_components=data.get("ui_components", []),
-            api_endpoints=data.get("api_endpoints", [])
-        )
-        bolt_task.status_notes = task.status_notes
-        bolt_task.created_at = task.created_at
-        bolt_task.updated_at = task.updated_at
-        bolt_task.id = task.id
-        return bolt_task
+    def get_prompt_history(self) -> List[Dict[str, str]]:
+        """Get history of processed prompts and responses.
+
+        Returns:
+            List of prompt-response pairs with timestamps.
+        """
+        history = []
+        output_dir = self.config.get("output_dir", "outputs")
+
+        if not os.path.exists(output_dir):
+            return history
+
+        for filename in os.listdir(output_dir):
+            if filename.startswith("response_") and filename.endswith(".txt"):
+                file_path = os.path.join(output_dir, filename)
+                with open(file_path, "r") as f:
+                    content = f.read()
+                    history.append({
+                        "timestamp": filename[9:-4],
+                        "content": content,
+                    })
+
+        return sorted(history, key=lambda x: x["timestamp"], reverse=True)
+
+    def clear_history(self) -> None:
+        """Clear prompt-response history."""
+        output_dir = self.config.get("output_dir", "outputs")
+        if not os.path.exists(output_dir):
+            return
+
+        for filename in os.listdir(output_dir):
+            if filename.startswith("response_") and filename.endswith(".txt"):
+                os.remove(os.path.join(output_dir, filename))
+
+    def update_config(self, new_config: Dict[str, Any]) -> None:
+        """Update configuration with new settings.
+
+        Args:
+            new_config: New configuration settings to apply.
+        """
+        self.config.update(new_config)
 
 
 class MemoryBank:
@@ -256,6 +263,230 @@ class MemoryBank:
                 file_path.unlink()
 
 
+class Task:
+    """Represents a task in the workflow."""
+    
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        prompt_template: str,
+        priority: int = 1,
+        status: TaskStatus = TaskStatus.PENDING
+    ) -> None:
+        """Initialize a new task."""
+        self.name = name
+        self.description = description
+        self.prompt_template = prompt_template
+        self.priority = priority
+        self.status = status
+        self.status_notes: List[str] = []
+        self.created_at = datetime.datetime.now()
+        self.updated_at = self.created_at
+        self.id = str(uuid.uuid4())
+
+    def update_status(self, status: TaskStatus, note: Optional[str] = None) -> None:
+        """Update task status with optional note."""
+        self.status = status
+        if note:
+            self.status_notes.append(note)
+        self.updated_at = datetime.datetime.now()
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert task to dictionary for serialization."""
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "prompt_template": self.prompt_template,
+            "priority": self.priority,
+            "status": self.status.value,
+            "status_notes": self.status_notes,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat()
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "Task":
+        """Create task from dictionary."""
+        task = cls(
+            name=data["name"],
+            description=data["description"],
+            prompt_template=data["prompt_template"],
+            priority=data["priority"],
+            status=TaskStatus(data["status"])
+        )
+        task.id = data["id"]
+        task.status_notes = data["status_notes"]
+        task.created_at = datetime.datetime.fromisoformat(data["created_at"])
+        task.updated_at = datetime.datetime.fromisoformat(data["updated_at"])
+        return task
+
+
+class BoltTask(Task):
+    """Represents a task specifically for bolt.new development."""
+
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        prompt_template: str,
+        framework: Optional[str] = None,
+        dependencies: Optional[List[str]] = None,
+        ui_components: Optional[List[str]] = None,
+        api_endpoints: Optional[List[Dict[str, str]]] = None,
+        priority: int = 1,
+        status: TaskStatus = TaskStatus.PENDING
+    ) -> None:
+        """Initialize a new bolt.new task."""
+        super().__init__(name, description, prompt_template, priority, status)
+        self.framework = framework
+        self.dependencies = dependencies or []
+        self.ui_components = ui_components or []
+        self.api_endpoints = api_endpoints or []
+
+    def generate_prompt(self) -> str:
+        """Generate a prompt using the template and task details."""
+        prompt = self.prompt_template.format(
+            framework=self.framework,
+            description=self.description
+        )
+        
+        # Add dependencies if present
+        if self.dependencies:
+            prompt += f"\n\nDependencies:\n" + "\n".join([f"- {dep}" for dep in self.dependencies])
+        
+        # Add UI components if present
+        if self.ui_components:
+            prompt += f"\n\nUI Components:\n" + "\n".join([f"- {comp}" for comp in self.ui_components])
+        
+        # Add API endpoints if present
+        if self.api_endpoints:
+            prompt += "\n\nAPI Endpoints:"
+            for endpoint in self.api_endpoints:
+                prompt += f"\n- {endpoint['method']} {endpoint['path']}"
+                if endpoint.get('description'):
+                    prompt += f": {endpoint['description']}"
+        
+        return prompt
+
+    def to_bolt_prompt(self) -> str:
+        """Generate a bolt.new-compatible prompt."""
+        prompt = [
+            f"# {self.name}",
+            f"Description: {self.description}",
+            f"Framework: {self.framework}",
+        ]
+
+        if self.dependencies:
+            prompt.append("\nDependencies:")
+            prompt.extend([f"- {dep}" for dep in self.dependencies])
+
+        if self.ui_components:
+            prompt.append("\nUI Components:")
+            prompt.extend([f"- {comp}" for comp in self.ui_components])
+
+        if self.api_endpoints:
+            prompt.append("\nAPI Endpoints:")
+            for endpoint in self.api_endpoints:
+                prompt.append(
+                    f"- {endpoint['method']} {endpoint['path']}: {endpoint.get('description', '')}"
+                )
+
+        prompt.append(f"\nPrompt Template:\n{self.prompt_template}")
+        return "\n".join(prompt)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert task to dictionary for serialization."""
+        data = super().to_dict()
+        data.update({
+            "framework": self.framework,
+            "dependencies": self.dependencies,
+            "ui_components": self.ui_components,
+            "api_endpoints": self.api_endpoints,
+        })
+        return data
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "BoltTask":
+        """Create task from dictionary."""
+        task = cls(
+            name=data["name"],
+            description=data["description"],
+            prompt_template=data["prompt_template"],
+            framework=data.get("framework"),
+            dependencies=data.get("dependencies", []),
+            ui_components=data.get("ui_components", []),
+            api_endpoints=data.get("api_endpoints", []),
+            priority=data.get("priority", 1),
+            status=TaskStatus(data.get("status", TaskStatus.PENDING.value))
+        )
+        task.status_notes = data.get("status_notes", [])
+        task.created_at = datetime.datetime.fromisoformat(data["created_at"])
+        task.updated_at = datetime.datetime.fromisoformat(data["updated_at"])
+        task.id = data["id"]
+        return task
+
+    @classmethod
+    def generate_task_sequence(
+        cls,
+        project_description: str,
+        framework: str,
+        dependencies: List[str],
+        ui_components: List[str],
+        api_endpoints: List[Dict[str, str]]
+    ) -> List["BoltTask"]:
+        """Generate a sequence of tasks for a bolt.new project.
+
+        Args:
+            project_description: Description of the project
+            framework: Target framework (e.g., Next.js, React)
+            dependencies: List of project dependencies
+            ui_components: List of UI components to create
+            api_endpoints: List of API endpoints to implement
+
+        Returns:
+            List of BoltTask objects representing the development sequence
+        """
+        tasks = []
+
+        # Project setup task
+        tasks.append(cls(
+            name="Project Setup",
+            description=f"Initialize {framework} project with required dependencies",
+            prompt_template="Create a new {framework} project and set up the following dependencies: {dependencies}",
+            framework=framework,
+            dependencies=dependencies,
+            priority=1
+        ))
+
+        # UI component tasks
+        for component in ui_components:
+            tasks.append(cls(
+                name=f"{component} Component",
+                description=f"Create the {component} component",
+                prompt_template="Create a {framework} component for {description}",
+                framework=framework,
+                dependencies=dependencies,
+                ui_components=[component],
+                priority=2
+            ))
+
+        # API endpoint tasks
+        for endpoint in api_endpoints:
+            tasks.append(cls(
+                name=f"{endpoint['method']} {endpoint['path']} Endpoint",
+                description=endpoint.get('description', ''),
+                prompt_template="Implement {method} endpoint at {path} for {description}",
+                framework=framework,
+                dependencies=dependencies,
+                api_endpoints=[endpoint],
+                priority=3
+            ))
+
+        return tasks
+
+
 class PromptManager:
     """Manages development workflow, tasks, and debugging."""
 
@@ -267,12 +498,12 @@ class PromptManager:
     ) -> None:
         """Initialize PromptManager with project configuration."""
         self.project_name = project_name
-        default_path = Path.cwd() / "cline_docs"
-        self.memory_bank = MemoryBank(memory_path or default_path)
+        self.memory_bank = MemoryBank(memory_path or Path.cwd() / "cline_docs")
         self.config = config or {}
         self.tasks: Dict[str, Task] = {}
         self.debug_mode = False
         self.is_initialized = False
+        self.llm_enhancement = LLMEnhancement(self.memory_bank)
         self.initialize()
 
     def initialize(self) -> None:
@@ -582,11 +813,10 @@ class PromptManager:
         content += "## Task Status\n```mermaid\ngraph TD\n"
         for task in self.tasks.values():
             style = {
-                TaskStatus.NOT_STARTED: "fill:#fff",
+                TaskStatus.PENDING: "fill:#fff",
                 TaskStatus.IN_PROGRESS: "fill:#yellow",
                 TaskStatus.COMPLETED: "fill:#green",
                 TaskStatus.FAILED: "fill:#red",
-                TaskStatus.BLOCKED: "fill:#gray",
             }.get(task.status, "fill:#fff")
 
             content += f"    {task.name}[{task.name}]:::status{task.status.value}\n"
