@@ -10,6 +10,7 @@ A powerful AI-assisted workflow management system with advanced task tracking an
 - **GitHub Integration**: Seamless integration with existing GitHub repositories
 - **IDE Support**: VSCode integration for enhanced development workflow
 - **bolt.new Integration**: AI-powered task generation for web applications
+- **LLM Enhancement**: Autonomous code improvement and pull request generation
 
 ## Installation
 
@@ -69,6 +70,30 @@ for task in tasks:
     print(f"{task.name} - Priority: {task.priority}")
 ```
 
+### Using LLM Enhancement
+```python
+from prompt_manager import LLMEnhancement
+
+# Initialize LLM Enhancement
+llm = LLMEnhancement(memory_bank)
+
+# Start learning session
+llm.start_learning_session()
+
+# Generate code improvements
+suggestions = llm.generate_suggestions()
+
+# Create pull request
+pr = llm.suggest_pull_request(
+    changes=[{"path/to/file.py": "new content"}],
+    title="Improve code structure",
+    description="Enhance modularity and readability"
+)
+
+# Submit pull request
+success, message = llm.create_pull_request(pr)
+```
+
 ### Using the CLI
 ```bash
 # Initialize a new project
@@ -90,6 +115,7 @@ prompt-manager list-tasks
 - [Examples](docs/examples/)
   - [AI Book Writer Integration](docs/examples/ai-book-writer-integration.md)
   - [Cline Memory Bank Integration](docs/examples/cline-memory-bank-book-writer.md)
+  - [LLM Enhancement Guide](docs/examples/llm-enhancement-guide.md)
 
 ## Development
 
@@ -129,10 +155,11 @@ The GitHub Action will automatically:
 ## Latest Release (v0.3.0)
 
 ### What's New
+- **LLM Enhancement**: Autonomous code improvement and pull request generation
 - **bolt.new Integration**: Generate structured development tasks for web applications
 - **Enhanced Task Management**: Improved task tracking and organization
 - **Memory Bank Updates**: Better context management for web development
-- **New Documentation**: Comprehensive guide for bolt.new features
+- **New Documentation**: Comprehensive guide for bolt.new features and LLM Enhancement
 
 ### Breaking Changes
 None
@@ -141,6 +168,7 @@ None
 - Improved task persistence
 - Enhanced test coverage
 - Fixed CLI command handling
+- Improved error handling in LLM Enhancement
 
 ## Contributing
 
@@ -159,3 +187,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Built with [Cline](docs/ide-integrations/cline/README.md) integration
 - Inspired by AI-assisted development workflows
 - Powered by bolt.new for web development task generation
+- Enhanced by LLM-driven code improvements

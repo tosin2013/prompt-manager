@@ -2,13 +2,16 @@ from setuptools import setup, find_packages
 
 setup(
     name="prompt-manager",
-    version="0.1.0",
+    version="0.3.0",
     packages=find_packages(),
     install_requires=[
         "pyyaml>=6.0.1",
         "typing-extensions>=4.7.1",
         "pytest>=7.0.0",
         "pytest-cov>=4.0.0",
+        "click>=8.0.0",
+        "gitpython>=3.1.0",
+        "uuid>=1.30",
     ],
     extras_require={
         'dev': [
@@ -20,7 +23,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'prompt-manager=prompt_manager:main',
+            'prompt-manager=prompt_manager.cli:cli',
         ],
     },
     python_requires='>=3.8',
@@ -28,7 +31,7 @@ setup(
     description="A prompt engineering and development workflow management system",
     long_description=open('README.md').read(),
     long_description_content_type="text/markdown",
-    keywords="prompt-engineering, development-workflow, ai-assisted",
+    keywords="prompt-engineering, development-workflow, ai-assisted, llm-enhancement",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
