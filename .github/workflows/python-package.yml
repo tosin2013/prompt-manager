@@ -29,6 +29,8 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install pytest pytest-cov
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        # Install package in development mode
+        pip install -e .
     
     - name: Run tests
       run: |
@@ -116,4 +118,4 @@ jobs:
           ../clean-build/dist/*.whl
           ../clean-build/dist/*.tar.gz
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
