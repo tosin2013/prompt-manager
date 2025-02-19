@@ -2,6 +2,8 @@
 Prompt Manager: Development workflow management system with memory tracking.
 """
 
+__version__ = "0.3.2"
+
 from typing import Dict, Optional, Any, Union, List
 from pathlib import Path
 from enum import Enum
