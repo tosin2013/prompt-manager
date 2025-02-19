@@ -1,19 +1,12 @@
-import os
 from setuptools import setup, find_packages
-from build_helpers import clean_bazel_artifacts
-
-# Clean up all Bazel artifacts before building
-clean_bazel_artifacts()
 
 setup(
     name="prompt-manager",
-    version="0.3.5",
+    version="0.3.6",
     packages=find_packages(exclude=[
         "*.tests", "*.tests.*", "tests.*", "tests",
-        "bazel-*", "bazel-bin", "bazel-out", "bazel-testlogs",
         "*.egg-info", "*.egg-info.*",
-        "build", "dist",
-        "build_helpers.py"
+        "build", "dist"
     ]),
     package_data={
         "prompt_manager": ["py.typed", "**/*.py", "**/*.pyi"],

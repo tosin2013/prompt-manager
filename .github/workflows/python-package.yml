@@ -1,0 +1,76 @@
+name: Python Package
+
+on:
+  push:
+    branches: [ "main" ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install build pytest pytest-cov
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    
+    - name: Prepare source for build
+      run: |
+        # Create a clean copy of the source without Bazel files
+        mkdir ../clean-source
+        rsync -av --exclude='.git' \
+                  --exclude='bazel-*' \
+                  --exclude='.bazel*' \
+                  --exclude='*.egg-info' \
+                  --exclude='dist' \
+                  --exclude='build' \
+                  --exclude='__pycache__' \
+                  . ../clean-source/
+        
+        # Move to clean directory
+        cd ../clean-source
+        
+        # Verify no Bazel symlinks exist
+        ! find . -type l -name 'bazel*' | grep .
+    
+    - name: Build package
+      run: |
+        cd ../clean-source
+        python -m build
+    
+    - name: Run tests
+      run: |
+        cd ../clean-source
+        pytest tests/ --cov=prompt_manager
+    
+    - name: Upload dist artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist-${{ matrix.python-version }}
+        path: ../clean-source/dist/
+    
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/') && matrix.python-version == '3.8'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          ../clean-source/dist/*.whl
+          ../clean-source/dist/*.tar.gz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
