@@ -18,7 +18,7 @@ You can install the latest release (v0.3.12) using pip:
 
 ```bash
 # Install from GitHub release
-pip install https://github.com/tosin2013/prompt-manager/releases/download/v0.3.12/prompt_manager-0.3.12.tar.gz
+pip install https://github.com/tosin2013/prompt-manager/releases/download/v0.3.12/prompt_manager-0.3.11.tar.gz
 
 # Or install directly from the repository
 pip install git+https://github.com/tosin2013/prompt-manager.git@v0.3.12
