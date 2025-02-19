@@ -6,24 +6,30 @@ include prompt_manager/py.typed
 # Include all package data
 recursive-include prompt_manager *
 
+# Exclude build helper
+exclude build_helpers.py
+
 # Exclude Bazel-specific directories and files
 exclude bazel-*
 exclude bazel-bin
 exclude bazel-out
 exclude bazel-testlogs
 exclude bazel-prompt-manager
+exclude .bazelrc
+exclude .bazel-*
 prune bazel-*
 prune bazel-bin
 prune bazel-out
 prune bazel-testlogs
 prune bazel-prompt-manager
+prune .bazel
 
 # Exclude Python build artifacts
 global-exclude */__pycache__/*
 global-exclude *.py[cod]
 global-exclude *.so
 global-exclude .git*
-global-exclude .bazelrc
-global-exclude .bazel-*
 global-exclude *.egg-info
 global-exclude *.egg-info/*
+global-exclude dist/*
+global-exclude build/*
