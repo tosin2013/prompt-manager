@@ -18,6 +18,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        # Shallow clone to avoid getting Bazel history
+        fetch-depth: 1
     
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
@@ -30,24 +33,30 @@ jobs:
         python -m pip install build pytest pytest-cov
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     
-    - name: Prepare source for build
+    - name: Create clean source
       run: |
-        # Create a clean copy of the source without Bazel files
+        # Create a clean directory
         mkdir ../clean-source
-        rsync -av --exclude='.git' \
-                  --exclude='bazel-*' \
-                  --exclude='.bazel*' \
-                  --exclude='*.egg-info' \
-                  --exclude='dist' \
-                  --exclude='build' \
-                  --exclude='__pycache__' \
-                  . ../clean-source/
         
-        # Move to clean directory
-        cd ../clean-source
+        # Copy only Python package files and essential files
+        cp -r prompt_manager ../clean-source/
+        cp setup.py ../clean-source/
+        cp MANIFEST.in ../clean-source/
+        cp README.md ../clean-source/
+        cp requirements.txt ../clean-source/
+        cp -r tests ../clean-source/
         
-        # Verify no Bazel symlinks exist
-        ! find . -type l -name 'bazel*' | grep .
+        # Remove any Bazel files that might have been copied
+        find ../clean-source -name "bazel-*" -type l -delete
+        find ../clean-source -name ".bazel*" -type f -delete
+        find ../clean-source -name "BUILD" -type f -delete
+        find ../clean-source -name "WORKSPACE" -type f -delete
+        
+        # Verify no Bazel files exist
+        if find ../clean-source -name "bazel*" -o -name ".bazel*" -o -name "BUILD" -o -name "WORKSPACE" | grep .; then
+          echo "Found Bazel files in clean source!"
+          exit 1
+        fi
     
     - name: Build package
       run: |
