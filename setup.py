@@ -1,9 +1,21 @@
+import os
 from setuptools import setup, find_packages
+
+# Clean up Bazel symlinks if they exist
+bazel_symlinks = ['bazel-bin', 'bazel-out', 'bazel-testlogs', 'bazel-prompt-manager']
+for link in bazel_symlinks:
+    if os.path.islink(link):
+        os.unlink(link)
 
 setup(
     name="prompt-manager",
-    version="0.3.3",
-    packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests", "bazel-*"]),
+    version="0.3.4",
+    packages=find_packages(exclude=[
+        "*.tests", "*.tests.*", "tests.*", "tests",
+        "bazel-*", "bazel-bin", "bazel-out", "bazel-testlogs",
+        "*.egg-info", "*.egg-info.*",
+        "build", "dist"
+    ]),
     package_data={
         "prompt_manager": ["py.typed", "**/*.py", "**/*.pyi"],
     },
