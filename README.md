@@ -14,10 +14,10 @@ A powerful AI-assisted workflow management system with advanced task tracking an
 
 ## Installation
 
-You can install the latest release (v0.3.0) using pip:
+You can install the latest release (v0.3.15) using pip:
 
 ```bash
-pip install prompt-manager==0.3.0
+pip install tosins-prompt-manager==0.3.15
 ```
 
 Or download directly from GitHub releases:
@@ -27,7 +27,7 @@ git clone https://github.com/tosin2013/prompt-manager.git
 cd prompt-manager
 
 # Checkout the latest release
-git checkout v0.3.0
+git checkout v0.3.15
 
 # Install in editable mode
 pip install -e .
@@ -94,6 +94,57 @@ pr = llm.suggest_pull_request(
 success, message = llm.create_pull_request(pr)
 ```
 
+## Command Line Interface
+
+The package provides a comprehensive CLI for managing your development workflow:
+
+```bash
+# Initialize a new project
+prompt-manager init [PATH]
+
+# Analyze a repository for project context
+prompt-manager analyze-repo PATH
+
+# Add a new task
+prompt-manager add-task NAME DESCRIPTION PROMPT [--priority NUMBER]
+
+# Update task progress
+prompt-manager update-progress NAME STATUS
+
+# List tasks with optional filtering and sorting
+prompt-manager list-tasks [--status STATUS] [--sort-by FIELD]
+
+# Export tasks to a file
+prompt-manager export-tasks OUTPUT
+
+# Generate bolt.new development tasks
+prompt-manager generate-bolt-tasks PROJECT_DESCRIPTION FRAMEWORK
+
+# Start interactive mode
+prompt-manager startup --interactive
+
+# Analyze LLM's interaction patterns
+prompt-manager reflect
+
+# Enable autonomous learning mode
+prompt-manager learn-mode
+
+# Allow LLM to modify its tooling
+prompt-manager meta-program
+```
+
+Available task statuses:
+- PENDING
+- IN_PROGRESS
+- COMPLETED
+- BLOCKED
+- FAILED
+
+Sort fields for list-tasks:
+- priority
+- created
+- updated
+
 ### Using the CLI
 ```bash
 # Initialize a new project
@@ -152,7 +203,7 @@ The GitHub Action will automatically:
 - Create a GitHub release
 - Upload build artifacts
 
-## Latest Release (v0.3.0)
+## Latest Release (v0.3.15)
 
 ### What's New
 - **LLM Enhancement**: Autonomous code improvement and pull request generation
