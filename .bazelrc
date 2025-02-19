@@ -5,6 +5,17 @@ build --enable_platform_specific_config
 # Python options
 build --python_version=PY3
 
+# Python version configurations
+build:py39 --repo_env=PYTHON_BIN_PATH=@python39//:python
+build:py39 --python_version=PY3
+build:py39 --build_tag_filters=-python3.13
+build:py39 --test_tag_filters=-python3.13
+
+build:py313 --repo_env=PYTHON_BIN_PATH=@python313//:python
+build:py313 --python_version=PY3
+build:py313 --build_tag_filters=-python3.9
+build:py313 --test_tag_filters=-python3.9
+
 # Test options
 test --test_output=errors
 test --test_verbose_timeout_warnings

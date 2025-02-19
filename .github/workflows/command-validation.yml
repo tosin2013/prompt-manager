@@ -1,0 +1,163 @@
+name: CLI Command Validation
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  test-cli-commands:
+    name: Validate CLI Commands
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install package
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install pytest pytest-cov
+
+    - name: Create test project
+      run: |
+        mkdir test-project
+        cd test-project
+        prompt-manager init
+
+    - name: Test CLI Commands
+      run: |
+        # Create test script
+        cat > test_cli_commands.sh << 'EOF'
+        #!/bin/bash
+        set -e
+
+        # Function to test a command
+        test_command() {
+          local cmd=$1
+          local args=$2
+          echo "Testing: prompt-manager $cmd $args"
+          if prompt-manager $cmd $args; then
+            echo "✅ prompt-manager $cmd $args passed"
+            return 0
+          else
+            echo "❌ prompt-manager $cmd $args failed"
+            return 1
+          fi
+        }
+
+        # Function to get subcommands for a command
+        get_subcommands() {
+          local cmd=$1
+          if [ -z "$cmd" ]; then
+            prompt-manager --help | grep -A 100 "Commands:" | tail -n +2 | grep "^  [a-z]" | awk '{print $1}'
+          else
+            prompt-manager $cmd --help | grep -A 100 "Commands:" | tail -n +2 | grep "^  [a-z]" | awk '{print $1}'
+          fi
+        }
+
+        # Function to test all subcommands recursively
+        test_subcommands() {
+          local base_cmd=$1
+          
+          # Get subcommands
+          local subcommands
+          if [ -z "$base_cmd" ]; then
+            subcommands=$(get_subcommands)
+          else
+            subcommands=$(get_subcommands "$base_cmd")
+          fi
+          
+          # Test each subcommand
+          for subcmd in $subcommands; do
+            local full_cmd
+            if [ -z "$base_cmd" ]; then
+              full_cmd=$subcmd
+            else
+              full_cmd="$base_cmd $subcmd"
+            fi
+            
+            # Test help for the subcommand
+            echo -e "\nTesting help for: $full_cmd"
+            test_command "$full_cmd" "--help"
+            
+            # Test basic execution where possible
+            case "$full_cmd" in
+              "init")
+                # Skip init as it's already tested in setup
+                echo "Skipping init execution (already tested in setup)"
+                ;;
+              "add-task")
+                test_command "$full_cmd" "--title 'Test Task' --description 'Test Description' --priority high"
+                ;;
+              "list-tasks")
+                test_command "$full_cmd" ""
+                ;;
+              "export-tasks")
+                test_command "$full_cmd" "--output test_export.json"
+                ;;
+              "analyze-repo")
+                test_command "$full_cmd" "--path ."
+                ;;
+              "llm")
+                # Test llm subcommands recursively
+                echo -e "\nTesting llm subcommands:"
+                test_subcommands "llm"
+                ;;
+              *)
+                # For other commands, just test help
+                echo "Skipping execution test for $full_cmd (help only)"
+                ;;
+            esac
+            
+            # If this is a command with known subcommands, test them
+            if [[ "$full_cmd" != "llm"* ]]; then  # Skip llm as it's handled separately
+              local sub_subcommands=$(get_subcommands "$full_cmd")
+              if [ ! -z "$sub_subcommands" ]; then
+                echo -e "\nTesting subcommands for: $full_cmd"
+                test_subcommands "$full_cmd"
+              fi
+            fi
+          done
+        }
+
+        # Initialize test environment
+        echo "Setting up test environment..."
+        cd test-project
+
+        # Test version and main help
+        echo -e "\nTesting version..."
+        test_command "--version" ""
+
+        echo -e "\nTesting main help..."
+        test_command "--help" ""
+
+        # Test all commands and their subcommands
+        echo -e "\nTesting all commands and subcommands:"
+        test_subcommands
+
+        echo -e "\nAll CLI command tests completed!"
+        EOF
+
+        # Make script executable
+        chmod +x test_cli_commands.sh
+        
+        # Run tests
+        ./test_cli_commands.sh
+
+    - name: Cleanup
+      run: |
+        rm -rf test-project
+        rm -f test_cli_commands.sh

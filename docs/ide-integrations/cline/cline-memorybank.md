@@ -10,18 +10,29 @@ The Memory Bank system is now integrated with the Prompt Manager (`prompt_manage
 - Automated progress tracking
 - Token usage monitoring
 
+### Version Compatibility
+
+This documentation is for version 0.3.16 of tosins-prompt-manager, which supports:
+- Python versions 3.9 through 3.13
+- Full CLI command set with memory bank integration
+- Enhanced task management and tracking
+- Automated documentation updates
+
 ## Installation
 
 ### For Users
 
-You can install the latest release (v0.3.12) using pip:
+You can install the latest release (v0.3.16) using pip:
 
 ```bash
-# Install from GitHub release
-pip install https://github.com/tosin2013/prompt-manager/releases/download/v0.3.12/prompt_manager-0.3.11.tar.gz
+# Install from PyPI
+pip install tosins-prompt-manager==0.3.16
+
+# Or install from GitHub release
+pip install https://github.com/tosin2013/prompt-manager/releases/download/v0.3.16/tosins_prompt_manager-0.3.16.tar.gz
 
 # Or install directly from the repository
-pip install git+https://github.com/tosin2013/prompt-manager.git@v0.3.12
+pip install git+https://github.com/tosin2013/prompt-manager.git@v0.3.16
 ```
 
 ### For Development
@@ -32,6 +43,9 @@ If you're working on the project locally:
 # Clone the repository
 git clone https://github.com/tosin2013/prompt-manager.git
 cd prompt-manager
+
+# Checkout the latest release
+git checkout v0.3.16
 
 # Install in editable mode
 pip install -e .
@@ -393,7 +407,7 @@ The Command Line Interface (CLI) Memory Bank is a powerful tool that helps maint
 You can install the prompt-manager package using pip:
 
 ```bash
-pip install prompt-manager==0.3.12
+pip install tosins-prompt-manager==0.3.16
 ```
 
 ## Getting Started

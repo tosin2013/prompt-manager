@@ -7,9 +7,27 @@ on:
       - 'v*'
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
+
+# Ensure this workflow only runs if command-validation succeeds
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
+  wait-for-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Command Validation
+        uses: lewagon/wait-on-check-action@v1.3.1
+        with:
+          ref: ${{ github.ref }}
+          check-name: 'Validate CLI Commands'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 10
+
   test:
+    needs: wait-for-validation
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

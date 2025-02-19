@@ -159,6 +159,8 @@ prompt-manager list-tasks
 
 ## Documentation
 
+For a complete reference of all available commands and their usage, see the [Command Documentation](docs/commands.md).
+
 - [Getting Started](docs/getting-started.md)
 - [Memory Bank Guide](docs/ide-integrations/cline/cline-memorybank.md)
 - [bolt.new Integration](docs/ide-integrations/cline/bolt-new-cline-memorybank.md)

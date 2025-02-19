@@ -63,43 +63,78 @@ Generate a sequence of development tasks for bolt.new projects.
 
 ## LLM Enhancement
 
+The LLM Enhancement module provides advanced capabilities for code improvement and automation:
+
 ### Start Learning Session
 ```bash
-prompt-manager learn-session [--duration MINUTES]
+prompt-manager llm learn-session [--duration MINUTES]
 ```
 Start an autonomous learning session to analyze code patterns.
 - `--duration`: Duration in minutes (default: continuous)
 
-### Generate Suggestions
+### Analyze Impact
 ```bash
-prompt-manager suggest-improvements [--path PATH] [--max-suggestions NUM]
+prompt-manager llm analyze-impact [--files FILE...]
 ```
-Generate code improvement suggestions.
-- `--path`: Path to analyze (default: current directory)
-- `--max-suggestions`: Maximum number of suggestions (default: 10)
+Analyze the potential impact of changes.
+- `--files`: Files to analyze
+- Provides detailed impact analysis including:
+  * Code complexity changes
+  * Test coverage impact
+  * Performance implications
+  * Cross-component dependencies
 
 ### Create Pull Request
 ```bash
-prompt-manager create-pr [--title TITLE] [--description DESC] [--changes FILE...]
+prompt-manager llm create-pr [--title TITLE] [--description DESC] [--changes FILE...]
 ```
 Create a pull request from suggestions.
 - `--title`: Pull request title
 - `--description`: Pull request description
 - `--changes`: Files to include in the pull request
-
-### Analyze Impact
-```bash
-prompt-manager analyze-impact [--files FILE...]
-```
-Analyze the potential impact of changes.
-- `--files`: Files to analyze
+- Automatically:
+  * Validates changes
+  * Generates meaningful commit messages
+  * Adds relevant reviewers
+  * Includes test coverage information
 
 ### Generate Custom Commands
 ```bash
-prompt-manager generate-commands [--output PATH]
+prompt-manager llm generate-commands [--output PATH]
 ```
 Generate custom CLI commands based on usage patterns.
 - `--output`: Path to save generated commands
+- Features:
+  * Pattern recognition from command history
+  * Optimization suggestions
+  * Documentation generation
+  * Test case creation
+
+### Suggest Improvements
+```bash
+prompt-manager llm suggest-improvements [--path PATH] [--max-suggestions NUM]
+```
+Generate code improvement suggestions.
+- `--path`: Path to analyze (default: current directory)
+- `--max-suggestions`: Maximum number of suggestions (default: 10)
+- Provides:
+  * Code quality improvements
+  * Performance optimizations
+  * Security enhancements
+  * Best practice recommendations
+
+### Debug Commands
+```bash
+prompt-manager llm debug [--issue-type TYPE]
+```
+Get debugging guidance and analyze issues.
+- `--issue-type`: Type of issue (performance/integration/configuration/reliability/complexity)
+- Provides:
+  * Systematic debugging approach
+  * Targeted guidance based on issue type
+  * Performance analysis
+  * Pattern recognition
+  * Solution validation
 
 ## Advanced Features
 
@@ -167,16 +202,16 @@ prompt-manager export-tasks --output tasks-backup.json
 6. Start a learning session and create pull requests:
 ```bash
 # Start learning session
-prompt-manager learn-session --duration 30
+prompt-manager llm learn-session --duration 30
 
 # Generate and apply improvements
-prompt-manager suggest-improvements --path ./src
-prompt-manager create-pr --title "Code Improvements" --description "Enhance error handling" --changes src/core.py
+prompt-manager llm suggest-improvements --path ./src
+prompt-manager llm create-pr --title "Code Improvements" --description "Enhance error handling" --changes src/core.py
 ```
 
 7. Analyze impact of changes:
 ```bash
-prompt-manager analyze-impact --files src/core.py tests/test_core.py
+prompt-manager llm analyze-impact --files src/core.py tests/test_core.py
 ```
 
 ## Error Handling

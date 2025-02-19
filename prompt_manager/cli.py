@@ -4,12 +4,13 @@ Command-line interface for the Prompt Manager.
 import click
 from pathlib import Path
 from prompt_manager import PromptManager, Task, TaskStatus
+from prompt_manager.llm_guidance import LLMGuidance
 from typing import Optional
 import sys
 
 
 @click.group()
-@click.version_option(version="0.1.0")
+@click.version_option(version="0.3.16")
 def cli():
     """Prompt Manager CLI - Development workflow management system."""
     pass
@@ -26,10 +27,16 @@ def _get_manager():
     manager = PromptManager("", memory_path=_current_project_path / "prompt_manager_data")
     return manager
 
+def _get_llm_guidance(command: str) -> str:
+    """Get formatted guidance for an LLM about how to use a command."""
+    guidance = LLMGuidance.get_command_guidance(command)
+    return LLMGuidance.format_guidance(guidance)
+
 @cli.command()
 @click.argument("path", type=click.Path(exists=True))
 def analyze_repo(path: str):
     """Analyze a repository for project context."""
+    click.echo(_get_llm_guidance("analyze_repo"))
     click.echo(f"Analyzing repository at: {path}")
     
     # Initialize PromptManager with repository path
@@ -47,6 +54,7 @@ def analyze_repo(path: str):
 @click.option("--path", type=click.Path(), default=".")
 def init(path: str):
     """Initialize a new project."""
+    click.echo(_get_llm_guidance("init"))
     try:
         global _current_project_path
         _current_project_path = Path(path)
@@ -65,6 +73,7 @@ def init(path: str):
 @click.option("--priority", type=int, default=1)
 def add_task(name: str, description: str, prompt: str, priority: int = 1):
     """Add a new task."""
+    click.echo(_get_llm_guidance("add_task"))
     try:
         if priority < 1:
             raise ValueError("Priority must be a positive integer")
@@ -82,6 +91,7 @@ def add_task(name: str, description: str, prompt: str, priority: int = 1):
 @click.argument("status", type=click.Choice([s.value for s in TaskStatus], case_sensitive=False))
 def update_progress(name: str, status: str):
     """Update task progress."""
+    click.echo(_get_llm_guidance("update_progress"))
     try:
         manager = _get_manager()
         task = manager.update_task_status(name, status.upper())
@@ -98,6 +108,7 @@ def update_progress(name: str, status: str):
               help='Sort tasks by field')
 def list_tasks(status: Optional[str] = None, sort_by: Optional[str] = None):
     """List tasks with optional filtering and sorting."""
+    click.echo(_get_llm_guidance("list_tasks"))
     try:
         manager = _get_manager()
         task_status = TaskStatus(status.upper()) if status else None
@@ -132,6 +143,7 @@ def list_tasks(status: Optional[str] = None, sort_by: Optional[str] = None):
 @click.option("--output", type=click.Path(), required=True)
 def export_tasks(output: str):
     """Export tasks to a file."""
+    click.echo(_get_llm_guidance("export_tasks"))
     try:
         manager = _get_manager()
         manager.export_tasks(Path(output))
@@ -146,6 +158,7 @@ def export_tasks(output: str):
 @click.option("--framework", default="Next.js", help="Framework to use (e.g., Next.js, React, Vue)")
 def generate_bolt_tasks(project_description: str, framework: str):
     """Generate a sequence of bolt.new development tasks."""
+    click.echo(_get_llm_guidance("generate_bolt_tasks"))
     try:
         manager = _get_manager()
         tasks = manager.generate_bolt_tasks(project_description)
@@ -179,6 +192,7 @@ def generate_bolt_tasks(project_description: str, framework: str):
 @click.option("--interactive", "-i", is_flag=True, help="Start in interactive mode")
 def startup(interactive: bool):
     """Start the prompt manager with optional interactive mode."""
+    click.echo(_get_llm_guidance("startup"))
     try:
         if interactive:
             click.echo("Welcome to Prompt Manager! Let's get started.")
@@ -238,6 +252,7 @@ def startup(interactive: bool):
 @cli.command()
 def reflect():
     """Analyze LLM's interaction patterns and effectiveness."""
+    click.echo(_get_llm_guidance("reflect"))
     manager = _get_manager()
     click.echo("Analyzing LLM interaction patterns...")
     
@@ -255,6 +270,7 @@ def reflect():
 @cli.command()
 def learn_mode():
     """Enable autonomous learning mode for the LLM."""
+    click.echo(_get_llm_guidance("learn_mode"))
     manager = _get_manager()
     click.echo("Enabling autonomous learning mode...")
     manager.start_learning_session()
@@ -264,6 +280,7 @@ def learn_mode():
 @cli.command()
 def meta_program():
     """Allow LLM to modify its own tooling."""
+    click.echo(_get_llm_guidance("meta_program"))
     manager = _get_manager()
     click.echo("Entering meta-programming mode...")
     

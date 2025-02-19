@@ -10,8 +10,19 @@ http_archive(
     url = "https://github.com/bazelbuild/rules_python/releases/download/0.20.0/rules_python-0.20.0.tar.gz",
 )
 
-load("@rules_python//python:repositories.bzl", "py_repositories")
+load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
 py_repositories()
+
+# Register Python toolchains
+python_register_toolchains(
+    name = "python39",
+    python_version = "3.9",
+)
+
+python_register_toolchains(
+    name = "python313",
+    python_version = "3.13",
+)
 
 # Python package management
 load("@rules_python//python:pip.bzl", "pip_parse")
