@@ -2,8 +2,11 @@ from setuptools import setup, find_packages
 
 setup(
     name="prompt-manager",
-    version="0.3.0",
-    packages=find_packages(),
+    version="0.3.3",
+    packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests", "bazel-*"]),
+    package_data={
+        "prompt_manager": ["py.typed", "**/*.py", "**/*.pyi"],
+    },
     install_requires=[
         "pyyaml>=6.0.1",
         "typing-extensions>=4.7.1",
