@@ -9,7 +9,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -18,9 +18,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-      with:
-        # Shallow clone to avoid getting Bazel history
-        fetch-depth: 1
     
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
@@ -30,56 +27,93 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install build pytest pytest-cov
+        python -m pip install pytest pytest-cov
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     
-    - name: Create clean source
+    - name: Run tests
       run: |
-        # Create a clean directory
-        mkdir ../clean-source
+        pytest tests/ --cov=prompt_manager
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 1
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install build
+    
+    - name: Prepare clean source
+      run: |
+        # Create a fresh directory for build
+        CLEAN_DIR="../clean-build"
+        mkdir -p "$CLEAN_DIR/prompt_manager"
         
-        # Copy only Python package files and essential files
-        cp -r prompt_manager ../clean-source/
-        cp setup.py ../clean-source/
-        cp MANIFEST.in ../clean-source/
-        cp README.md ../clean-source/
-        cp requirements.txt ../clean-source/
-        cp -r tests ../clean-source/
+        # Copy only the essential Python files
+        echo "Copying Python package files..."
+        cp -r prompt_manager/* "$CLEAN_DIR/prompt_manager/"
         
-        # Remove any Bazel files that might have been copied
-        find ../clean-source -name "bazel-*" -type l -delete
-        find ../clean-source -name ".bazel*" -type f -delete
-        find ../clean-source -name "BUILD" -type f -delete
-        find ../clean-source -name "WORKSPACE" -type f -delete
+        # Copy package files
+        echo "Copying package files..."
+        cp setup.py "$CLEAN_DIR/"
+        cp MANIFEST.in "$CLEAN_DIR/"
+        cp README.md "$CLEAN_DIR/"
+        cp requirements.txt "$CLEAN_DIR/"
+        
+        # Clean up any Bazel artifacts
+        echo "Removing Bazel artifacts..."
+        find "$CLEAN_DIR" -name "bazel-*" -type l -delete
+        find "$CLEAN_DIR" -name ".bazel*" -type f -delete
+        find "$CLEAN_DIR" -name "BUILD" -type f -delete
+        find "$CLEAN_DIR" -name "WORKSPACE" -type f -delete
+        
+        # Remove Python cache files
+        echo "Removing Python cache..."
+        find "$CLEAN_DIR" -type d -name "__pycache__" -exec rm -rf {} +
+        find "$CLEAN_DIR" -type f -name "*.pyc" -delete
+        
+        # List all files for verification
+        echo "Files in clean directory:"
+        find "$CLEAN_DIR" -type f
         
         # Verify no Bazel files exist
-        if find ../clean-source -name "bazel*" -o -name ".bazel*" -o -name "BUILD" -o -name "WORKSPACE" | grep .; then
-          echo "Found Bazel files in clean source!"
+        echo "Checking for Bazel files..."
+        if find "$CLEAN_DIR" -name "bazel*" -o -name ".bazel*" -o -name "BUILD" -o -name "WORKSPACE" | grep .; then
+          echo "ERROR: Found Bazel files in clean source!"
           exit 1
         fi
     
     - name: Build package
       run: |
-        cd ../clean-source
+        cd ../clean-build
         python -m build
-    
-    - name: Run tests
-      run: |
-        cd ../clean-source
-        pytest tests/ --cov=prompt_manager
     
     - name: Upload dist artifacts
       uses: actions/upload-artifact@v3
       with:
         name: dist-${{ matrix.python-version }}
-        path: ../clean-source/dist/
+        path: ../clean-build/dist/
     
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/') && matrix.python-version == '3.8'
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          ../clean-source/dist/*.whl
-          ../clean-source/dist/*.tar.gz
+          ../clean-build/dist/*.whl
+          ../clean-build/dist/*.tar.gz
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

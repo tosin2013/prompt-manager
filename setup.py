@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="prompt-manager",
-    version="0.3.6",
+    version="0.3.8",  # Match the latest tag
     packages=find_packages(exclude=[
         "*.tests", "*.tests.*", "tests.*", "tests",
         "*.egg-info", "*.egg-info.*",
