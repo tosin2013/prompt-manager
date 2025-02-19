@@ -14,14 +14,14 @@ The Memory Bank system is now integrated with the Prompt Manager (`prompt_manage
 
 ### For Users
 
-You can install the latest release (v0.3.0) using pip:
+You can install the latest release (v0.3.11) using pip:
 
 ```bash
 # Install from GitHub release
-pip install https://github.com/tosin2013/prompt-manager/releases/download/v0.3.0/prompt_manager-0.3.0.tar.gz
+pip install https://github.com/tosin2013/prompt-manager/releases/download/v0.3.11/prompt_manager-0.3.11.tar.gz
 
 # Or install directly from the repository
-pip install git+https://github.com/tosin2013/prompt-manager.git@v0.3.0
+pip install git+https://github.com/tosin2013/prompt-manager.git@v0.3.11
 ```
 
 ### For Development
@@ -382,3 +382,99 @@ if pm.memory_bank.is_active:
     print("Memory Bank is ready")
 else:
     print("Memory Bank needs initialization")
+```
+
+## Command Line Interface Memory Bank
+
+The Command Line Interface (CLI) Memory Bank is a powerful tool that helps maintain context and preferences across coding sessions.
+
+## Installation
+
+You can install the prompt-manager package using pip:
+
+```bash
+pip install prompt-manager==0.3.11
+```
+
+## Getting Started
+
+After installation, you can explore the available commands and features using the help command:
+
+```bash
+prompt-manager --help
+```
+
+This will display all available commands and their descriptions. Each command also has its own help information:
+
+```bash
+prompt-manager <command> --help
+```
+
+Available commands include:
+- `analyze-repo`: Analyze a repository for patterns and suggestions
+- `init`: Initialize a new prompt-manager configuration
+- `add-task`: Add a new task to track
+- `update-progress`: Update the progress of a task
+- `list-tasks`: List all tracked tasks
+- `export-tasks`: Export tasks to various formats
+- `generate-bolt-tasks`: Generate Bolt-compatible task definitions
+
+## Using Memory Bank
+
+The Memory Bank allows you to:
+1. Store and retrieve important context about your codebase
+2. Track user preferences and coding patterns
+3. Maintain a history of decisions and their rationales
+4. Share knowledge across team members
+
+### Basic Commands
+
+Initialize a new configuration:
+```bash
+prompt-manager init
+```
+
+Add a new task:
+```bash
+prompt-manager add-task "Implement new feature"
+```
+
+List all tasks:
+```bash
+prompt-manager list-tasks
+```
+
+### Advanced Usage
+
+Analyze a repository for patterns:
+```bash
+prompt-manager analyze-repo /path/to/repo
+```
+
+Export tasks to JSON:
+```bash
+prompt-manager export-tasks --format json
+```
+
+## Best Practices
+
+1. Always initialize prompt-manager in your project root
+2. Regularly update task progress to maintain accurate status
+3. Use descriptive task names and detailed descriptions
+4. Tag tasks appropriately for better organization
+5. Export tasks regularly for backup and sharing
+
+## Troubleshooting
+
+If you encounter any issues:
+1. Check your prompt-manager version:
+   ```bash
+   prompt-manager --version
+   ```
+2. Verify your configuration is initialized correctly
+3. Ensure you have appropriate permissions in your project directory
+4. Check the logs for detailed error messages
+
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](../../CONTRIBUTING.md) for details on how to submit pull requests, report issues, and contribute to the project.
