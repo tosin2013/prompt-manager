@@ -62,7 +62,7 @@ jobs:
     - name: Prepare clean source
       run: |
         # Create a fresh directory for build
-        CLEAN_DIR="../clean-build"
+        CLEAN_DIR="${GITHUB_WORKSPACE}/clean-build"
         mkdir -p "$CLEAN_DIR/prompt_manager"
         
         # Copy only the essential Python files
@@ -101,21 +101,21 @@ jobs:
     
     - name: Build package
       run: |
-        cd ../clean-build
+        cd "${GITHUB_WORKSPACE}/clean-build"
         python -m build
     
     - name: Upload dist artifacts
       uses: actions/upload-artifact@v4
       with:
         name: dist-${{ matrix.python-version }}
-        path: ../clean-build/dist/
+        path: ${{ github.workspace }}/clean-build/dist/
     
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/') && matrix.python-version == '3.8'
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          ../clean-build/dist/*.whl
-          ../clean-build/dist/*.tar.gz
+          ${{ github.workspace }}/clean-build/dist/*.whl
+          ${{ github.workspace }}/clean-build/dist/*.tar.gz
       env:
-        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
