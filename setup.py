@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="windsurf-prompt-manager",
+    name="tosins-prompt-manager",
     version="0.3.15",  # Match the latest tag
     packages=find_packages(exclude=[
         "*.tests", "*.tests.*", "tests.*", "tests",

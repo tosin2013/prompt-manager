@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "windsurf-prompt-manager"
+name = "tosins-prompt-manager"
 version = "0.3.15"
 description = "Development workflow management system with memory tracking"
 readme = "README.md"
