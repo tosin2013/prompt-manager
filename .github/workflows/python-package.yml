@@ -14,13 +14,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.9", "3.13"]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     
@@ -42,80 +42,76 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.9", "3.13"]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 1
     
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     
-    - name: Install build dependencies
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install build
-    
-    - name: Prepare clean source
-      run: |
-        # Create a fresh directory for build
-        CLEAN_DIR="${GITHUB_WORKSPACE}/clean-build"
-        mkdir -p "$CLEAN_DIR/prompt_manager"
-        
-        # Copy only the essential Python files
-        echo "Copying Python package files..."
-        cp -r prompt_manager/* "$CLEAN_DIR/prompt_manager/"
-        
-        # Copy package files
-        echo "Copying package files..."
-        cp setup.py "$CLEAN_DIR/"
-        cp MANIFEST.in "$CLEAN_DIR/"
-        cp README.md "$CLEAN_DIR/"
-        cp requirements.txt "$CLEAN_DIR/"
-        
-        # Clean up any Bazel artifacts
-        echo "Removing Bazel artifacts..."
-        find "$CLEAN_DIR" -name "bazel-*" -type l -delete
-        find "$CLEAN_DIR" -name ".bazel*" -type f -delete
-        find "$CLEAN_DIR" -name "BUILD" -type f -delete
-        find "$CLEAN_DIR" -name "WORKSPACE" -type f -delete
-        
-        # Remove Python cache files
-        echo "Removing Python cache..."
-        find "$CLEAN_DIR" -type d -name "__pycache__" -exec rm -rf {} +
-        find "$CLEAN_DIR" -type f -name "*.pyc" -delete
-        
-        # List all files for verification
-        echo "Files in clean directory:"
-        find "$CLEAN_DIR" -type f
-        
-        # Verify no Bazel files exist
-        echo "Checking for Bazel files..."
-        if find "$CLEAN_DIR" -name "bazel*" -o -name ".bazel*" -o -name "BUILD" -o -name "WORKSPACE" | grep .; then
-          echo "ERROR: Found Bazel files in clean source!"
-          exit 1
-        fi
+        python -m pip install build twine
     
     - name: Build package
-      run: |
-        cd "${GITHUB_WORKSPACE}/clean-build"
-        python -m build
+      run: python -m build
     
-    - name: Upload dist artifacts
+    - name: Check package
+      run: twine check dist/*
+    
+    - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: dist-${{ matrix.python-version }}
-        path: ${{ github.workspace }}/clean-build/dist/
+        path: dist/
+        retention-days: 5
+
+  publish:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
     
-    - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/') && matrix.python-version == '3.9'
-      uses: softprops/action-gh-release@v1
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.9"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install twine
+    
+    - name: Publish to PyPI
+      env:
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: |
+        for artifact in artifacts/*; do
+          if [ -d "$artifact" ]; then
+            twine upload "$artifact/*"
+          fi
+        done
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
       with:
         files: |
-          ${{ github.workspace }}/clean-build/dist/*.whl
-          ${{ github.workspace }}/clean-build/dist/*.tar.gz
+          artifacts/**/*.whl
+          artifacts/**/*.tar.gz
+        generate_release_notes: true
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
