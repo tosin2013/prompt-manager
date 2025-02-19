@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.scripts]
-prompt-manager = "prompt_manager.cli:cli"
+prompt-manager = "prompt_manager.cli.__init__:cli"
 
 [project.optional-dependencies]
 dev = [

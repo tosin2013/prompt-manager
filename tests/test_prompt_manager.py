@@ -1,4 +1,5 @@
 """Tests for the PromptManager component."""
+
 import pytest
 from prompt_manager import PromptManager, Task, TaskStatus, BoltTask
 
@@ -16,7 +17,7 @@ def populated_prompt_manager(tmp_path):
     task = Task(
         name="test-task",
         description="Test description",
-        prompt_template="Test template"
+        prompt_template="Test template",
     )
     manager.add_task(task)
     return manager
@@ -28,7 +29,7 @@ def mock_task_data():
     return {
         "name": "test-task",
         "description": "Test description",
-        "prompt_template": "Test template"
+        "prompt_template": "Test template",
     }
 
 
@@ -51,7 +52,7 @@ def test_task_creation(prompt_manager, mock_task_data):
     task = prompt_manager.add_task(
         mock_task_data["name"],
         mock_task_data["description"],
-        mock_task_data["prompt_template"]
+        mock_task_data["prompt_template"],
     )
     assert task.name == mock_task_data["name"]
     assert task.description == mock_task_data["description"]
@@ -71,17 +72,14 @@ def test_task_update(populated_prompt_manager, mock_task_data):
     # Update task description
     new_description = "Updated description"
     populated_prompt_manager.update_task(
-        task_name,
-        description=new_description
+        task_name, description=new_description
     )
     task = populated_prompt_manager.get_task(task_name)
     assert task.description == new_description
 
     # Update task status
     populated_prompt_manager.update_task_status(
-        task_name,
-        status=TaskStatus.IN_PROGRESS,
-        notes="Making progress"
+        task_name, status=TaskStatus.IN_PROGRESS, notes="Making progress"
     )
     task = populated_prompt_manager.get_task(task_name)
     assert task.status == TaskStatus.IN_PROGRESS
@@ -133,12 +131,13 @@ def test_task_filtering(populated_prompt_manager, mock_task_data):
 
     # Update status of first task
     populated_prompt_manager.update_task_status(
-        mock_task_data["name"],
-        status=TaskStatus.IN_PROGRESS
+        mock_task_data["name"], status=TaskStatus.IN_PROGRESS
     )
 
     # Filter by status
-    in_progress = populated_prompt_manager.list_tasks(status=TaskStatus.IN_PROGRESS)
+    in_progress = populated_prompt_manager.list_tasks(
+        status=TaskStatus.IN_PROGRESS
+    )
     assert len(in_progress) == 1
     assert in_progress[0].name == mock_task_data["name"]
 
@@ -175,24 +174,18 @@ def test_error_handling(prompt_manager):
         name="test-task",
         description="Test task",
         prompt_template="Test prompt",
-        priority=1
+        priority=1,
     )
     prompt_manager.add_task(task)
 
     # Test invalid task status
     with pytest.raises(ValueError):
-        prompt_manager.update_task_status(
-            "test-task",
-            "invalid_status"
-        )
+        prompt_manager.update_task_status("test-task", "invalid_status")
 
     # Test invalid priority
     with pytest.raises(ValueError):
         prompt_manager.add_task(
-            "test-task-2",
-            "Test description",
-            "Test prompt",
-            priority=-1
+            "test-task-2", "Test description", "Test prompt", priority=-1
         )
 
 
@@ -205,11 +198,13 @@ def test_bolt_task_creation():
         framework="Next.js",
         dependencies=["react", "typescript"],
         ui_components=["Button", "Card"],
-        api_endpoints=[{
-            "method": "GET",
-            "path": "/api/test",
-            "description": "Test endpoint"
-        }]
+        api_endpoints=[
+            {
+                "method": "GET",
+                "path": "/api/test",
+                "description": "Test endpoint",
+            }
+        ],
     )
 
     assert task.name == "Test Bolt Task"
@@ -232,11 +227,13 @@ def test_bolt_task_serialization():
         framework="Next.js",
         dependencies=["react", "typescript"],
         ui_components=["Button", "Card"],
-        api_endpoints=[{
-            "method": "GET",
-            "path": "/api/test",
-            "description": "Test endpoint"
-        }]
+        api_endpoints=[
+            {
+                "method": "GET",
+                "path": "/api/test",
+                "description": "Test endpoint",
+            }
+        ],
     )
 
     # Test serialization
@@ -265,7 +262,7 @@ def test_bolt_prompt_generation():
         framework="Next.js",
         dependencies=["react", "typescript"],
         ui_components=["Button"],
-        api_endpoints=[]
+        api_endpoints=[],
     )
 
     prompt = task.generate_prompt()
@@ -285,8 +282,8 @@ def test_generate_bolt_tasks():
         api_endpoints=[
             {"method": "POST", "path": "/api/auth/signup"},
             {"method": "POST", "path": "/api/auth/login"},
-            {"method": "GET", "path": "/api/user/profile"}
-        ]
+            {"method": "GET", "path": "/api/user/profile"},
+        ],
     )
 
     assert len(tasks) >= 3  # Should generate multiple tasks

@@ -1,4 +1,4 @@
-.PHONY: setup test clean build install dev-install
+.PHONY: setup test clean build install dev-install test-commands test-all
 
 VENV_NAME?=venv
 PYTHON=${VENV_NAME}/bin/python
@@ -14,6 +14,12 @@ ${VENV_NAME}/bin/activate:
 
 test: setup
 	${PYTHON} -m pytest tests/ --cov=prompt_manager -v
+
+test-commands: setup
+	${PYTHON} -m pytest tests/test_cli_commands.py -v
+
+test-all: lint test test-commands
+	@echo "All tests passed successfully!"
 
 clean:
 	rm -rf ${VENV_NAME}

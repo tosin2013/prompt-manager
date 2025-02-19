@@ -1,10 +1,11 @@
 """Tests for LLM Enhancement module."""
+
 import pytest
-from pathlib import Path
-import json
-from datetime import datetime
 from unittest.mock import patch, MagicMock, mock_open
-from prompt_manager.llm_enhancement import LLMEnhancement, PullRequestSuggestion
+from prompt_manager.llm_enhancement import (
+    LLMEnhancement,
+    PullRequestSuggestion,
+)
 
 
 @pytest.fixture
@@ -36,12 +37,12 @@ def test_analyze_patterns(llm_enhancement):
     - Pattern: Use descriptive variable names
     - Pattern: Add comprehensive docstrings
     """
-    
+
     with patch("pathlib.Path.exists") as mock_exists:
         with patch("pathlib.Path.read_text") as mock_read:
             mock_exists.return_value = True
             mock_read.return_value = test_content
-            
+
             patterns = llm_enhancement.analyze_patterns()
             assert len(patterns) == 2
             assert "Use descriptive variable names" in patterns
@@ -51,10 +52,10 @@ def test_analyze_patterns(llm_enhancement):
 def test_generate_suggestions(llm_enhancement):
     """Test suggestion generation."""
     llm_enhancement.pattern_library = {
-        'pattern1': {'success_rate': 0.5},
-        'pattern2': {'success_rate': 0.6}
+        "pattern1": {"success_rate": 0.5},
+        "pattern2": {"success_rate": 0.6},
     }
-    
+
     suggestions = llm_enhancement.generate_suggestions()
     assert len(suggestions) > 0
     assert isinstance(suggestions, list)
@@ -65,12 +66,12 @@ def test_record_command(llm_enhancement):
     """Test command recording."""
     command = "test command"
     llm_enhancement.record_command(command, True)
-    
+
     assert len(llm_enhancement.command_history) == 1
     record = llm_enhancement.command_history[0]
-    assert record['command'] == command
-    assert record['success'] is True
-    assert 'timestamp' in record
+    assert record["command"] == command
+    assert record["success"] is True
+    assert "timestamp" in record
 
 
 def test_generate_custom_utilities(llm_enhancement):
@@ -79,7 +80,7 @@ def test_generate_custom_utilities(llm_enhancement):
         with patch("pathlib.Path.read_text") as mock_read:
             mock_exists.return_value = True
             mock_read.return_value = "Need: Custom Logger"
-            
+
             utilities = llm_enhancement.generate_custom_utilities()
             assert len(utilities) == 1
             assert "def custom_logger():" in utilities[0]
@@ -88,10 +89,10 @@ def test_generate_custom_utilities(llm_enhancement):
 def test_create_custom_commands(llm_enhancement):
     """Test command creation."""
     llm_enhancement.command_history = [
-        {'command': 'test', 'success': True, 'timestamp': '2024-01-01'},
-        {'command': 'test', 'success': True, 'timestamp': '2024-01-02'},
+        {"command": "test", "success": True, "timestamp": "2024-01-01"},
+        {"command": "test", "success": True, "timestamp": "2024-01-02"},
     ]
-    
+
     commands = llm_enhancement.create_custom_commands()
     assert len(commands) == 1
     assert "@click.command()" in commands[0]
@@ -103,8 +104,10 @@ def test_suggest_pull_request(llm_enhancement):
     changes = [{"test.py": "print('test')"}]
     title = "Test PR"
     description = "Test description"
-    
-    suggestion = llm_enhancement.suggest_pull_request(changes, title, description)
+
+    suggestion = llm_enhancement.suggest_pull_request(
+        changes, title, description
+    )
     assert isinstance(suggestion, PullRequestSuggestion)
     assert suggestion.title == title
     assert suggestion.description == description
@@ -123,9 +126,9 @@ def test_create_pull_request_success(llm_enhancement):
         changes=[{"test.py": "print('test')"}],
         impact_analysis={"test.py": "Low impact"},
         test_coverage={"test.py": 0.85},
-        reviewer_notes=["Please review carefully"]
+        reviewer_notes=["Please review carefully"],
     )
-    
+
     with patch("subprocess.run") as mock_run:
         mock_run.return_value.returncode = 0
         success, message = llm_enhancement.create_pull_request(suggestion)
@@ -143,9 +146,9 @@ def test_create_pull_request_failure(llm_enhancement):
         changes=[{"test.py": "print('test')"}],
         impact_analysis={"test.py": "Low impact"},
         test_coverage={"test.py": 0.85},
-        reviewer_notes=["Please review carefully"]
+        reviewer_notes=["Please review carefully"],
     )
-    
+
     with patch("subprocess.run") as mock_run:
         mock_run.side_effect = Exception("Git error")
         success, message = llm_enhancement.create_pull_request(suggestion)
@@ -170,7 +173,7 @@ def test_generate_branch_name(llm_enhancement):
 def test_analyze_change_impact(llm_enhancement):
     """Test change impact analysis."""
     changes = [{"test.py": "print('test')\n" * 100}]
-    
+
     with patch("pathlib.Path.exists") as mock_exists:
         with patch("builtins.open", mock_open(read_data="print('old')")):
             mock_exists.return_value = True
@@ -191,7 +194,7 @@ def test_generate_reviewer_notes(llm_enhancement):
     """Test reviewer notes generation."""
     changes = [{"test.py": "print('test')"}]
     impact = {"test.py": "Low impact"}
-    
+
     notes = llm_enhancement._generate_reviewer_notes(changes, impact)
     assert len(notes) > 0
     assert any("test.py" in note for note in notes)

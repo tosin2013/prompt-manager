@@ -62,10 +62,10 @@ def analyze_repo(path: str):
 @cli.command()
 @click.option("--title", required=True, help="Name/title of the task")
 @click.option("--description", required=True, help="Description of the task")
-@click.option("--template", required=True, help="Template/prompt for the task")
+@click.option("--template", help="Template/prompt for the task (optional)")
 @click.option("--priority", type=click.Choice(['low', 'medium', 'high']), default='medium', 
               help="Task priority (low/medium/high)")
-def add_task(title: str, description: str, template: str, priority: str = 'medium'):
+def add_task(title: str, description: str, template: str = None, priority: str = 'medium'):
     """Add a new task."""
     click.echo(get_llm_guidance("add_task"))
     try:

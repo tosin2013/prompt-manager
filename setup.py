@@ -30,7 +30,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'prompt-manager=prompt_manager.cli:cli',
+            'prompt-manager=prompt_manager.cli.__init__:cli',
         ],
     },
     python_requires='>=3.9,<3.14',  # Match pyproject.toml version constraint

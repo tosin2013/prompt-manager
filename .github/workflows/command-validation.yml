@@ -100,25 +100,32 @@ jobs:
                 echo "Skipping init execution (already tested in setup)"
                 ;;
               "add-task")
-                test_command "$full_cmd" "--title 'Test Task' --description 'Test Description' --priority high"
+                # Test add-task with required arguments
+                test_command "$full_cmd" "\"Test Task\" \"Test Description\" \"basic\""
                 ;;
-              "list-tasks")
-                test_command "$full_cmd" ""
-                ;;
-              "export-tasks")
-                test_command "$full_cmd" "--output test_export.json"
+              "update-progress")
+                # Test update-progress with required arguments
+                test_command "$full_cmd" "\"Test Task\" \"in_progress\""
                 ;;
               "analyze-repo")
-                test_command "$full_cmd" "--path ."
+                # Test analyze-repo with current directory
+                test_command "$full_cmd" "."
                 ;;
-              "llm")
-                # Test llm subcommands recursively
-                echo -e "\nTesting llm subcommands:"
-                test_subcommands "llm"
+              "export-tasks")
+                # Test export-tasks with output file
+                test_command "$full_cmd" "--output tasks.json"
+                ;;
+              "generate-bolt-tasks")
+                # Test generate-bolt-tasks with description
+                test_command "$full_cmd" "\"Create a new feature\""
+                ;;
+              "list-tasks")
+                # Test list-tasks (no arguments required)
+                test_command "$full_cmd" ""
                 ;;
               *)
-                # For other commands, just test help
-                echo "Skipping execution test for $full_cmd (help only)"
+                # Test help for unknown commands
+                test_command "$full_cmd" "--help"
                 ;;
             esac
             

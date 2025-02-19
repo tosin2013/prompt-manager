@@ -20,13 +20,13 @@ Analyze a repository to gather project context and setup the memory bank.
 
 ### Add Task
 ```bash
-prompt-manager add-task NAME DESCRIPTION PROMPT [--priority PRIORITY]
+prompt-manager add-task --title NAME --description DESC --template PROMPT [--priority PRIORITY]
 ```
 Add a new task to the project.
-- `NAME`: Name of the task
-- `DESCRIPTION`: Description of what the task does
-- `PROMPT`: Template for generating the task's output
-- `--priority`: Task priority (default: 1)
+- `--title`: Name/title of the task
+- `--description`: Description of what the task does
+- `--template`: Template/prompt for generating the task's output
+- `--priority`: Task priority (low/medium/high, default: medium)
 
 ### Update Progress
 ```bash
@@ -181,7 +181,7 @@ prompt-manager init --path ./my-project
 
 2. Add a new high-priority task:
 ```bash
-prompt-manager add-task "Setup Auth" "Implement user authentication" "Create authentication system using {framework}" --priority 1
+prompt-manager add-task --title "Setup Auth" --description "Implement user authentication" --template "Create authentication system using {framework}" --priority high
 ```
 
 3. List all in-progress tasks sorted by priority:

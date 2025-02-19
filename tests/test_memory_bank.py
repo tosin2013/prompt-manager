@@ -1,7 +1,7 @@
 """Tests for the MemoryBank component."""
+
 import pytest
-from pathlib import Path
-from prompt_manager import MemoryBank
+from prompt_manager.memory_bank import MemoryBank
 
 
 @pytest.fixture
@@ -31,10 +31,7 @@ def test_context_update(memory_bank):
 
     # Test append mode
     memory_bank.update_context(
-        "productContext.md",
-        test_section,
-        test_content,
-        mode="append"
+        "productContext.md", test_section, test_content, mode="append"
     )
     content = (memory_bank.docs_path / "productContext.md").read_text()
     assert f"## {test_section}" in content
@@ -43,10 +40,7 @@ def test_context_update(memory_bank):
     # Test replace mode
     new_content = "New test content"
     memory_bank.update_context(
-        "productContext.md",
-        test_section,
-        new_content,
-        mode="replace"
+        "productContext.md", test_section, new_content, mode="replace"
     )
     content = (memory_bank.docs_path / "productContext.md").read_text()
     assert test_content not in content
@@ -74,9 +68,7 @@ def test_inactive_memory_bank(memory_bank):
     """Test behavior when memory bank is not active."""
     # Don't initialize
     memory_bank.update_context(
-        "productContext.md",
-        "Test Section",
-        "Should not be written"
+        "productContext.md", "Test Section", "Should not be written"
     )
 
     # File should not exist since bank wasn't initialized
@@ -89,9 +81,7 @@ def test_memory_bank_reset(memory_bank):
 
     # Add some content
     memory_bank.update_context(
-        "productContext.md",
-        "Test Section",
-        "Test content"
+        "productContext.md", "Test Section", "Test content"
     )
 
     # Reset memory bank
@@ -111,16 +101,11 @@ def test_invalid_file_operations(memory_bank):
     # Test invalid file name
     with pytest.raises(ValueError):
         memory_bank.update_context(
-            "invalid.md",
-            "Test Section",
-            "Test content"
+            "invalid.md", "Test Section", "Test content"
         )
 
     # Test invalid mode
     with pytest.raises(ValueError):
         memory_bank.update_context(
-            "productContext.md",
-            "Test Section",
-            "Test content",
-            mode="invalid"
+            "productContext.md", "Test Section", "Test content", mode="invalid"
         )
