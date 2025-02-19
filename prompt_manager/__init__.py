@@ -2,7 +2,7 @@
 Prompt Manager: Development workflow management system with memory tracking.
 """
 
-__version__ = "0.3.17"
+__version__ = "0.3.18"
 
 from typing import Dict, Optional, Any, Union, List
 from pathlib import Path
@@ -967,6 +967,208 @@ class PromptManager:
             if prompt_type in content:
                 return f"Using {prompt_type} prompt"
             return "Default debugging prompt"
+
+    def debug_file(self, file_path: str, error_message: Optional[str] = None, file_purpose: Optional[str] = None) -> Dict[str, Any]:
+        """Perform layered analysis of a single file."""
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"File not found: {file_path}")
+        
+        purpose = file_purpose or self._infer_file_purpose(file_path)
+        env_issues = self._check_environment(file_path)
+        code_issues = self._analyze_code_logic(file_path, error_message)
+        integration_issues = self._analyze_integration(file_path)
+        
+        return {
+            "file_purpose": purpose,
+            "environment_issues": env_issues,
+            "code_issues": code_issues,
+            "integration_issues": integration_issues
+        }
+
+    def find_root_cause(self, file_path: str, error_message: Optional[str] = None, file_purpose: Optional[str] = None) -> Dict[str, Any]:
+        """Find the root cause of an error in a specific file."""
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"File not found: {file_path}")
+        
+        issues = self._identify_issues(file_path, error_message)
+        purpose = file_purpose or self._infer_file_purpose(file_path)
+        fixes = self._suggest_fixes(issues, purpose)
+        verification = self._generate_verification_plan(file_path, fixes)
+        
+        return {
+            "issues": issues,
+            "suggested_fixes": fixes,
+            "verification_plan": verification
+        }
+
+    def iterative_fix(self, file_path: str, error_message: Optional[str] = None, file_purpose: Optional[str] = None) -> Dict[str, Any]:
+        """Apply iterative fixes to resolve an error."""
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"File not found: {file_path}")
+        
+        key_functions = self._identify_key_functions(file_path, error_message)
+        fixes = []
+        for func in key_functions:
+            fix = self._apply_fix(file_path, func)
+            if fix:
+                fixes.append(fix)
+                if error_message and self._validate_fix(file_path, error_message):
+                    break
+        
+        return {
+            "key_functions": key_functions,
+            "applied_fixes": fixes
+        }
+
+    def generate_test_roadmap(self, file_path: str, error_message: Optional[str] = None, file_purpose: Optional[str] = None) -> Dict[str, Any]:
+        """Generate a testing roadmap for a specific file."""
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"File not found: {file_path}")
+        
+        existing_tests = self._find_existing_tests(file_path)
+        new_tests = self._suggest_new_tests(file_path, error_message, existing_tests)
+        test_plan = self._generate_test_plan(file_path, new_tests)
+        
+        return {
+            "existing_tests": existing_tests,
+            "suggested_tests": new_tests,
+            "test_plan": test_plan
+        }
+
+    def analyze_dependencies(self, file_paths: List[str], error_message: Optional[str] = None) -> Dict[str, Any]:
+        """Analyze dependencies between files."""
+        for path in file_paths:
+            if not os.path.exists(path):
+                raise FileNotFoundError(f"File not found: {path}")
+        
+        dependencies = self._map_dependencies(file_paths)
+        error_sources = self._identify_error_sources(dependencies, error_message) if error_message else []
+        purposes = {path: self._infer_file_purpose(path) for path in file_paths}
+        fixes = self._suggest_cross_file_fixes(error_sources, purposes)
+        
+        return {
+            "dependencies": dependencies,
+            "error_sources": error_sources,
+            "suggested_fixes": fixes
+        }
+
+    def trace_error(self, file_paths: List[str], error_message: Optional[str] = None) -> Dict[str, Any]:
+        """Trace error path across multiple files."""
+        for path in file_paths:
+            if not os.path.exists(path):
+                raise FileNotFoundError(f"File not found: {path}")
+        
+        error_path = self._map_error_path(file_paths, error_message)
+        primary_fixes = self._suggest_primary_fixes(error_path)
+        secondary_fixes = self._suggest_secondary_fixes(error_path)
+        verification = self._generate_verification_steps(primary_fixes + secondary_fixes)
+        
+        return {
+            "error_path": error_path,
+            "primary_fixes": primary_fixes,
+            "secondary_fixes": secondary_fixes,
+            "verification_steps": verification
+        }
+
+    def _infer_file_purpose(self, file_path: str) -> str:
+        """Infer the purpose of a file based on its name, location, and contents."""
+        # Implementation details
+        pass
+
+    def _check_environment(self, file_path: str) -> Dict[str, Any]:
+        """Check environment and dependency issues affecting a file."""
+        # Implementation details
+        pass
+
+    def _analyze_code_logic(self, file_path: str, error_message: Optional[str]) -> Dict[str, Any]:
+        """Analyze code logic issues in a file."""
+        # Implementation details
+        pass
+
+    def _analyze_integration(self, file_path: str) -> Dict[str, Any]:
+        """Analyze how a file interacts with other files."""
+        # Implementation details
+        pass
+
+    def _validate_fix(self, file_path: str, error_message: str) -> bool:
+        """Validate that a fix resolves the error."""
+        # Implementation details
+        pass
+
+    def _identify_issues(self, file_path: str, error_message: Optional[str]) -> List[Dict]:
+        """Identify issues in a file."""
+        # Implementation details
+        pass
+
+    def _suggest_fixes(self, issues: List[Dict], file_purpose: str) -> List[Dict]:
+        """Suggest fixes for identified issues."""
+        # Implementation details
+        pass
+
+    def _generate_verification_plan(self, file_path: str, fixes: List[Dict]) -> Dict[str, Any]:
+        """Generate a plan to verify fixes."""
+        # Implementation details
+        pass
+
+    def _identify_key_functions(self, file_path: str, error_message: Optional[str]) -> List[str]:
+        """Identify key functions related to an error."""
+        # Implementation details
+        pass
+
+    def _apply_fix(self, file_path: str, function: str) -> Dict[str, Any]:
+        """Apply a fix to a specific function."""
+        # Implementation details
+        pass
+
+    def _find_existing_tests(self, file_path: str) -> List[str]:
+        """Find existing tests for a file."""
+        # Implementation details
+        pass
+
+    def _suggest_new_tests(self, file_path: str, error_message: Optional[str], existing_tests: List[str]) -> List[Dict]:
+        """Suggest new tests for a file."""
+        # Implementation details
+        pass
+
+    def _generate_test_plan(self, file_path: str, new_tests: List[Dict]) -> Dict[str, Any]:
+        """Generate a test plan."""
+        # Implementation details
+        pass
+
+    def _map_dependencies(self, file_paths: List[str]) -> Dict[str, List[str]]:
+        """Map dependencies between files."""
+        # Implementation details
+        pass
+
+    def _identify_error_sources(self, dependencies: Dict[str, List[str]], error_message: str) -> List[str]:
+        """Identify potential error sources in dependencies."""
+        # Implementation details
+        pass
+
+    def _suggest_cross_file_fixes(self, error_sources: List[str], purposes: Dict[str, str]) -> List[Dict]:
+        """Suggest fixes across multiple files."""
+        # Implementation details
+        pass
+
+    def _map_error_path(self, file_paths: List[str], error_message: Optional[str]) -> List[Dict]:
+        """Map the path of an error through files."""
+        # Implementation details
+        pass
+
+    def _suggest_primary_fixes(self, error_path: List[Dict]) -> List[Dict]:
+        """Suggest primary fixes for error path."""
+        # Implementation details
+        pass
+
+    def _suggest_secondary_fixes(self, error_path: List[Dict]) -> List[Dict]:
+        """Suggest secondary fixes for error path."""
+        # Implementation details
+        pass
+
+    def _generate_verification_steps(self, fixes: List[Dict]) -> Dict[str, Any]:
+        """Generate steps to verify fixes."""
+        # Implementation details
+        pass
 
     def generate_bolt_tasks(self, project_description: str) -> List[BoltTask]:
         """Generate a sequence of bolt.new development tasks."""

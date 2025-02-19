@@ -14,10 +14,10 @@ A powerful AI-assisted workflow management system with advanced task tracking an
 
 ## Installation
 
-You can install the latest release (v0.3.16) using pip:
+You can install the latest release (v0.3.18) using pip:
 
 ```bash
-pip install tosins-prompt-manager==0.3.16
+pip install tosins-prompt-manager==0.3.18
 ```
 
 Or download directly from GitHub releases:
@@ -27,7 +27,7 @@ git clone https://github.com/tosin2013/prompt-manager.git
 cd prompt-manager
 
 # Checkout the latest release
-git checkout v0.3.16
+git checkout v0.3.18
 
 # Install in editable mode
 pip install -e .
@@ -205,16 +205,18 @@ The GitHub Action will automatically:
 - Create a GitHub release
 - Upload build artifacts
 
-## Latest Release (v0.3.16)
+## Latest Release (v0.3.18)
 
 ### What's New
-- Added comprehensive CLI command documentation
-- Updated Python version support (3.9-3.13)
-- Package renamed to tosins-prompt-manager
-- **LLM Enhancement**: Autonomous code improvement and pull request generation
-- **bolt.new Integration**: Generate structured development tasks for web applications
-- **Enhanced Task Management**: Improved task tracking and organization
-- **Memory Bank Updates**: Better context management for web development
+- **Enhanced LLM Capabilities**: Added new LLM enhancement commands for improved code analysis and automation
+  - `analyze-impact`: Analyze potential impact of code changes
+  - `learn-session`: Start autonomous learning sessions
+  - `suggest-improvements`: Get AI-powered code improvement suggestions
+  - `create-pr`: Automated pull request creation
+  - `generate-commands`: Generate custom CLI commands based on usage patterns
+- **Improved Test Coverage**: Enhanced test suite for CLI commands
+- **Better Error Handling**: More robust error handling in LLM enhancement features
+- **Documentation Updates**: Added comprehensive command documentation in `commands.md`
 
 ### Breaking Changes
 None

@@ -10,55 +10,31 @@ import sys
 
 
 @click.group()
-@click.version_option(version="0.3.16")
+@click.version_option(version="0.3.18")
 def cli():
     """Prompt Manager CLI - Development workflow management system."""
     pass
 
 
-# Global variable to store the current project path
-_current_project_path = None
-
-def _get_manager():
+def get_manager():
     """Get a PromptManager instance with the current project."""
-    global _current_project_path
-    if _current_project_path is None:
-        _current_project_path = Path.cwd()
-    manager = PromptManager("", memory_path=_current_project_path / "prompt_manager_data")
+    manager = PromptManager("", memory_path=Path.cwd() / "prompt_manager_data")
     return manager
 
-def _get_llm_guidance(command: str) -> str:
+
+def get_llm_guidance(command: str) -> str:
     """Get formatted guidance for an LLM about how to use a command."""
     guidance = LLMGuidance.get_command_guidance(command)
     return LLMGuidance.format_guidance(guidance)
-
-@cli.command()
-@click.argument("path", type=click.Path(exists=True))
-def analyze_repo(path: str):
-    """Analyze a repository for project context."""
-    click.echo(_get_llm_guidance("analyze_repo"))
-    click.echo(f"Analyzing repository at: {path}")
-    
-    # Initialize PromptManager with repository path
-    manager = PromptManager("", memory_path=Path(path))
-    
-    try:
-        # Perform repository analysis
-        manager.initialize()
-        click.echo("Repository analysis complete")
-    except Exception as e:
-        click.echo(f"Error: {str(e)}")
 
 
 @cli.command()
 @click.option("--path", type=click.Path(), default=".")
 def init(path: str):
     """Initialize a new project."""
-    click.echo(_get_llm_guidance("init"))
+    click.echo(get_llm_guidance("init"))
     try:
-        global _current_project_path
-        _current_project_path = Path(path)
-        manager = _get_manager()
+        manager = PromptManager("", memory_path=Path(path).absolute() / "prompt_manager_data")
         manager.initialize()
         click.echo("Project initialized successfully")
     except Exception as e:
@@ -67,22 +43,55 @@ def init(path: str):
 
 
 @cli.command()
-@click.argument("name")
-@click.argument("description")
-@click.argument("prompt")
-@click.option("--priority", type=int, default=1)
-def add_task(name: str, description: str, prompt: str, priority: int = 1):
-    """Add a new task."""
-    click.echo(_get_llm_guidance("add_task"))
+@click.argument("path", type=click.Path(exists=True))
+def analyze_repo(path: str):
+    """Analyze a repository for project context."""
+    click.echo(get_llm_guidance("analyze_repo"))
+    click.echo(f"Analyzing repository at: {path}")
+    
     try:
-        if priority < 1:
-            raise ValueError("Priority must be a positive integer")
+        # Initialize PromptManager with repository path
+        manager = PromptManager("", memory_path=Path(path))
+        manager.initialize()
+        click.echo("Repository analysis complete")
+    except Exception as e:
+        click.echo(f"Error: {str(e)}")
+        sys.exit(1)
+
+
+@cli.command()
+@click.option("--title", required=True, help="Name/title of the task")
+@click.option("--description", required=True, help="Description of the task")
+@click.option("--template", required=True, help="Template/prompt for the task")
+@click.option("--priority", type=click.Choice(['low', 'medium', 'high']), default='medium', 
+              help="Task priority (low/medium/high)")
+def add_task(title: str, description: str, template: str, priority: str = 'medium'):
+    """Add a new task."""
+    click.echo(get_llm_guidance("add_task"))
+    try:
+        # Convert priority string to integer
+        priority_map = {'low': 1, 'medium': 2, 'high': 3}
+        priority_int = priority_map[priority.lower()]
             
-        manager = _get_manager()
-        task = manager.add_task(name, description, prompt, priority)
-        click.echo(f"Task {task.name} added successfully")
+        manager = get_manager()
+        task = manager.add_task(title, description, template, priority_int)
+        click.echo(f"Task '{task.name}' added successfully with priority {priority}")
     except Exception as e:
         click.echo(f"Error adding task: {str(e)}", err=True)
+        sys.exit(1)
+
+
+@cli.command()
+def list_tasks():
+    """List all tasks."""
+    click.echo(get_llm_guidance("list_tasks"))
+    try:
+        manager = get_manager()
+        tasks = manager.list_tasks()
+        for task in tasks:
+            click.echo(f"{task.name} ({task.status.value})")
+    except Exception as e:
+        click.echo(f"Error listing tasks: {str(e)}", err=True)
         sys.exit(1)
 
 
@@ -91,9 +100,9 @@ def add_task(name: str, description: str, prompt: str, priority: int = 1):
 @click.argument("status", type=click.Choice([s.value for s in TaskStatus], case_sensitive=False))
 def update_progress(name: str, status: str):
     """Update task progress."""
-    click.echo(_get_llm_guidance("update_progress"))
+    click.echo(get_llm_guidance("update_progress"))
     try:
-        manager = _get_manager()
+        manager = get_manager()
         task = manager.update_task_status(name, status.upper())
         click.echo(f"Task {task.name} status updated to {task.status.value}")
     except Exception as e:
@@ -102,197 +111,98 @@ def update_progress(name: str, status: str):
 
 
 @cli.command()
-@click.option('--status', type=click.Choice([s.value for s in TaskStatus], case_sensitive=False),
-              help='Filter tasks by status')
-@click.option('--sort-by', type=click.Choice(['priority', 'created', 'updated'], case_sensitive=False),
-              help='Sort tasks by field')
-def list_tasks(status: Optional[str] = None, sort_by: Optional[str] = None):
-    """List tasks with optional filtering and sorting."""
-    click.echo(_get_llm_guidance("list_tasks"))
-    try:
-        manager = _get_manager()
-        task_status = TaskStatus(status.upper()) if status else None
-        tasks = manager.list_tasks(status=task_status, sort_by=sort_by)
-        
-        if not tasks:
-            click.echo("No tasks found")
-            return
-        
-        # Print header
-        click.echo("\nTasks:")
-        click.echo("=" * 50)
-        
-        for task in tasks:
-            click.echo(f"\nName: {task.name}")
-            click.echo(f"Status: {task.status.value}")
-            click.echo(f"Description: {task.description}")
-            click.echo(f"Priority: {task.priority}")
-            click.echo(f"Created: {task.created_at.strftime('%Y-%m-%d %H:%M:%S')}")
-            click.echo(f"Updated: {task.updated_at.strftime('%Y-%m-%d %H:%M:%S')}")
-            if task.status_notes:
-                click.echo("Status Notes:")
-                for note in task.status_notes:
-                    click.echo(f"  - {note}")
-            click.echo("-" * 50)
-    except Exception as e:
-        click.echo(f"Error listing tasks: {str(e)}", err=True)
-        sys.exit(1)
-
-
-@cli.command()
-@click.option("--output", type=click.Path(), required=True)
+@click.option("--output", required=True, type=click.Path(), help="Export file path")
 def export_tasks(output: str):
-    """Export tasks to a file."""
-    click.echo(_get_llm_guidance("export_tasks"))
+    """Export tasks to JSON."""
+    click.echo(get_llm_guidance("export_tasks"))
     try:
-        manager = _get_manager()
-        manager.export_tasks(Path(output))
-        click.echo("Tasks exported successfully")
-        click.echo(f"Output file: {output}")
+        manager = get_manager()
+        manager.export_tasks(output)
+        click.echo(f"Tasks exported to {output}")
     except Exception as e:
-        click.echo(f"Error exporting tasks: {str(e)}")
-
-
-@cli.command()
-@click.argument("project_description")
-@click.option("--framework", default="Next.js", help="Framework to use (e.g., Next.js, React, Vue)")
-def generate_bolt_tasks(project_description: str, framework: str):
-    """Generate a sequence of bolt.new development tasks."""
-    click.echo(_get_llm_guidance("generate_bolt_tasks"))
-    try:
-        manager = _get_manager()
-        tasks = manager.generate_bolt_tasks(project_description)
-        
-        # Update framework for setup task
-        tasks[0].framework = framework
-        
-        # Add tasks to manager
-        for task in tasks:
-            manager.add_task(task)
-        
-        click.echo("\nGenerated Bolt.new Development Tasks:")
-        click.echo("=" * 60)
-        
-        for task in tasks:
-            click.echo(f"\n{task.name} (Priority: {task.priority})")
-            click.echo("-" * len(task.name))
-            click.echo(f"Status: {task.status.value}")
-            
-            # Show bolt.new prompt
-            click.echo("\nBolt.new Prompt:")
-            click.echo(task.to_bolt_prompt())
-            click.echo("\n" + "=" * 60)
-            
-    except Exception as e:
-        click.echo(f"Error generating bolt tasks: {str(e)}", err=True)
+        click.echo(f"Error exporting tasks: {str(e)}", err=True)
         sys.exit(1)
 
 
 @cli.command()
-@click.option("--interactive", "-i", is_flag=True, help="Start in interactive mode")
-def startup(interactive: bool):
-    """Start the prompt manager with optional interactive mode."""
-    click.echo(_get_llm_guidance("startup"))
+@click.argument("description")
+@click.option("--framework", default="Next.js", help="Framework to use")
+def generate_bolt_tasks(description: str, framework: str):
+    """Generate bolt.new tasks."""
+    click.echo(get_llm_guidance("generate_bolt_tasks"))
     try:
-        if interactive:
-            click.echo("Welcome to Prompt Manager! Let's get started.")
-            click.echo("\nAvailable commands:")
-            click.echo("1. Initialize new project")
-            click.echo("2. Generate bolt.new tasks")
-            click.echo("3. List existing tasks")
-            click.echo("4. Add new task")
-            click.echo("5. Import tasks from file")
-            click.echo("6. Reset Memory Bank")
-            click.echo("0. Exit")
-
-            while True:
-                choice = click.prompt("\nEnter command number", type=int)
-                
-                if choice == 0:
-                    click.echo("Goodbye!")
-                    break
-                elif choice == 1:
-                    path = click.prompt("Enter project path (or '.' for current directory)", default=".")
-                    name = click.prompt("Enter project name")
-                    init(path)
-                    click.echo(f"Project {name} initialized at {path}")
-                elif choice == 2:
-                    desc = click.prompt("Enter project description")
-                    framework = click.prompt("Enter framework (default: Next.js)", default="Next.js")
-                    generate_bolt_tasks(desc, framework)
-                elif choice == 3:
-                    status = click.prompt("Filter by status (optional)", default="")
-                    sort_by = click.prompt("Sort by (optional)", default="")
-                    list_tasks(status or None, sort_by or None)
-                elif choice == 4:
-                    name = click.prompt("Task name")
-                    desc = click.prompt("Task description")
-                    prompt = click.prompt("Prompt template")
-                    priority = click.prompt("Priority (default: 1)", type=int, default=1)
-                    add_task(name, desc, prompt, priority)
-                elif choice == 5:
-                    path = click.prompt("Enter file path")
-                    import_tasks(path)
-                elif choice == 6:
-                    if click.confirm("Are you sure you want to reset the Memory Bank?"):
-                        manager = _get_manager()
-                        manager.memory_bank.reset()
-                        click.echo("Memory Bank reset successfully")
-                else:
-                    click.echo("Invalid choice. Please try again.")
-        else:
-            manager = _get_manager()
-            manager.initialize()
-            click.echo("Prompt Manager started successfully")
+        manager = get_manager()
+        tasks = manager.generate_bolt_tasks(description, framework)
+        click.echo(f"Generated {len(tasks)} tasks for {framework} project")
     except Exception as e:
-        click.echo(f"Error during startup: {str(e)}", err=True)
+        click.echo(f"Error generating tasks: {str(e)}", err=True)
         sys.exit(1)
 
 
-@cli.command()
-def reflect():
-    """Analyze LLM's interaction patterns and effectiveness."""
-    click.echo(_get_llm_guidance("reflect"))
-    manager = _get_manager()
-    click.echo("Analyzing LLM interaction patterns...")
-    
-    patterns = manager.analyze_patterns()
-    click.echo("\nMost effective prompt patterns:")
-    for pattern in patterns:
-        click.echo(f"- {pattern}")
-    
-    suggestions = manager.generate_suggestions()
-    click.echo("\nOptimization suggestions:")
-    for suggestion in suggestions:
-        click.echo(f"- {suggestion}")
+@cli.group()
+def llm():
+    """LLM Enhancement commands."""
+    pass
 
 
-@cli.command()
-def learn_mode():
-    """Enable autonomous learning mode for the LLM."""
-    click.echo(_get_llm_guidance("learn_mode"))
-    manager = _get_manager()
-    click.echo("Enabling autonomous learning mode...")
-    manager.start_learning_session()
-    click.echo("Learning mode enabled")
+@llm.command()
+def learn_session():
+    """Start an autonomous learning session."""
+    try:
+        manager = get_manager()
+        manager.llm.start_learning_session()
+        click.echo("Learning session started successfully")
+    except Exception as e:
+        click.echo(f"Error: {str(e)}")
+        sys.exit(1)
 
 
-@cli.command()
-def meta_program():
-    """Allow LLM to modify its own tooling."""
-    click.echo(_get_llm_guidance("meta_program"))
-    manager = _get_manager()
-    click.echo("Entering meta-programming mode...")
-    
-    utilities = manager.generate_custom_utilities()
-    click.echo("\nGenerated custom utilities:")
-    for util in utilities:
-        click.echo(f"- {util}")
-    
-    commands = manager.create_custom_commands()
-    click.echo("\nCreated custom commands:")
-    for cmd in commands:
-        click.echo(f"- {cmd}")
+@llm.command()
+def analyze_impact():
+    """Analyze the potential impact of changes."""
+    try:
+        manager = get_manager()
+        manager.llm.analyze_impact()
+        click.echo("Impact analysis complete")
+    except Exception as e:
+        click.echo(f"Error: {str(e)}")
+        sys.exit(1)
+
+
+@llm.command()
+def suggest_improvements():
+    """Generate code improvement suggestions."""
+    try:
+        manager = get_manager()
+        manager.llm.suggest_improvements()
+        click.echo("Generated improvement suggestions")
+    except Exception as e:
+        click.echo(f"Error: {str(e)}")
+        sys.exit(1)
+
+
+@llm.command()
+def create_pr():
+    """Create a pull request from suggestions."""
+    try:
+        manager = get_manager()
+        manager.llm.create_pr()
+        click.echo("Pull request created successfully")
+    except Exception as e:
+        click.echo(f"Error: {str(e)}")
+        sys.exit(1)
+
+
+@llm.command()
+def generate_commands():
+    """Generate custom CLI commands."""
+    try:
+        manager = get_manager()
+        manager.llm.generate_commands()
+        click.echo("Commands generated successfully")
+    except Exception as e:
+        click.echo(f"Error: {str(e)}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
