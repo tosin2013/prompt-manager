@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="prompt-manager",
-    version="0.3.13",  # Match the latest tag
+    version="0.3.14",  # Match the latest tag
     packages=find_packages(exclude=[
         "*.tests", "*.tests.*", "tests.*", "tests",
         "*.egg-info", "*.egg-info.*",
@@ -33,7 +33,7 @@ setup(
             'prompt-manager=prompt_manager.cli:cli',
         ],
     },
-    python_requires='>=3.8',
+    python_requires='>=3.9',  # Updated to match our minimum supported version
     author="Windsurf Team",
     description="A prompt engineering and development workflow management system",
     long_description=open('README.md').read(),
@@ -43,8 +43,8 @@ setup(
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
         "Topic :: Software Development :: Libraries :: Python Modules",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.13",
     ],
 )
