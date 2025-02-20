@@ -1,226 +1,0 @@
-
-Oprompt_manager.llm_enhancement.LLMEnhancement._generate_improvement_suggestionsc
-W/Users/tosinakinosho/CascadeProjects/windsurf-project/prompt_manager/llm_enhancement.pyÅ Å()"2*»
-2
-Æ Ð(
-
-Ñ Ñ(
-%15"listH
-F
-
-Ñ Ñ(
-suggestions"__id*#
-
-__unknown_file (
-
-%15vt
-
-Ò Ò((
-%16*M
-
-__unknown_file (1/
--prompt_manager.llm_enhancement.LLMEnhancement2_identify_issuesC
-A
-
-Ò Ò((
-issues"__id*#
-
-__unknown_file (
-
-%16*
-4
-6*—
-13
-Û Û(+{y
-
-Û Û(+
-%13*%
-
-__unknown_file (	
-
-issue*/
-
-__unknown_file (
-unused patterns2__contains__*
-11
-12*.
-4
-ï ï("
-
-ï ï(
-
-suggestions*–
-6
-Õ Õ(*|z
-
-Õ Õ(*
-%14*%
-
-__unknown_file (	
-
-issue*0
-
-__unknown_file (
-Low success rate2__contains__*
-13
-7*Í
-7
-Ö Ö(;rp
-
-Ö Ö(8
-%1*%
-
-__unknown_file (	
-
-issue*.
-
-__unknown_file (
-command type: 2splitqo
-
-Ö Ö(;
-%2"__mapGet*"
-
-__unknown_file (
-
-%1* 
-
-__unknown_file (22__getitem__D
-B
-
-Ö Ö(;
-
-cmd_type"__id*"
-
-__unknown_file (
-
-%2Š
-‡
-
-Ø Ø(H
-%3"__concat*0
-
-Ø Ø(4" 
-Consider refining prompts for *
-
-Ø5 Ø(=
-
-
-cmd_type*
-
-Ø> Ø(G
-	 commandszx
-
-× Ù(
-%4"list.append*+
-
-__unknown_file (
-
-suggestions*"
-
-__unknown_file (
-
-%32append*
-4
-6*ó
-8
-è ê(£ 
-
-è ê(
-%5"list.append*+
-
-__unknown_file (
-
-suggestions*J
-
-__unknown_file (.,
-*Analyze failed prompts for common patterns2append³°
-
-ë í(
-%6"list.append*+
-
-__unknown_file (
-
-suggestions*Z
-
-__unknown_file (><
-:Consider adding more specific guidance for common failures2append*
-4
-6*¤
-9
-ç ç(7‡„
-
-ç ç(7
-%7*%
-
-__unknown_file (	
-
-issue*;
-
-__unknown_file (
-Below target prompt success2__contains__*	
-4
-6
-8*Ú
-10
-ä ä(Kž›
-
-ä ä(K
-%8"list.append*+
-
-__unknown_file (
-
-suggestions*E
-
-__unknown_file ()'
-%Increase context awareness in prompts2appendž›
-
-å å(K
-%9"list.append*+
-
-__unknown_file (
-
-suggestions*E
-
-__unknown_file ()'
-%Review context extraction methodology2append*
-4
-6* 
-11
-ã ã(3„
-
-ã ã(3
-%10*%
-
-__unknown_file (	
-
-issue*7
-
-__unknown_file (
-Low context utilization2__contains__*
-9
-10*í
-12
-Ü Þ(¨¥
-
-Ü Þ(
-%11"list.append*+
-
-__unknown_file (
-
-suggestions*N
-
-__unknown_file (20
-.Review and update pattern recognition criteria2append§¤
-
-ß á(
-%12"list.append*+
-
-__unknown_file (
-
-suggestions*M
-
-__unknown_file (1/
--Consider removing or updating unused patterns2append*
-4
-6B1/
--prompt_manager.llm_enhancement.LLMEnhancementH

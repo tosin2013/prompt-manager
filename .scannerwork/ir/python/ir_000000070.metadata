@@ -1,7 +1,0 @@
-prompt_manager.models.BoltTask.to_dict
-false
-7ca5a6c73f49c0285ef43d83589fc6e1
-super
-==
-to_dict
-update

@@ -1,5 +1,0 @@
-prompt_manager.debug_manager.DebugManager.__init__
-false
-6e5b0957da6fe54d7ae5875599b4224c
-pathlib.Path.__init__
-pathlib.Path.cwd

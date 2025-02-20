@@ -166,9 +166,9 @@ fi
 # Initialize git repo
 git config --global user.email "test@example.com"
 git config --global user.name "Test User"
-git init > /dev/null 2>&1
-git add test_file.py > /dev/null 2>&1
-git commit -m "Initial commit" > /dev/null 2>&1
+git init .
+git add .
+git commit -m "Initial commit"
 
 # Test repo commands with prompt validation
 echo -e "\n${YELLOW}Testing repo commands with prompts...${NC}"

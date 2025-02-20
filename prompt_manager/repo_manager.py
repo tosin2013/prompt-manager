@@ -128,36 +128,168 @@ class RepoManager:
         except Exception as e:
             return [{'error': f'Error getting recent changes: {str(e)}'}]
 
-    def learn_session(self, file_path: str, duration: int = 30) -> Dict[str, str]:
+    def learn_session(self, file_path: str, duration: int = 30) -> Dict[str, Union[Dict, List, str]]:
         """Start a learning session for repository understanding."""
         try:
+            # Validate file path
+            if not Path(file_path).exists():
+                return {'error': f'File path does not exist: {file_path}'}
+
+            # Get git directory
+            git_dir = self._find_git_dir(file_path)
+            if not git_dir:
+                return {'error': 'Not a git repository'}
+
+            # Gather repository information
             stats = self.get_repo_stats(file_path)
+            if not isinstance(stats, dict):
+                stats = {'total_files': 0, 'languages': []}
+
+            # Get commit history
             history = self.get_commit_history(file_path, limit=5)
-            branch = self.get_current_branch(file_path)
-            changes = self.get_recent_changes(file_path, days=duration)
+            if not isinstance(history, list):
+                history = [{'error': 'Failed to get commit history'}]
             
+            # Format commit history for template
+            commit_history = "\n".join([
+                f"- [{commit.get('hash', 'unknown')}] {commit.get('message', 'No message')} "
+                f"(by {commit.get('author', 'unknown')} on {commit.get('date', 'unknown')})"
+                for commit in history if isinstance(commit, dict) and 'error' not in commit
+            ]) or "No commit history available"
+
+            # Get current branch
+            branch = self.get_current_branch(file_path)
+            if not branch:
+                branch = 'Unknown'
+
+            # Get recent changes
+            changes = self.get_recent_changes(file_path, days=duration)
+            if not isinstance(changes, list):
+                changes = [{'error': 'Failed to get recent changes'}]
+
+            # Analyze code patterns
+            try:
+                with open(file_path, 'r', errors='replace') as f:
+                    content = f.read()
+                code_patterns = self._analyze_code_patterns(content)
+            except Exception:
+                code_patterns = "Could not analyze code patterns"
+
+            # Get documentation
+            documentation = self._get_documentation(Path(file_path))
+
+            # Get test coverage
+            test_coverage = self._get_test_coverage(Path(file_path))
+
             return {
                 'stats': stats,
                 'recent_history': history,
                 'current_branch': branch,
-                'recent_changes': changes
+                'recent_changes': changes,
+                'template_context': {
+                    'repo_path': file_path,
+                    'file_path': file_path,
+                    'duration': duration,
+                    'commit_history': commit_history,
+                    'code_patterns': code_patterns,
+                    'documentation': documentation,
+                    'test_coverage': test_coverage,
+                    'file_count': stats.get('total_files', 0),
+                    'languages': stats.get('languages', []),
+                    'recent_changes': changes
+                }
             }
         except Exception as e:
-            return {'error': f'Error during learning session: {str(e)}'}
+            return {'error': str(e)}
+
+    def _analyze_code_patterns(self, content: str) -> str:
+        """Analyze code patterns in content."""
+        patterns = []
+        
+        # Check for common patterns
+        if 'class ' in content:
+            patterns.append("Object-oriented programming")
+        if 'def ' in content:
+            patterns.append("Function-based organization")
+        if 'import ' in content:
+            patterns.append("External dependencies")
+        if 'try:' in content:
+            patterns.append("Error handling")
+        if 'test' in content.lower():
+            patterns.append("Test-driven development")
+        if '#' in content or '"""' in content:
+            patterns.append("Documentation practices")
+            
+        return "\n".join([f"- {pattern}" for pattern in patterns]) if patterns else "No clear patterns detected"
+
+    def _get_documentation(self, path: Path) -> str:
+        """Get documentation information."""
+        try:
+            if not path.exists():
+                return "File not found"
+                
+            doc_files = []
+            if path.is_file():
+                with open(path, 'r', errors='replace') as f:
+                    content = f.read()
+                    if '"""' in content or "'''" in content:
+                        doc_files.append(f"- {path.name}: Has docstrings")
+            else:
+                for doc_file in ['README.md', 'DOCS.md', 'API.md']:
+                    if (path / doc_file).exists():
+                        doc_files.append(f"- {doc_file}: Present")
+                        
+            return "\n".join(doc_files) if doc_files else "No documentation found"
+        except Exception:
+            return "Could not analyze documentation"
+
+    def _get_test_coverage(self, path: Path) -> str:
+        """Get test coverage information."""
+        try:
+            if not path.exists():
+                return "File not found"
+                
+            test_files = []
+            if path.is_file():
+                test_path = path.parent / 'tests' / f'test_{path.name}'
+                if test_path.exists():
+                    test_files.append(f"- {test_path.name}: Present")
+            else:
+                test_dir = path / 'tests'
+                if test_dir.exists():
+                    test_files.extend([
+                        f"- {f.name}: Present"
+                        for f in test_dir.glob('test_*.py')
+                    ])
+                        
+            return "\n".join(test_files) if test_files else "No test files found"
+        except Exception:
+            return "Could not analyze test coverage"
 
     def _find_git_dir(self, path: Union[str, Path]) -> Optional[Path]:
         """Find the .git directory for a repository."""
-        path = Path(path)
-        if not path.exists():
+        try:
+            path = Path(path)
+            if path.is_file():
+                path = path.parent
+                
+            git_path = path / '.git'
+            if git_path.exists() and git_path.is_dir():
+                return git_path
+                
+            # Try running git rev-parse to find git dir
+            try:
+                cmd = ['git', 'rev-parse', '--git-dir']
+                output = subprocess.check_output(cmd, cwd=path, text=True, stderr=subprocess.PIPE).strip()
+                git_path = Path(output)
+                if not git_path.is_absolute():
+                    git_path = path / git_path
+                return git_path if git_path.exists() else None
+            except subprocess.CalledProcessError:
+                return None
+                
+        except Exception:
             return None
-
-        current = path if path.is_dir() else path.parent
-        while current != current.parent:
-            git_dir = current / '.git'
-            if git_dir.exists() and git_dir.is_dir():
-                return git_dir
-            current = current.parent
-        return None
 
     def _count_files(self, path: Path) -> int:
         """Count number of files in directory."""

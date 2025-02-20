@@ -1,7 +1,0 @@
-prompt_manager.llm_enhancement.LLMEnhancement.create_custom_commands
-false
-228165aa7f072513d80a6f3bfe6d8ec4
-builtins.print
-==
-_analyze_command_patterns
-_get_guidance

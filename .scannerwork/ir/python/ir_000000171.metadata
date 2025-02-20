@@ -1,7 +1,0 @@
-prompt_manager.PromptManager.debug_log
-false
-0f80a60fd038ac90ed0997a033b0a18e
-builtins.print
-datetime.datetime.now
-==
-isoformat

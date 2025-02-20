@@ -1,36 +1,0 @@
-
-1prompt_manager.memory.MemoryBank.increment_tokensX
-N/Users/tosinakinosho/CascadeProjects/windsurf-project/prompt_manager/memory.pyi i("2*»
-2j n(n
-l
-o o(
-%1"__id*T
-
-__unknown_file (8*6"
- prompt_manager.memory.MemoryBank"
-current_tokensG
-E
-o o($
-%2"__concat*
-o o(
-
-%1*
-o o($	
-
-countn
-l
-o o($6"
- prompt_manager.memory.MemoryBank"
-current_tokens"__id*"
-
-__unknown_file (
-
-%2*
-3*/
-3
-	memory.py"
-q q(
-implicit return:
-i i()
-countB$"
- prompt_manager.memory.MemoryBankH

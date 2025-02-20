@@ -1,6 +1,0 @@
-prompt_manager.debug.DebugManager.generate_test_roadmap
-false
-37994c88a15561ce99cfcff224f5d473
-prompt_manager.debug.DebugManager._find_existing_tests
-prompt_manager.debug.DebugManager._generate_test_plan
-prompt_manager.debug.DebugManager._suggest_new_tests

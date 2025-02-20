@@ -65,26 +65,36 @@ def learn_session(file_path, duration):
         stats = manager.get_repo_stats(file_path)
         recent_changes = manager.get_recent_changes(file_path)
         
+        # Start session
+        session = manager.learn_session(file_path, duration)
+        if 'error' in session:
+            click.echo(f"Error: {session['error']}", err=True)
+            sys.exit(1)
+
         # Get and format prompt
         prompt_template = get_prompt_for_command("learn-session")
         if prompt_template:
-            context = {
-                "repo_path": file_path,
-                "duration": duration,
-                "file_count": stats['total_files'],
-                "languages": stats['languages'],
-                "recent_changes": recent_changes
-            }
-            prompt = prompt_template.format(**context)
-            print_prompt_info("learn-session", prompt)
+            context = session['template_context']
+            try:
+                prompt = prompt_template.format(**context)
+                print_prompt_info("learn-session", prompt)
+            except ValueError as e:
+                click.echo(f"Error formatting prompt: {str(e)}", err=True)
+                sys.exit(1)
         
-        # Start session
-        session = manager.learn_session(file_path, duration)
-        click.echo(f"Learning session for {file_path}:")
-        click.echo(f"Duration: {session['duration']}")
-        click.echo("\nInsights:")
-        for insight in session['insights']:
-            click.echo(f"- {insight}")
+        # Print repository stats
+        click.echo("\nRepository Stats:")
+        click.echo(f"Total Files: {session['stats'].get('total_files', 0)}")
+        click.echo(f"Languages: {', '.join(session['stats'].get('languages', []))}")
+        
+        click.echo(f"\nCurrent Branch: {session['current_branch']}")
+        
+        click.echo("\nRecent Changes:")
+        for change in session['recent_changes']:
+            if 'error' in change:
+                click.echo(f"Error getting changes: {change['error']}")
+            else:
+                click.echo(f"- [{change['date']}] {change['message']} (by {change['author']})")
     except FileNotFoundError:
         click.echo(f"Error: File {file_path} not found", err=True)
         sys.exit(1)

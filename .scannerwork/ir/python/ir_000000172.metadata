@@ -1,7 +1,0 @@
-prompt_manager.PromptManager.add_task_to_project
-false
-9a08db9c86ba01424791ebb465fe28f5
-prompt_manager.Task.__init__
-==
-save_project
-update_markdown_files

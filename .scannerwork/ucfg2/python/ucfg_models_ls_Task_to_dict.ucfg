@@ -1,205 +1,0 @@
-
-"prompt_manager.models.Task.to_dictX
-N/Users/tosinakinosho/CascadeProjects/windsurf-project/prompt_manager/models.py9 9("2*◊
-2: :(;
-; D(	
-%1"dict_
-]
-< <(
-%2"__id*E
-
-__unknown_file ()*'
-prompt_manager.models.Task"
-titleå
-â
-< <(
-%3"__mapSet*"
-
-__unknown_file (
-
-%1*%
-
-__unknown_file (	
-title*"
-
-__unknown_file (
-
-%2e
-c
-= =(+
-%4"__id*K
-
-__unknown_file (/*-
-prompt_manager.models.Task"
-descriptioní
-è
-= =(+
-%5"__mapSet*"
-
-__unknown_file (
-
-%1*+
-
-__unknown_file (
-description*"
-
-__unknown_file (
-
-%4b
-`
-> >(%
-%6"__id*H
-
-__unknown_file (,**
-prompt_manager.models.Task"
-
-priorityè
-å
-> >(%
-%7"__mapSet*"
-
-__unknown_file (
-
-%1*(
-
-__unknown_file (
-
-priority*"
-
-__unknown_file (
-
-%6`
-^
-? ?(!
-%8"__id*F
-
-__unknown_file (**(
-prompt_manager.models.Task"
-statusG
-E
-? ?('
-%9"__id*-
-
-__unknown_file (*
-
-%8"
-valueé
-ã
-? ?('
-%10"__mapSet*"
-
-__unknown_file (
-
-%1*&
-
-__unknown_file (
-
-status*"
-
-__unknown_file (
-
-%9j
-h
-@ @(3
-%11"__id*O
-
-__unknown_file (3*1
-prompt_manager.models.Task"
-prompt_templateò
-ï
-@ @(3
-%12"__mapSet*"
-
-__unknown_file (
-
-%1*/
-
-__unknown_file (
-prompt_template*#
-
-__unknown_file (
-
-%11`
-^
-A A(
-%13"__id*E
-
-__unknown_file ()*'
-prompt_manager.models.Task"
-notesé
-ã
-A A(
-%14"__mapSet*"
-
-__unknown_file (
-
-%1*%
-
-__unknown_file (	
-notes*#
-
-__unknown_file (
-
-%13e
-c
-B B()
-%15"__id*J
-
-__unknown_file (.*,
-prompt_manager.models.Task"
-
-created_atCA
-B B(5
-%16*#
-
-__unknown_file (
-
-%152	isoformatì
-ê
-B B(5
-%17"__mapSet*"
-
-__unknown_file (
-
-%1**
-
-__unknown_file (
-
-created_at*#
-
-__unknown_file (
-
-%16e
-c
-C C()
-%18"__id*J
-
-__unknown_file (.*,
-prompt_manager.models.Task"
-
-updated_atCA
-C C(5
-%19*#
-
-__unknown_file (
-
-%182	isoformatì
-ê
-C C(5
-%20"__mapSet*"
-
-__unknown_file (
-
-%1**
-
-__unknown_file (
-
-updated_at*#
-
-__unknown_file (
-
-%19"
-; D(	
-
-%1B
-prompt_manager.models.TaskH

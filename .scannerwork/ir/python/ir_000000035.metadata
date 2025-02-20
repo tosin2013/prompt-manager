@@ -1,5 +1,0 @@
-prompt_manager.repo_manager.RepoManager.__init__
-false
-5449af7d0ef7615ac38c813eb9e91cf1
-pathlib.Path.__init__
-pathlib.Path.cwd

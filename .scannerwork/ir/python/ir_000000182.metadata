@@ -1,7 +1,0 @@
-prompt_manager.PromptManager._escalate_to_human
-false
-ba7e1b54b2dd6f6e8f719624fb2a041d
-datetime.datetime.now
-==
-isoformat
-update_markdown_files

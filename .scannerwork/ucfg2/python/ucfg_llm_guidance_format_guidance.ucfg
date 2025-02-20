@@ -1,121 +1,0 @@
-
-8prompt_manager.llm_guidance.LLMGuidance._format_guidance`
-T/Users/tosinakinosho/CascadeProjects/windsurf-project/prompt_manager/llm_guidance.pyî î("2*¥
-2
-ï ú(~|
-
-°
- °(
-%1"__mapGet*(
-
-__unknown_file (
-
-
-guidance*'
-
-__unknown_file (	
-purpose2__getitem__~|
-
-¢ ¢(!
-%2"__mapGet*(
-
-__unknown_file (
-
-
-guidance*'
-
-__unknown_file (	
-context2__getitem__àÖ
-
-£ £(/
-%3"__mapGet*(
-
-__unknown_file (
-
-
-guidance*0
-
-__unknown_file (
-example_scenario2__getitem__àÖ
-
-§ §(/
-%4"__mapGet*(
-
-__unknown_file (
-
-
-guidance*0
-
-__unknown_file (
-expected_outcome2__getitem__Å
-
-• •(#
-%5"__mapGet*(
-
-__unknown_file (
-
-
-guidance**
-
-__unknown_file (
-
-next_steps2__getitem__Ú
-Ô
-
-û ¶(
-%6"__concat*?
-
-û °(	1/
--
-Command Guidance:
-----------------
-Purpose: *
-
-°
- °(
-
-%1* 
-
-° ¢(
-
-When to Use: *
-
-¢ ¢(!
-
-%2*%
-
-¢" £(
-
-Example Scenario: *
-
-£ £(/
-
-%3*%
-
-£0 §(
-
-Expected Outcome: *
-
-§ §(/
-
-%4*
-
-§0 •(
-
-Next Steps: *
-
-• •(#
-
-%5*
-•$ ¶
-
-"
-
-ù ß(	
-
-%6:
-
-î î(1
-
-guidanceB+)
-'prompt_manager.llm_guidance.LLMGuidanceH

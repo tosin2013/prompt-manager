@@ -1,113 +1,0 @@
-
-Fprompt_manager.llm_enhancement.LLMEnhancement._generate_reviewer_notesc
-W/Users/tosinakinosho/CascadeProjects/windsurf-project/prompt_manager/llm_enhancement.py« «( "2*Ç
-2
-® ®(0
-
-¯ ¯(
-%7"listA
-?
-
-¯ ¯(
-notes"__id*"
-
-__unknown_file (
-
-%7OM
-
-±' ±(5
-%8"
-dict.items*&
-
-__unknown_file (
-
-
-impact2items*
-4
-6*ù
-4
-´ ´(<—”
-
-´ ´(<
-%1"list.append*%
-
-__unknown_file (	
-
-notes*D
-
-__unknown_file ((&
-$Please review the following aspects:2append“
-
-µ µ(8
-%2"list.append*%
-
-__unknown_file (	
-
-notes*@
-
-__unknown_file ($"
- - Code style and maintainability2appendŽ‹
-
-¶ ¶(3
-%3"list.append*%
-
-__unknown_file (	
-
-notes*;
-
-__unknown_file (
-- Test coverage and quality2appendŠ
-
-· ·(2
-%4"list.append*%
-
-__unknown_file (	
-
-notes*:
-
-__unknown_file (
-- Performance implications2append"
-
-¹ ¹(	
-
-notes*›
-6
-² ²(=‹
-ˆ
-
-² ²(<
-%5"__concat*
-
-² ²( 	
-File *
-
-²! ²(*
-
-	file_path*
-
-²+ ²(-
-: *
-
-². ²(:
-
-impact_leveltr
-
-² ²(=
-%6"list.append*%
-
-__unknown_file (	
-
-notes*"
-
-__unknown_file (
-
-%52append*
-4
-6:
-
-¬ ¬(+	
-changes:
-
-¬- ¬(C
-impactB1/
--prompt_manager.llm_enhancement.LLMEnhancementH

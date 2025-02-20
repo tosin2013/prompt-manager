@@ -1,6 +1,0 @@
-prompt_manager.llm_manager.LLMManager.create_pr
-false
-753481ee87589a6f654f410e5a102272
-pathlib.Path.__init__
-==
-exists
