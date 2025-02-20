@@ -7,6 +7,7 @@ from typing import Optional
 import sys
 from prompt_manager.cli.base_commands import base
 from prompt_manager.cli.debug_commands import debug
+from prompt_manager.cli.memory_commands import memory
 from prompt_manager.cli.llm_commands import llm
 from prompt_manager.cli.repo_commands import repo
 from prompt_manager.cli.utils import get_manager
@@ -24,11 +25,32 @@ def cli(ctx, project_dir=None):
         ctx.obj['project_dir'] = project_dir
     elif 'project_dir' not in ctx.obj:
         ctx.obj['project_dir'] = str(Path.cwd())
+    # Store command info in context for tracking
+    ctx.ensure_object(dict)
+    ctx.obj['command'] = ctx.command.name
+    ctx.obj['args'] = ctx.args
+
+
+@cli.result_callback()
+@click.pass_context
+def process_result(ctx, result, **kwargs):
+    """Track command execution in memory bank."""
+    try:
+        manager = get_manager()
+        if manager.memory_bank:
+            command = ctx.obj.get('command', '')
+            args = ' '.join(ctx.obj.get('args', []))
+            result_str = str(result) if result is not None else 'Success'
+            manager.memory_bank.track_command(command, args, result_str)
+    except Exception:
+        pass  # Don't fail if tracking fails
+    return result
 
 
 # Import and register commands
 cli.add_command(base)
 cli.add_command(debug)
+cli.add_command(memory)
 cli.add_command(llm)
 cli.add_command(repo)
 
@@ -44,26 +66,15 @@ def init(ctx, path: str):
             click.echo(f"Error: Path '{path}' does not exist", err=True)
             sys.exit(1)
             
-        # Create required directories
-        data_dir = project_path / "prompt_manager_data"
-        data_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Create required files
-        for required_file in ["productContext.md", "activeContext.md", "systemPatterns.md", "techContext.md", "progress.md"]:
-            file_path = data_dir / required_file
-            if not file_path.exists():
-                file_path.touch()
-            
         # Set project directory in context
         if not hasattr(ctx, 'obj') or not ctx.obj:
             ctx.obj = {}
         ctx.obj['project_dir'] = str(project_path)
             
-        manager = PromptManager(
-            str(project_path),  # Use project path as name
-            memory_path=data_dir
-        )
-        manager.initialize()
+        # Initialize project
+        manager = PromptManager(str(project_path))
+        manager.init_project(str(project_path))
+        
         click.echo(f"Initialized project at {project_path}")
         return 0
     except Exception as e:

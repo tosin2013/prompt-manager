@@ -1,6 +1,7 @@
 """Debug CLI commands."""
 
 import click
+from prompt_manager.cli.utils import get_manager
 from prompt_manager.debug_manager import DebugManager
 
 
@@ -17,6 +18,15 @@ def analyze_file(file):
     manager = DebugManager()
     result = manager.analyze_file(file)
     click.echo(f"Analysis results: {result}")
+    
+    # Update memory bank
+    prompt_manager = get_manager()
+    prompt_manager.memory_bank.update_context(
+        "techContext.md",
+        f"Analysis_{file}",
+        f"File Analysis Results:\n{result}",
+        mode="replace"
+    )
 
 
 @debug.command()
@@ -26,6 +36,15 @@ def find_root_cause(file):
     manager = DebugManager()
     result = manager.find_root_cause(file)
     click.echo(f"Root cause: {result}")
+    
+    # Update memory bank
+    prompt_manager = get_manager()
+    prompt_manager.memory_bank.update_context(
+        "techContext.md",
+        f"RootCause_{file}",
+        f"Root Cause Analysis:\n{result}",
+        mode="replace"
+    )
 
 
 @debug.command()
@@ -35,6 +54,15 @@ def iterative_fix(file):
     manager = DebugManager()
     result = manager.iterative_fix(file)
     click.echo(f"Applied fixes: {result}")
+    
+    # Update memory bank
+    prompt_manager = get_manager()
+    prompt_manager.memory_bank.update_context(
+        "techContext.md",
+        f"Fixes_{file}",
+        f"Applied Fixes:\n{result}",
+        mode="replace"
+    )
 
 
 @debug.command()
@@ -44,6 +72,15 @@ def test_roadmap(file):
     manager = DebugManager()
     result = manager.generate_test_roadmap(file)
     click.echo(f"Test roadmap: {result}")
+    
+    # Update memory bank
+    prompt_manager = get_manager()
+    prompt_manager.memory_bank.update_context(
+        "techContext.md",
+        f"TestRoadmap_{file}",
+        f"Test Roadmap:\n{result}",
+        mode="replace"
+    )
 
 
 @debug.command()
@@ -53,6 +90,15 @@ def analyze_dependencies(file):
     manager = DebugManager()
     result = manager.analyze_dependencies(file)
     click.echo(f"Dependencies: {result}")
+    
+    # Update memory bank
+    prompt_manager = get_manager()
+    prompt_manager.memory_bank.update_context(
+        "techContext.md",
+        f"Dependencies_{file}",
+        f"Dependencies:\n{result}",
+        mode="replace"
+    )
 
 
 @debug.command()
@@ -62,6 +108,15 @@ def trace_error(file):
     manager = DebugManager()
     result = manager.trace_error(file)
     click.echo(f"Error trace: {result}")
+    
+    # Update memory bank
+    prompt_manager = get_manager()
+    prompt_manager.memory_bank.update_context(
+        "techContext.md",
+        f"ErrorTrace_{file}",
+        f"Error Trace:\n{result}",
+        mode="replace"
+    )
 
 
 __all__ = ['debug']

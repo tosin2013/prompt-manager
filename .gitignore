@@ -44,4 +44,7 @@ docs/prompt-engineering/*.md
 
 # SonarQube
 .scannerwork/
+.scannerwork/
 coverage.xml
+tasks.yaml
+tasks_export.json

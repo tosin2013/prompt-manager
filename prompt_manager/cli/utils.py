@@ -4,6 +4,7 @@ import click
 from pathlib import Path
 import sys
 from prompt_manager import PromptManager
+from prompt_manager.memory import MemoryBank
 
 
 def get_manager():
@@ -19,7 +20,14 @@ def get_manager():
             click.echo(f"Error: Project directory '{project_dir}' does not exist", err=True)
             sys.exit(2)
             
-        manager = PromptManager(str(project_path), memory_path=project_path / "prompt_manager_data")
+        manager = PromptManager(str(project_path))
+        
+        # Initialize memory bank if it exists
+        memory_dir = project_path / "memory"
+        if memory_dir.exists():
+            manager.memory_bank = MemoryBank(memory_dir)
+            manager.memory_bank.initialize()
+            
         return manager
     except Exception as e:
         click.echo(f"Error initializing project manager: {str(e)}", err=True)
