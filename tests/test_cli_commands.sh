@@ -172,13 +172,13 @@ git commit -m "Initial commit" > /dev/null 2>&1
 echo -e "\n${YELLOW}Testing repo commands with prompts...${NC}"
 
 # Test analyze-repo
-output=$(prompt-manager repo analyze-repo)
+output=$(prompt-manager repo analyze-repo "test_file.py")
 if ! validate_prompt_display "$output" "analyze-repo"; then
   exit 1
 fi
 
 # Test learn-session
-output=$(prompt-manager repo learn-session)
+output=$(prompt-manager repo learn-session "test_file.py")
 if ! validate_prompt_display "$output" "learn-session"; then
   exit 1
 fi
