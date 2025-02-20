@@ -6,6 +6,7 @@ from prompt_manager import PromptManager, TaskStatus, MemoryBank
 from prompt_manager.cli.utils import get_manager, with_prompt_option
 from prompt_manager.prompts import get_prompt_for_command
 from typing import Optional
+import sys
 
 def print_prompt_info(prompt_name: str, prompt: str):
     """Print prompt information in a formatted way."""
@@ -173,29 +174,33 @@ def list_tasks():
 @with_prompt_option('export-tasks')
 def export_tasks(output: str):
     """Export tasks to a file."""
-    manager = get_manager()
-    
-    # Get export context
-    tasks = manager.list_tasks()
-    project_metadata = manager.get_project_metadata()
-    historical_exports = manager.get_historical_exports()
-    
-    # Get and format prompt
-    prompt_template = get_prompt_for_command("export-tasks")
-    if prompt_template:
-        context = {
-            "tasks": "\n".join(str(task) for task in tasks),
-            "export_format": output.split('.')[-1],
-            "export_path": output,
-            "project_metadata": project_metadata,
-            "historical_exports": historical_exports
-        }
-        prompt = prompt_template.format(**context)
-        print_prompt_info("export-tasks", prompt)
-    
-    # Export tasks
-    manager.export_tasks(output)
-    click.echo(f"Exported tasks to: {output}")
+    try:
+        manager = get_manager()
+        
+        # Get export context if showing prompt
+        if get_prompt_for_command("export-tasks"):
+            tasks = manager.list_tasks()
+            project_metadata = manager.get_project_metadata()
+            historical_exports = manager.get_historical_exports()
+            
+            context = {
+                "tasks": "\n".join(str(task) for task in tasks),
+                "export_format": output.split('.')[-1],
+                "export_path": output,
+                "project_metadata": project_metadata,
+                "historical_exports": historical_exports
+            }
+            prompt = get_prompt_for_command("export-tasks")
+            if prompt:
+                prompt = prompt.format(**context)
+                print_prompt_info("export-tasks", prompt)
+        
+        # Export tasks
+        manager.export_tasks(output)
+        click.echo(f"Exported tasks to: {output}")
+    except Exception as e:
+        click.echo(f"Error exporting tasks: {str(e)}", err=True)
+        sys.exit(1)
 
 @base.command()
 @click.option('--path', default='.', help='Path to initialize project at')

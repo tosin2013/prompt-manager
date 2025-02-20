@@ -314,7 +314,11 @@ class PromptManager:
         return exports
 
     def export_tasks(self, filename: str):
-        """Export tasks to a file."""
+        """Export tasks to a file.
+        
+        Args:
+            filename: Path to export file (supports .json, .yaml, .yml formats)
+        """
         tasks_data = {}
         for task_id, task in self.tasks.items():
             tasks_data[task_id] = {
@@ -330,29 +334,35 @@ class PromptManager:
                 "notes": task.notes
             }
         
-        with open(filename, "w") as f:
-            if filename.endswith(".json"):
-                json.dump(tasks_data, f, indent=2)
-            elif filename.endswith(".yaml") or filename.endswith(".yml"):
-                yaml.dump(tasks_data, f)
-        
-        if self.memory:
-            # Load existing context
-            context = self.memory.load_context_memory()
+        try:
+            with open(filename, "w") as f:
+                if filename.endswith(".json"):
+                    json.dump(tasks_data, f, indent=2)
+                elif filename.endswith(".yaml") or filename.endswith(".yml"):
+                    yaml.safe_dump(tasks_data, f)
+                else:
+                    # Default to JSON if no recognized extension
+                    json.dump(tasks_data, f, indent=2)
             
-            # Add new export record
-            export_id = f"TaskExport_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
-            if "exports" not in context:
-                context["exports"] = []
-            context["exports"].append({
-                "id": export_id,
-                "timestamp": datetime.datetime.now().isoformat(),
-                "filename": filename,
-                "task_count": len(tasks_data)
-            })
-            
-            # Save updated context
-            self.memory.save_context_memory(context)
+            if self.memory:
+                # Load existing context
+                context = self.memory.load_context_memory()
+                
+                # Add new export record
+                export_id = f"TaskExport_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                if "exports" not in context:
+                    context["exports"] = []
+                context["exports"].append({
+                    "id": export_id,
+                    "timestamp": datetime.datetime.now().isoformat(),
+                    "filename": filename,
+                    "task_count": len(tasks_data)
+                })
+                
+                # Save updated context
+                self.memory.save_context_memory(context)
+        except Exception as e:
+            raise Exception(f"Failed to export tasks: {str(e)}")
 
     def delete_task(self, title: str) -> bool:
         """Delete a task."""
