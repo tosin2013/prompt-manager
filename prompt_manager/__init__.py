@@ -24,7 +24,8 @@ class PromptManager:
     ) -> None:
         """Initialize PromptManager with project configuration."""
         self.project_name = project_name
-        self.memory_bank = MemoryBank(memory_path or Path.cwd() / "cline_docs")
+        self.project_dir = Path.cwd()
+        self.memory_bank = None
         self.config = config or {}
         self.tasks: Dict[str, Task] = {}
         self.debug_mode = False
@@ -33,7 +34,6 @@ class PromptManager:
 
     def initialize(self) -> None:
         """Initialize the prompt manager and memory bank."""
-        self.memory_bank.initialize()
         self._load_config()
         self.load_tasks()
         self.is_initialized = True
@@ -47,25 +47,78 @@ class PromptManager:
 
     def load_tasks(self) -> None:
         """Load tasks from storage."""
-        tasks_path = Path("tasks.yaml")
-        if tasks_path.exists():
-            with open(tasks_path) as f:
-                data = yaml.safe_load(f)
-                if data and isinstance(data, dict):
-                    self.tasks = {
-                        title: Task.from_dict(task_data)
-                        for title, task_data in data.items()
-                    }
+        tasks_path = self.project_dir / "tasks.yaml"
+        if not tasks_path.exists():
+            return
+            
+        with open(tasks_path) as f:
+            data = yaml.safe_load(f)
+            if not data or "tasks" not in data:
+                return
+                
+            for title, task_data in data["tasks"].items():
+                self.tasks[title] = Task(
+                    title=title,
+                    description=task_data.get("description", ""),
+                    status=TaskStatus(task_data.get("status", "todo")),
+                    template=task_data.get("template"),
+                    priority=task_data.get("priority", "medium")
+                )
 
     def save_tasks(self) -> None:
         """Save tasks to storage."""
-        tasks_path = Path("tasks.yaml")
+        tasks_path = self.project_dir / "tasks.yaml"
+        tasks_path.parent.mkdir(parents=True, exist_ok=True)
+        tasks_data = {
+            "tasks": {
+                title: {
+                    "description": task.description,
+                    "status": task.status.value,
+                    "template": task.template,
+                    "priority": task.priority
+                }
+                for title, task in self.tasks.items()
+            }
+        }
         with open(tasks_path, "w") as f:
-            yaml.dump(
-                {title: task.to_dict() for title, task in self.tasks.items()},
-                f,
-                default_flow_style=False,
-            )
+            yaml.dump(tasks_data, f)
+
+    def init_project(self, path: str) -> None:
+        """Initialize a new project at the specified path.
+        
+        Args:
+            path (str): Path to initialize project at
+        """
+        project_dir = Path(path)
+        project_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Create memory directory
+        memory_dir = project_dir / "memory"
+        memory_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Create config file
+        config_path = project_dir / "prompt_manager_config.yaml"
+        config = {
+            "project_name": project_dir.name,
+            "memory_path": str(memory_dir),
+            "created_at": datetime.datetime.now().isoformat()
+        }
+        with open(config_path, "w") as f:
+            yaml.dump(config, f)
+        
+        # Initialize memory bank
+        self.memory_bank = MemoryBank(memory_dir)
+        self.memory_bank.initialize()
+        
+        # Update project context
+        self.memory_bank.update_context(
+            "activeContext.md",
+            "Project Initialization",
+            f"Project initialized on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+            f"Project Name: {project_dir.name}\n"
+            f"Project Path: {project_dir}",
+            mode="append"
+        )
 
     def add_task(
         self,
@@ -90,20 +143,20 @@ class PromptManager:
         """
         if isinstance(title_or_task, Task):
             task = title_or_task
-            title = task.title
         else:
-            title = title_or_task
             task = Task(
-                title=title,
+                title=title_or_task,
                 description=description or "",
                 template=template or "",
-                priority=priority,
+                priority=priority.lower()
             )
 
-        if title in self.tasks:
-            raise ValueError(f"Task with title '{title}' already exists")
+        if task.title in self.tasks:
+            raise ValueError(f"Task with title '{task.title}' already exists")
 
-        self.tasks[title] = task
+        self.tasks[task.title] = task
+        if self.memory_bank:
+            self.memory_bank.add_task(task.title, task.description, task.priority)
         self.save_tasks()
         return task
 
@@ -130,8 +183,10 @@ class PromptManager:
         if template is not None:
             task.template = template
         if priority is not None:
-            task.priority = priority
+            task.priority = priority.lower()
 
+        if self.memory_bank:
+            self.memory_bank.update_task(task.title, description, priority)
         self.save_tasks()
         return task
 
@@ -156,16 +211,15 @@ class PromptManager:
             ValueError: If status string is invalid
         """
         task = self.get_task(task_id)
-
         if isinstance(status, str):
             try:
-                status = TaskStatus(status.lower())
-            except ValueError:
-                raise ValueError(
-                    f"Invalid status: {status}. Must be one of: {[s.value for s in TaskStatus]}"
-                )
+                status = TaskStatus[status.upper()]
+            except KeyError:
+                raise ValueError(f"Invalid status: {status}")
 
-        task.update_status(status, notes)
+        task.status = status
+        if self.memory_bank:
+            self.memory_bank.update_task_status(task.title, status.value, notes)
         self.save_tasks()
         return task
 
@@ -234,6 +288,7 @@ class MemoryBank:
             "systemPatterns.md",
             "techContext.md",
             "progress.md",
+            "commandHistory.md"
         ]
 
     def initialize(self) -> None:
@@ -283,3 +338,15 @@ class MemoryBank:
             if file_path.exists():
                 file_path.unlink()
         self.initialize()
+
+    def add_task(self, title: str, description: str, priority: str) -> None:
+        """Add a new task to the memory bank."""
+        self.update_context("progress.md", title, f"Priority: {priority}\n{description}")
+
+    def update_task(self, title: str, description: str, priority: str) -> None:
+        """Update a task in the memory bank."""
+        self.update_context("progress.md", title, f"Priority: {priority}\n{description}", mode="replace")
+
+    def update_task_status(self, title: str, status: str, notes: str) -> None:
+        """Update a task status in the memory bank."""
+        self.update_context("progress.md", title, f"Status: {status}\n{notes}")

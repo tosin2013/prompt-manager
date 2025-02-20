@@ -25,22 +25,22 @@ def init(ctx, path):
         click.secho(f"Error initializing project: {str(e)}", fg='red')
 
 @cli.command()
-@click.option('--title', required=True, help='Task title')
-@click.option('--description', required=True, help='Task description')
-@click.option('--template', required=True, help='Task prompt template')
-@click.option('--priority', type=str, default='medium', help='Task priority (low/medium/high)')
+@click.argument('name')
+@click.argument('description')
+@click.argument('template')
+@click.option('--priority', type=click.Choice(['low', 'medium', 'high']), default='medium', help='Task priority (low/medium/high)')
 @click.pass_context
-def add_task(ctx, title, description, template, priority):
+def add_task(ctx, name, description, template, priority):
     """Add new task"""
     pm = ctx.obj['pm']
     try:
         task = pm.add_task(
-            title=title,
+            title=name,
             description=description,
             template=template,
             priority=priority
         )
-        click.echo(f"Task {title} added successfully")
+        click.echo(f"Task {name} added successfully")
     except ValueError as e:
         click.secho(f"Validation error: {str(e)}", fg='yellow')
         ctx.exit(1)

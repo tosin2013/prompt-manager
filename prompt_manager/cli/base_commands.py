@@ -129,11 +129,14 @@ def update_progress(title, status, note=None):
 
 
 @base.command()
-@click.option('--path', required=True, help='Project directory path')
+@click.argument('path', type=click.Path())
 def init(path):
     """Initialize a new project."""
     try:
-        manager = get_manager()
+        # Create a new PromptManager instance
+        manager = PromptManager()
+        
+        # Initialize the project
         manager.init_project(path)
         click.echo(f"Initialized project at {path}")
         return 0
