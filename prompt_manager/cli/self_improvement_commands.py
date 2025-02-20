@@ -4,7 +4,7 @@ import click
 from pathlib import Path
 import subprocess
 from typing import Optional
-from prompt_manager.cli.utils import get_manager
+from prompt_manager.cli.utils import get_manager, with_prompt_option
 from prompt_manager.prompts import get_prompt_for_command
 
 @click.group()
@@ -13,76 +13,21 @@ def improve():
     pass
 
 @improve.command()
-@click.argument('target', type=click.Path(exists=True))
-@click.option('--type', 'improvement_type', type=click.Choice(['tests', 'commands', 'plugins']), default='tests')
-@click.option('--create-pr/--no-pr', default=True, help='Create a pull request with improvements')
-def enhance(target: str, improvement_type: str, create_pr: bool):
-    """Enhance the system by analyzing and improving specified components.
-    
-    TARGET: Path to the component to enhance (file or directory)
-    """
+@click.argument('target_path', type=click.Path(exists=True))
+@click.option('--type', 'enhancement_type', type=click.Choice(['tests', 'commands', 'plugins']), required=True)
+@click.option('--no-pr', is_flag=True, help='Skip creating PR')
+@click.option('--output', help='Output file path')
+@with_prompt_option('enhance-system')
+def enhance(target_path: str, enhancement_type: str, no_pr: bool = False, output: Optional[str] = None):
+    """Enhance system components."""
     manager = get_manager()
+    enhancements = manager.enhance_system(target_path, enhancement_type, create_pr=not no_pr)
     
-    try:
-        # Get enhancement prompt template
-        prompt_template = get_prompt_for_command("enhance-system")
-        if not prompt_template:
-            raise click.ClickException("Enhancement prompt template not found")
-            
-        # Get current state
-        if improvement_type == 'tests':
-            current_state = _get_test_coverage(target)
-        elif improvement_type == 'commands':
-            current_state = _get_command_coverage(target)
-        else:  # plugins
-            current_state = _get_plugin_info(target)
-            
-        # Format prompt with context
-        context = {
-            'target_path': target,
-            'improvement_type': improvement_type,
-            'current_state': current_state,
-            'system_capabilities': _get_system_capabilities()
-        }
-        
-        prompt = prompt_template.format(**context)
-        
-        # Get enhancement suggestions
-        enhancements = manager.llm.suggest_improvements(prompt)
-        
-        if create_pr:
-            # Create branch for improvements
-            branch_name = f"enhancement/{improvement_type}-{Path(target).stem}"
-            _create_branch(branch_name)
-            
-            # Apply enhancements
-            for enhancement in enhancements:
-                if enhancement.get('type') == 'new_file':
-                    _create_file(enhancement['path'], enhancement['content'])
-                elif enhancement.get('type') == 'modify_file':
-                    _modify_file(enhancement['path'], enhancement['changes'])
-                    
-            # Create pull request
-            _create_pull_request(
-                branch_name,
-                f"Enhancement: {improvement_type} improvements for {Path(target).name}",
-                f"Automated enhancement of {improvement_type} for {target}\n\n" + \
-                "Changes made:\n" + \
-                "\n".join(f"- {e['description']}" for e in enhancements)
-            )
-            
-            click.echo(f"Created pull request for {improvement_type} improvements")
-        else:
-            # Just show suggestions
-            click.echo("\nSuggested Improvements:")
-            for enhancement in enhancements:
-                click.echo(f"\n- {enhancement['description']}")
-                if 'code' in enhancement:
-                    click.echo("\nProposed changes:")
-                    click.echo(enhancement['code'])
-                    
-    except Exception as e:
-        raise click.ClickException(f"Error enhancing system: {str(e)}")
+    if output:
+        Path(output).write_text(enhancements)
+        click.echo(f"Enhancements written to {output}")
+    else:
+        click.echo(enhancements)
 
 def _get_test_coverage(path: str) -> dict:
     """Get current test coverage information."""
@@ -185,4 +130,6 @@ def _create_pull_request(branch_name: str, title: str, description: str) -> None
             f"Branch: {branch_name}\n" +
             f"Title: {title}\n" +
             f"Description: {description}"
-        ) 
+        )
+
+__all__ = ['improve'] 

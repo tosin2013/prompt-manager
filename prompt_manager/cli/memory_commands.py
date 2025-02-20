@@ -1,55 +1,65 @@
-"""Memory management CLI commands."""
+"""Memory CLI commands."""
 
 import click
-from datetime import datetime
-from prompt_manager.cli.utils import get_manager
+from pathlib import Path
+from prompt_manager import PromptManager
+from prompt_manager.cli.utils import get_manager, with_prompt_option
+from prompt_manager.prompts import get_prompt_for_command
+from typing import Optional
 
 
 @click.group()
 def memory():
-    """Memory management commands."""
+    """Memory commands."""
     pass
 
 
 @memory.command()
-@click.argument('memory_id')
-def delete(memory_id):
-    """Delete a memory entry by its ID."""
-    try:
-        manager = get_manager()
-        if not manager.memory_bank:
-            click.echo("Error: No memory bank initialized for this project", err=True)
-            return 1
-            
-        manager.memory_bank.delete_entry(memory_id)
-        click.echo(f"Memory entry '{memory_id}' deleted successfully")
-        return 0
-    except Exception as e:
-        click.echo(f"Error deleting memory entry: {str(e)}", err=True)
-        return 1
+@click.argument('key')
+@click.argument('value')
+@click.option('--output', help='Output file path')
+@with_prompt_option('store-memory')
+def store(key: str, value: str, output: Optional[str] = None):
+    """Store value in memory."""
+    manager = get_manager()
+    result = manager.store_memory(key, value)
+    
+    if output:
+        Path(output).write_text(result)
+        click.echo(f"Memory store result written to {output}")
+    else:
+        click.echo(result)
 
 
 @memory.command()
-@click.option('--file', help='Filter by memory file (e.g., progress.md)')
-def list(file=None):
-    """List memory entries."""
-    try:
-        manager = get_manager()
-        if not manager.memory_bank:
-            click.echo("Error: No memory bank initialized for this project", err=True)
-            return 1
-            
-        entries = manager.memory_bank.list_entries(file)
-        if not entries:
-            click.echo("No memory entries found")
-            return 0
-            
-        for entry in entries:
-            click.echo(f"- {entry['file']}: {entry['section']} ({entry['timestamp']})")
-        return 0
-    except Exception as e:
-        click.echo(f"Error listing memory entries: {str(e)}", err=True)
-        return 1
+@click.argument('key')
+@click.option('--output', help='Output file path')
+@with_prompt_option('retrieve-memory')
+def retrieve(key: str, output: Optional[str] = None):
+    """Retrieve value from memory."""
+    manager = get_manager()
+    value = manager.retrieve_memory(key)
+    
+    if output:
+        Path(output).write_text(value)
+        click.echo(f"Memory value written to {output}")
+    else:
+        click.echo(value)
+
+
+@memory.command()
+@click.option('--output', help='Output file path')
+@with_prompt_option('list-memories')
+def list_all(output: Optional[str] = None):
+    """List all stored memories."""
+    manager = get_manager()
+    memories = manager.list_memories()
+    
+    if output:
+        Path(output).write_text(memories)
+        click.echo(f"Memory list written to {output}")
+    else:
+        click.echo(memories)
 
 
 __all__ = ['memory']

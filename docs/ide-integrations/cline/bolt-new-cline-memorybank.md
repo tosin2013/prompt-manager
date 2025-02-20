@@ -2,6 +2,38 @@
 
 The Memory Bank system now integrates with bolt.new through the Prompt Manager, enabling AI-powered task generation for web application development. This integration leverages the Memory Bank's context awareness to create detailed, contextually relevant development tasks.
 
+## Prompt Display and Validation
+
+All bolt.new commands support the `--show-prompt` flag for transparent prompt inspection. This feature helps you:
+- Understand how tasks are generated
+- Validate prompt templates
+- Debug task generation
+- Train new developers
+
+Example usage:
+```bash
+# Generate tasks with prompt display
+prompt-manager generate-bolt-tasks "Create a blog with auth" --framework Next.js --show-prompt
+
+# Output will include:
+================================================================================
+Using prompt template: generate-bolt-tasks
+================================================================================
+Task Generation Request
+======================
+
+Project Description: Create a blog with auth
+Target Framework: Next.js
+...
+================================================================================
+
+# Analyze web components with prompt display
+prompt-manager llm analyze-impact components/Button.tsx --show-prompt
+
+# Get component suggestions with prompt
+prompt-manager llm suggest-improvements components/Button.tsx --show-prompt
+```
+
 ## Installation
 
 ### For Users
@@ -32,6 +64,7 @@ pip install -e .[dev]
 - Automatic task prioritization
 - Detailed technical specifications
 - Memory-aware development context
+- Transparent prompt inspection with `--show-prompt`
 
 ## Task Generation Workflow
 
@@ -478,3 +511,105 @@ if improvements:
 3. **Cross-browser Testing**: Include cross-browser compatibility in test coverage
 4. **Mobile Responsiveness**: Verify improvements work on all device sizes
 5. **Documentation**: Update component documentation and examples
+
+### Learning Session Prompts for Web Development
+
+The learning session prompts can be displayed and customized for web development:
+
+```bash
+# Start web-focused learning session and display prompt
+prompt-manager repo learn-session . --focus web --show-prompt
+
+# Example output:
+================================================================================
+Using prompt template: web-learn-session
+================================================================================
+Web Development Learning Analysis Request
+======================================
+
+Repository: {repo_path}
+Framework: {framework}
+Component Count: {component_count}
+API Endpoints: {api_endpoints}
+
+Previous Analysis:
+{previous_analysis}
+
+Please analyze this web application focusing on:
+
+1. Component Architecture
+   - Component hierarchy
+   - State management
+   - Props structure
+   - Event handling
+
+2. Frontend Patterns
+   - Reusable components
+   - Styling approach
+   - Responsive design
+   - Accessibility patterns
+
+3. API Integration
+   - Data fetching
+   - Error handling
+   - Caching strategy
+   - Authentication flow
+
+4. Performance Optimization
+   - Bundle size
+   - Load time
+   - Rendering optimization
+   - Resource usage
+
+5. Testing Coverage
+   - Unit tests
+   - Integration tests
+   - E2E tests
+   - Performance tests
+
+Please provide specific, actionable insights that can be used to:
+- Improve component architecture
+- Enhance user experience
+- Optimize performance
+- Strengthen testing
+================================================================================
+```
+
+The web development prompt can be customized:
+
+```python
+# Create custom web learning session prompt
+pm.memory_bank.update_context(
+    "prompts.md",
+    "Web Learning Session",
+    """
+    Custom web learning session template:
+    {your_custom_template}
+    """
+)
+
+# Use custom prompt in web session
+pm.llm.start_learning_session(
+    focus="web",
+    use_custom_prompt=True
+)
+```
+
+Access web-specific prompts programmatically:
+
+```python
+# Get current web learning session prompt
+prompt = pm.llm.get_session_prompt(focus="web")
+print(prompt)
+
+# Get prompt with specific web context
+prompt = pm.llm.get_session_prompt(
+    focus="web",
+    context={
+        "framework": "Next.js",
+        "focus_areas": ["components", "api"],
+        "analysis_depth": "detailed"
+    }
+)
+print(prompt)
+```

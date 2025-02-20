@@ -3,10 +3,10 @@
 import click
 from pathlib import Path
 import git
-from typing import List, Dict
+from typing import List, Dict, Optional
 import os
 
-from prompt_manager.cli.utils import get_manager
+from prompt_manager.cli.utils import get_manager, with_prompt_option
 from prompt_manager.prompts import get_prompt_for_command, save_prompt_history, list_available_templates
 
 def get_repo_info(repo_path: str) -> Dict[str, str]:
@@ -40,7 +40,9 @@ def llm():
 
 @llm.command()
 @click.argument('file_path', type=click.Path(exists=True))
-def analyze_impact(file_path):
+@click.option('--output', help='Output file path')
+@with_prompt_option('analyze-impact')
+def analyze_impact(file_path: str, output: Optional[str] = None):
     """Analyze impact of changes in a file."""
     manager = get_manager()
     prompt_template = get_prompt_for_command("analyze-impact")
@@ -74,7 +76,11 @@ def analyze_impact(file_path):
     # Save to memory bank
     save_prompt_history(manager.memory, "analyze-impact", prompt, response)
     
-    click.echo(response)
+    if output:
+        Path(output).write_text(response)
+        click.echo(f"Impact analysis written to {output}")
+    else:
+        click.echo(response)
 
 @llm.command()
 def analyze_repo():
@@ -105,7 +111,9 @@ def analyze_repo():
 
 @llm.command()
 @click.argument('file_path', type=click.Path(exists=True))
-def generate_commands(file_path):
+@click.option('--output', help='Output file path')
+@with_prompt_option('generate-commands')
+def generate_commands(file_path: str, output: Optional[str] = None):
     """Generate CLI commands from file."""
     manager = get_manager()
     prompt_template = get_prompt_for_command("generate-commands")
@@ -131,12 +139,18 @@ def generate_commands(file_path):
     # Save to memory bank
     save_prompt_history(manager.memory, "generate-commands", prompt, response)
     
-    click.echo(response)
+    if output:
+        Path(output).write_text(response)
+        click.echo(f"Commands written to {output}")
+    else:
+        click.echo(response)
 
 @llm.command()
 @click.argument('file_path', type=click.Path(exists=True))
-@click.option('--max-suggestions', default=5, help='Maximum number of suggestions to provide')
-def suggest_improvements(file_path, max_suggestions):
+@click.option('--max-suggestions', type=int, default=3, help='Maximum number of suggestions')
+@click.option('--output', help='Output file path')
+@with_prompt_option('suggest-improvements')
+def suggest_improvements(file_path: str, max_suggestions: int = 3, output: Optional[str] = None):
     """Suggest code improvements."""
     manager = get_manager()
     prompt_template = get_prompt_for_command("suggest-improvements")
@@ -163,12 +177,19 @@ def suggest_improvements(file_path, max_suggestions):
     # Save to memory bank
     save_prompt_history(manager.memory, "suggest-improvements", prompt, response)
     
-    click.echo(response)
+    if output:
+        Path(output).write_text(response)
+        click.echo(f"Suggestions written to {output}")
+    else:
+        click.echo(response)
 
 @llm.command()
 @click.argument('title')
 @click.argument('description')
-def create_pr(title, description):
+@click.option('--branch', help='Branch name')
+@click.option('--output', help='Output file path')
+@with_prompt_option('create-pr')
+def create_pr(title: str, description: str, branch: Optional[str] = None, output: Optional[str] = None):
     """Create a pull request."""
     manager = get_manager()
     prompt_template = get_prompt_for_command("create-pr")
@@ -200,7 +221,11 @@ def create_pr(title, description):
     # Save to memory bank
     save_prompt_history(manager.memory, "create-pr", prompt, response)
     
-    click.echo(response)
+    if output:
+        Path(output).write_text(response)
+        click.echo(f"PR details written to {output}")
+    else:
+        click.echo(response)
 
 @llm.command()
 def list_templates():
@@ -217,3 +242,5 @@ def list_templates():
         click.echo(f"\n{template['name']}:")
         click.echo(f"  Description: {template['description']}")
         click.echo(f"  Required context: {', '.join(template['required_context'])}")
+
+__all__ = ['llm']

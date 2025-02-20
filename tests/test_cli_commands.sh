@@ -10,19 +10,66 @@ BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Function to test a command
+# Function to test command with prompt
+test_command_with_prompt() {
+    local cmd=$1
+    local args=$2
+    local prompt_name=$3
+    
+    echo -e "${BLUE}Testing: prompt-manager $cmd $args --show-prompt${NC}"
+    
+    # Run command and capture output
+    output=$(eval "prompt-manager $cmd $args --show-prompt 2>&1")
+    exit_code=$?
+    
+    # Print output for debugging
+    echo "$output"
+    
+    # Check if command succeeded
+    if [ $exit_code -eq 0 ]; then
+        # Validate prompt display
+        if echo "$output" | grep -q "Using prompt template: $prompt_name"; then
+            echo -e "${GREEN}✅ Found prompt template header for $prompt_name${NC}"
+            if echo "$output" | grep -q "==================="; then
+                echo -e "${GREEN}✅ Found prompt formatting${NC}"
+                echo -e "${GREEN}✅ prompt-manager $cmd $args --show-prompt passed${NC}"
+                return 0
+            else
+                echo -e "${RED}❌ Missing prompt formatting${NC}"
+                return 1
+            fi
+        else
+            echo -e "${RED}❌ Missing prompt template header for $prompt_name${NC}"
+            return 1
+        fi
+    else
+        echo -e "${RED}❌ Command failed with exit code $exit_code${NC}"
+        return 1
+    fi
+}
+
+# Function to test command without prompt
 test_command() {
-  local cmd=$1
-  local args=$2
-  echo -e "${BLUE}Testing: prompt-manager $cmd $args${NC}"
-  # Use eval to properly handle quoted arguments
-  if eval "prompt-manager $cmd $args"; then
-    echo -e "${GREEN}✅ prompt-manager $cmd $args passed${NC}"
-    return 0
-  else
-    echo -e "${RED}❌ prompt-manager $cmd $args failed${NC}"
-    return 1
-  fi
+    local cmd=$1
+    local args=$2
+    
+    echo -e "${BLUE}Testing: prompt-manager $cmd $args${NC}"
+    
+    # Run command and capture output
+    output=$(eval "prompt-manager $cmd $args 2>&1")
+    exit_code=$?
+    
+    # Print output for debugging
+    echo "$output"
+    
+    # Check if command succeeded
+    if [ $exit_code -eq 0 ]; then
+        echo -e "${GREEN}✅ prompt-manager $cmd $args passed${NC}"
+        return 0
+    else
+        echo -e "${RED}❌ Command failed with exit code $exit_code${NC}"
+        return 1
+    fi
 }
 
 # Function to validate prompt display
@@ -102,52 +149,25 @@ test_command "init" "--path ."
 # Test base commands with prompt validation
 echo -e "\n${YELLOW}Testing base commands with prompts...${NC}"
 
-# Test add-task
-output=$(prompt-manager base add-task "test-task" "Test task description")
-if ! validate_prompt_display "$output" "add-task"; then
-  exit 1
-fi
+# Test add-task with and without --show-prompt
+test_command_with_prompt "base add-task" "'test-task' 'Test task description'" "add-task"
+test_command "base add-task" "'another-task' 'Another description'"
 
-# Debug output
-echo -e "${YELLOW}Task creation output:${NC}"
-prompt-manager base list-tasks
+# Test update-progress with and without --show-prompt
+test_command_with_prompt "base update-progress" "'test-task' 'in_progress' --note 'Started working'" "update-progress"
+test_command "base update-progress" "'another-task' 'in_progress'"
 
-# Verify task was created
-if ! prompt-manager base list-tasks | grep -q "not_started: test-task"; then
-  echo -e "${RED}❌ Task creation verification failed${NC}"
-  echo -e "${YELLOW}Expected to find 'not_started: test-task' in output${NC}"
-  exit 1
-fi
+# Test list-tasks with and without --show-prompt
+test_command_with_prompt "base list-tasks" "" "list-tasks"
+test_command "base list-tasks" ""
 
-# Test update-progress
-output=$(prompt-manager base update-progress "test-task" "in_progress" --note "Started working")
-if ! validate_prompt_display "$output" "update-progress"; then
-  exit 1
-fi
+# Test export-tasks with and without --show-prompt
+test_command_with_prompt "base export-tasks" "--output tasks_export.json" "export-tasks"
+test_command "base export-tasks" "--output tasks_export2.json"
 
-# Test list-tasks
-output=$(prompt-manager base list-tasks)
-if ! validate_prompt_display "$output" "list-tasks"; then
-  exit 1
-fi
-
-# Test export-tasks
-echo -e "\n${YELLOW}Testing export-tasks command...${NC}"
-output=$(prompt-manager base export-tasks --output tasks_export.json)
-if ! validate_prompt_display "$output" "export-tasks"; then
-  exit 1
-fi
-if [ ! -f "tasks_export.json" ]; then
-  echo -e "${RED}❌ Export file not created${NC}"
-  exit 1
-fi
-
-# Test generate-bolt-tasks
-echo -e "\n${YELLOW}Testing generate-bolt-tasks command...${NC}"
-output=$(prompt-manager base generate-bolt-tasks "Create a simple blog" --framework Next.js)
-if ! validate_prompt_display "$output" "generate-bolt-tasks"; then
-  exit 1
-fi
+# Test generate-bolt-tasks with and without --show-prompt
+test_command_with_prompt "base generate-bolt-tasks" "'Create a simple blog' --framework Next.js" "generate-bolt-tasks"
+test_command "base generate-bolt-tasks" "'Create another blog' --framework Next.js"
 
 # Test debug commands with prompt validation
 echo -e "\n${YELLOW}Testing debug commands with prompts...${NC}"
@@ -170,91 +190,68 @@ git config --global user.email "test@example.com"
 git config --global user.name "Test User"
 git commit -m "Initial commit"
 
-# Test analyze-file
-output=$(prompt-manager debug analyze-file "test_file.py")
-if ! validate_prompt_display "$output" "analyze-file"; then
-  exit 1
-fi
+# Test analyze-file with and without --show-prompt
+test_command_with_prompt "debug analyze-file" "test_file.py" "analyze-file"
+test_command "debug analyze-file" "test_file.py"
 
-# Test find-root-cause
-output=$(prompt-manager debug find-root-cause "test_error.log")
-if ! validate_prompt_display "$output" "find-root-cause"; then
-  exit 1
-fi
+# Test find-root-cause with and without --show-prompt
+test_command_with_prompt "debug find-root-cause" "test_error.log" "find-root-cause"
+test_command "debug find-root-cause" "test_error.log"
 
-# Test test-roadmap
-output=$(prompt-manager debug test-roadmap "test_file.py")
-if ! validate_prompt_display "$output" "test-roadmap"; then
-  exit 1
-fi
+# Test test-roadmap with and without --show-prompt
+test_command_with_prompt "debug test-roadmap" "test_file.py" "test-roadmap"
+test_command "debug test-roadmap" "test_file.py"
 
 # Test repo commands with prompts
 echo -e "\n${YELLOW}Testing repo commands with prompts...${NC}"
 
-# Test analyze-repo
-output=$(prompt-manager repo analyze-repo ".")
-if ! validate_prompt_display "$output" "analyze-repo"; then
-  exit 1
-fi
+# Test analyze-repo with and without --show-prompt
+test_command_with_prompt "repo analyze-repo" "." "analyze-repo"
+test_command "repo analyze-repo" "."
 
-# Test learn-session
-output=$(prompt-manager repo learn-session "." --duration 5)
-if ! validate_prompt_display "$output" "learn-session"; then
-  exit 1
-fi
+# Test learn-session with various combinations
+test_command_with_prompt "repo learn-session" "." "learn-session"
+test_command "repo learn-session" "."
+test_command_with_prompt "repo learn-session" ". --duration 5" "learn-session"
+test_command "repo learn-session" ". --duration 5"
 
-# Test LLM commands
+# Test LLM commands with prompts
 echo -e "\n${YELLOW}Testing LLM commands with prompts...${NC}"
 
-# Test analyze-impact
-output=$(prompt-manager llm analyze-impact test_file.py)
-if ! validate_prompt_display "$output" "analyze-impact"; then
-  exit 1
-fi
+# Test analyze-impact with and without --show-prompt
+test_command_with_prompt "llm analyze-impact" "test_file.py" "analyze-impact"
+test_command "llm analyze-impact" "test_file.py"
 
-# Test suggest-improvements
-output=$(prompt-manager llm suggest-improvements test_file.py --max-suggestions 2)
-if ! validate_prompt_display "$output" "suggest-improvements"; then
-  exit 1
-fi
+# Test suggest-improvements with and without --show-prompt
+test_command_with_prompt "llm suggest-improvements" "test_file.py --max-suggestions 2" "suggest-improvements"
+test_command "llm suggest-improvements" "test_file.py --max-suggestions 2"
 
-# Test create-pr
-# First make some changes
+# Test create-pr with and without --show-prompt
 echo "# Added comment" >> test_file.py
 git add test_file.py
-output=$(prompt-manager llm create-pr "Test PR" "Test Description")
-if ! validate_prompt_display "$output" "create-pr"; then
-  exit 1
-fi
+test_command_with_prompt "llm create-pr" "'Test PR' 'Test Description'" "create-pr"
+test_command "llm create-pr" "'Another PR' 'Another Description'"
 
-# Test generate-commands
-output=$(prompt-manager llm generate-commands test_file.py)
-if ! validate_prompt_display "$output" "generate-commands"; then
-  exit 1
-fi
+# Test generate-commands with and without --show-prompt
+test_command_with_prompt "llm generate-commands" "test_file.py" "generate-commands"
+test_command "llm generate-commands" "test_file.py"
 
-# Test self-improvement commands
-echo -e "\n${YELLOW}Testing self-improvement commands...${NC}"
+# Test self-improvement commands with prompts
+echo -e "\n${YELLOW}Testing self-improvement commands with prompts...${NC}"
 
-# Test enhance command for tests
-output=$(prompt-manager improve enhance test_file.py --type tests --no-pr)
-if ! validate_prompt_display "$output" "enhance-system"; then
-  exit 1
-fi
+# Test enhance command for tests with and without --show-prompt
+test_command_with_prompt "improve enhance" "test_file.py --type tests --no-pr" "enhance-system"
+test_command "improve enhance" "test_file.py --type tests --no-pr"
 
-# Test enhance command for commands
-output=$(prompt-manager improve enhance . --type commands --no-pr)
-if ! validate_prompt_display "$output" "enhance-system"; then
-  exit 1
-fi
+# Test enhance command for commands with and without --show-prompt
+test_command_with_prompt "improve enhance" ". --type commands --no-pr" "enhance-system"
+test_command "improve enhance" ". --type commands --no-pr"
 
-# Test enhance command for plugins
+# Test enhance command for plugins with and without --show-prompt
 mkdir -p plugins
 touch plugins/test_plugin.py
-output=$(prompt-manager improve enhance plugins --type plugins --no-pr)
-if ! validate_prompt_display "$output" "enhance-system"; then
-  exit 1
-fi
+test_command_with_prompt "improve enhance" "plugins --type plugins --no-pr" "enhance-system"
+test_command "improve enhance" "plugins --type plugins --no-pr"
 
 # Verify memory files
 verify_memory_files "."

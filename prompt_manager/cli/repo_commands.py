@@ -4,6 +4,7 @@ import click
 import sys
 from prompt_manager.repo_manager import RepoManager
 from prompt_manager.prompts import get_prompt_for_command
+from prompt_manager.cli.utils import with_prompt_option
 
 def print_prompt_info(prompt_name: str, prompt: str):
     """Print prompt information in a formatted way."""
@@ -20,6 +21,7 @@ def repo():
 
 @repo.command()
 @click.argument('file_path')
+@with_prompt_option('analyze-repo')
 def analyze_repo(file_path):
     """Analyze repository changes."""
     manager = RepoManager()
@@ -28,20 +30,6 @@ def analyze_repo(file_path):
         stats = manager.get_repo_stats(file_path)
         current_branch = manager.get_current_branch(file_path)
         last_commit = manager.get_commit_history(file_path, limit=1)[0] if manager.get_commit_history(file_path) else "No commits"
-        
-        # Get and format prompt
-        prompt_template = get_prompt_for_command("analyze-repo")
-        if prompt_template:
-            context = {
-                "repo_path": file_path,
-                "current_branch": current_branch,
-                "last_commit": last_commit,
-                "file_count": stats['total_files'],
-                "main_languages": stats['languages'],
-                "previous_analysis": "No previous analysis available"  # This should be loaded from history
-            }
-            prompt = prompt_template.format(**context)
-            print_prompt_info("analyze-repo", prompt)
         
         # Run analysis
         analysis = manager.analyze_repo(file_path)
@@ -55,8 +43,9 @@ def analyze_repo(file_path):
         sys.exit(2)
 
 @repo.command()
-@click.argument('file_path')
+@click.argument('file_path', type=click.Path(exists=True), default='.')
 @click.option('--duration', type=int, default=30, help='Duration in minutes')
+@with_prompt_option('learn-session')
 def learn_session(file_path, duration):
     """Start a learning session for repository understanding."""
     manager = RepoManager()
@@ -75,17 +64,6 @@ def learn_session(file_path, duration):
         click.echo(f"Status: {'Active' if session['session']['is_active'] else 'Inactive'}")
         if session['session']['time_remaining']:
             click.echo(f"Time Remaining: {session['session']['time_remaining']}")
-
-        # Get and format prompt
-        prompt_template = get_prompt_for_command("learn-session")
-        if prompt_template:
-            context = session['template_context']
-            try:
-                prompt = prompt_template.format(**context)
-                print_prompt_info("learn-session", prompt)
-            except ValueError as e:
-                click.echo(f"Error formatting prompt: {str(e)}", err=True)
-                sys.exit(1)
         
         # Print repository stats
         click.echo("\nRepository Stats:")

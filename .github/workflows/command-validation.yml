@@ -56,9 +56,106 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -e .
-        pip install pytest pytest-cov pytest-mock
+        pip install pytest pytest-cov pytest-mock gitpython>=3.1.0
 
     - name: Test CLI Commands
       run: |
         chmod +x ./tests/test_cli_commands.sh
         ./tests/test_cli_commands.sh
+
+  test-prompt-validation:
+    name: Validate Prompt Templates
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install package
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install pytest pytest-cov pytest-mock gitpython>=3.1.0
+
+    - name: Verify prompt templates
+      run: |
+        # Verify all YAML templates are valid
+        python -c "
+        import yaml
+        from pathlib import Path
+        import sys
+        
+        errors = []
+        template_dir = Path('prompt_manager/templates')
+        
+        for yaml_file in template_dir.rglob('*.yaml'):
+            try:
+                with open(yaml_file) as f:
+                    data = yaml.safe_load(f)
+                    # Validate required fields
+                    if not all(key in data for key in ['name', 'template', 'required_context']):
+                        errors.append(f'{yaml_file}: Missing required fields')
+                    # Validate template format
+                    if not isinstance(data['template'], str):
+                        errors.append(f'{yaml_file}: Template must be a string')
+                    if not isinstance(data['required_context'], list):
+                        errors.append(f'{yaml_file}: Required context must be a list')
+            except Exception as e:
+                errors.append(f'{yaml_file}: {str(e)}')
+        
+        if errors:
+            print('Template validation failed:')
+            for error in errors:
+                print(f'- {error}')
+            sys.exit(1)
+        else:
+            print('All templates validated successfully')
+        "
+
+    - name: Test prompt display
+      run: |
+        # Test --show-prompt flag for each command group
+        for cmd in base debug llm repo improve memory; do
+          echo "Testing $cmd commands..."
+          prompt-manager $cmd --help
+          for subcmd in $(prompt-manager $cmd --help | grep -oE '^  \w+' | tr -d ' '); do
+            echo "Testing: $cmd $subcmd --show-prompt"
+            prompt-manager $cmd $subcmd --help
+            if [[ "$subcmd" != "help" ]]; then
+              # Skip actual execution but verify command exists
+              if ! prompt-manager $cmd $subcmd --help | grep -q "Usage:"; then
+                echo "Error: Invalid command $cmd $subcmd"
+                exit 1
+              fi
+            fi
+          done
+        done
+
+    - name: Verify memory integration
+      run: |
+        # Initialize test project
+        mkdir test_project
+        cd test_project
+        prompt-manager init .
+        
+        # Verify memory files are created
+        for file in memory/tasks.json memory/prompts.json memory/context.json; do
+          if [ ! -f "$file" ]; then
+            echo "Error: Memory file $file not found"
+            exit 1
+          fi
+        done
+        
+        # Test memory commands with prompts
+        prompt-manager memory store test-key "test value" --show-prompt
+        prompt-manager memory retrieve test-key --show-prompt
+        prompt-manager memory list-all --show-prompt

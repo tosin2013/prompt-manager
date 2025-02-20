@@ -1,247 +1,122 @@
 # Prompt Manager
 
-A powerful AI-assisted workflow management system with advanced task tracking and debugging capabilities.
+A development workflow management system with memory tracking and LLM enhancement capabilities.
 
 ## Features
 
-- **Memory Bank System**: Maintains perfect documentation and project context
-- **Task Tracking**: Advanced task management and progress monitoring
-- **Debugging Tools**: Comprehensive debugging and troubleshooting support
-- **GitHub Integration**: Seamless integration with existing GitHub repositories
-- **IDE Support**: VSCode integration for enhanced development workflow
-- **bolt.new Integration**: AI-powered task generation for web applications
-- **LLM Enhancement**: Autonomous code improvement and pull request generation
+- Task management with memory persistence
+- LLM-powered code analysis and improvement
+- Debug assistance with error tracing
+- Repository analysis and learning
+- Self-improvement capabilities
+- Transparent prompt inspection with `--show-prompt`
 
 ## Installation
 
-You can install the latest release (v0.3.18) using pip:
-
 ```bash
-pip install tosins-prompt-manager==0.3.18
-```
-
-Or download directly from GitHub releases:
-```bash
-# Clone the repository
-git clone https://github.com/tosin2013/prompt-manager.git
-cd prompt-manager
-
-# Checkout the latest release
-git checkout v0.3.18
-
-# Install in editable mode
-pip install -e .
+pip install tosins-prompt-manager
 ```
 
 ## Quick Start
 
-### Basic Task Management
-```python
-from prompt_manager import PromptManager
-
-# Initialize project
-pm = PromptManager("your_project_name")
-
-# Add a new task
-task = pm.add_task(
-    name="implement-feature",
-    description="Add new feature X",
-    details="Implementation requirements..."
-)
-
-# Track progress
-pm.update_progress(
-    task_name="implement-feature",
-    status="in_progress",
-    details="Completed initial implementation"
-)
-```
-
-### Generate Web Development Tasks
-```python
-# Generate structured development tasks with bolt.new
-tasks = pm.generate_bolt_tasks(
-    project_name="My Web App",
-    framework="Next.js"  # Optional, defaults to Next.js
-)
-
-# List generated tasks
-for task in tasks:
-    print(f"{task.name} - Priority: {task.priority}")
-```
-
-### Using LLM Enhancement
-```python
-from prompt_manager import LLMEnhancement
-
-# Initialize LLM Enhancement
-llm = LLMEnhancement(memory_bank)
-
-# Start learning session
-llm.start_learning_session()
-
-# Generate code improvements
-suggestions = llm.generate_suggestions()
-
-# Create pull request
-pr = llm.suggest_pull_request(
-    changes=[{"path/to/file.py": "new content"}],
-    title="Improve code structure",
-    description="Enhance modularity and readability"
-)
-
-# Submit pull request
-success, message = llm.create_pull_request(pr)
-```
-
-## Command Line Interface
-
-The package provides a comprehensive CLI for managing your development workflow:
-
 ```bash
 # Initialize a new project
-prompt-manager init [PATH]
+prompt-manager init my-project
 
-# Analyze a repository for project context
-prompt-manager analyze-repo PATH
+# Add a task (with prompt display)
+prompt-manager base add-task "Setup CI/CD" "Configure GitHub Actions" --show-prompt
 
-# Add a new task
-prompt-manager add-task NAME DESCRIPTION PROMPT [--priority NUMBER]
+# Update task progress (with prompt display)
+prompt-manager base update-progress "Setup CI/CD" "in_progress" --show-prompt
 
-# Update task progress
-prompt-manager update-progress NAME STATUS
-
-# List tasks with optional filtering and sorting
-prompt-manager list-tasks [--status STATUS] [--sort-by FIELD]
-
-# Export tasks to a file
-prompt-manager export-tasks OUTPUT
-
-# Generate bolt.new development tasks
-prompt-manager generate-bolt-tasks PROJECT_DESCRIPTION FRAMEWORK
-
-# Start interactive mode
-prompt-manager startup --interactive
-
-# Analyze LLM's interaction patterns
-prompt-manager reflect
-
-# Enable autonomous learning mode
-prompt-manager learn-mode
-
-# Allow LLM to modify its tooling
-prompt-manager meta-program
+# List tasks (with prompt display)
+prompt-manager base list-tasks --show-prompt
 ```
 
-Available task statuses:
-- PENDING
-- IN_PROGRESS
-- COMPLETED
-- BLOCKED
-- FAILED
+## Command Groups
 
-Sort fields for list-tasks:
-- priority
-- created
-- updated
-
-### Using the CLI
+### Base Commands
 ```bash
-# Initialize a new project
-prompt-manager init "my-web-app"
+# Task Management
+prompt-manager base add-task "Task Name" "Description"
+prompt-manager base update-progress "Task Name" "in_progress"
+prompt-manager base list-tasks
+prompt-manager base export-tasks --output tasks.json
 
-# Generate bolt.new tasks
-prompt-manager generate-bolt-tasks "Create a blog with authentication" --framework Next.js
+# Add --show-prompt to any command to see the prompt template:
+prompt-manager base add-task "Task Name" "Description" --show-prompt
+```
 
-# List all tasks
-prompt-manager list-tasks
+### Debug Commands
+```bash
+# Debugging
+prompt-manager debug analyze-file path/to/file.py
+prompt-manager debug find-root-cause error.log
+prompt-manager debug test-roadmap path/to/file.py
+
+# Add --show-prompt to see analysis prompts:
+prompt-manager debug analyze-file path/to/file.py --show-prompt
+```
+
+### LLM Commands
+```bash
+# LLM Enhancement
+prompt-manager llm analyze-impact file.py
+prompt-manager llm suggest-improvements file.py
+prompt-manager llm create-pr "Title" "Description"
+
+# Add --show-prompt to inspect LLM prompts:
+prompt-manager llm analyze-impact file.py --show-prompt
+```
+
+### Memory Commands
+```bash
+# Memory Operations
+prompt-manager memory store key value
+prompt-manager memory retrieve key
+prompt-manager memory list-all
+
+# Add --show-prompt to see memory operation prompts:
+prompt-manager memory store key value --show-prompt
+```
+
+## Understanding Prompts
+
+The `--show-prompt` flag is available on all commands and shows the prompt template being used. This is useful for:
+
+1. **Debugging**: Understand how commands interpret your input
+2. **Learning**: See how the system structures tasks and analysis
+3. **Validation**: Verify prompt templates are correct
+4. **Training**: Help new users understand the system
+
+Example output with `--show-prompt`:
+```bash
+$ prompt-manager base add-task "New Feature" "Add authentication" --show-prompt
+
+================================================================================
+Using prompt template: add-task
+================================================================================
+Task Analysis Request
+====================
+
+New Task:
+- Title: New Feature
+- Description: Add authentication
+...
+================================================================================
 ```
 
 ## Documentation
 
-For a complete reference of all available commands and their usage, see the [Command Documentation](docs/commands.md).
-
-- [Getting Started](docs/getting-started.md)
-- [Memory Bank Guide](docs/ide-integrations/cline/cline-memorybank.md)
-- [bolt.new Integration](docs/ide-integrations/cline/bolt-new-cline-memorybank.md)
-- [API Reference](docs/api-reference.md)
-- [Examples](docs/examples/)
-  - [AI Book Writer Integration](docs/examples/ai-book-writer-integration.md)
-  - [Cline Memory Bank Integration](docs/examples/cline-memory-bank-book-writer.md)
-  - [LLM Enhancement Guide](docs/examples/llm-enhancement-guide.md)
-
-## Development
-
-1. Clone the repository:
-```bash
-git clone https://github.com/tosin2013/prompt-manager.git
-cd prompt-manager
-```
-
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-3. Run tests:
-```bash
-pytest tests/
-```
-
-## Release Process
-
-Releases are automated via GitHub Actions. To create a new release:
-
-1. Update version in `setup.py`
-2. Create and push a new tag:
-```bash
-git tag -a v1.0.0 -m "Release v1.0.0"
-git push origin v1.0.0
-```
-
-The GitHub Action will automatically:
-- Run tests across Python versions
-- Build the package
-- Create a GitHub release
-- Upload build artifacts
-
-## Latest Release (v0.3.18)
-
-### What's New
-- **Enhanced LLM Capabilities**: Added new LLM enhancement commands for improved code analysis and automation
-  - `analyze-impact`: Analyze potential impact of code changes
-  - `learn-session`: Start autonomous learning sessions
-  - `suggest-improvements`: Get AI-powered code improvement suggestions
-  - `create-pr`: Automated pull request creation
-  - `generate-commands`: Generate custom CLI commands based on usage patterns
-- **Improved Test Coverage**: Enhanced test suite for CLI commands
-- **Better Error Handling**: More robust error handling in LLM enhancement features
-- **Documentation Updates**: Added comprehensive command documentation in `commands.md`
-
-### Breaking Changes
-None
-
-### Bug Fixes
-- Improved task persistence
-- Enhanced test coverage
-- Fixed CLI command handling
-- Improved error handling in LLM Enhancement
+For detailed documentation, see:
+- [Memory Bank Integration](docs/ide-integrations/cline/cline-memorybank.md)
+- [Bolt.new Integration](docs/ide-integrations/cline/bolt-new-cline-memorybank.md)
+- [IDE Integration Guide](docs/ide-integrations/README.md)
 
 ## Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Built with [Cline](docs/ide-integrations/cline/README.md) integration
-- Inspired by AI-assisted development workflows
-- Powered by bolt.new for web development task generation
-- Enhanced by LLM-driven code improvements
+MIT

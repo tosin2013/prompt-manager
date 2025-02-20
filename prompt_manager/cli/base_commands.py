@@ -3,7 +3,7 @@
 import click
 from pathlib import Path
 from prompt_manager import PromptManager, TaskStatus, MemoryBank
-from prompt_manager.cli.utils import get_manager
+from prompt_manager.cli.utils import get_manager, with_prompt_option
 from prompt_manager.prompts import get_prompt_for_command
 from typing import Optional
 
@@ -25,6 +25,7 @@ def base():
 @click.argument('description', required=False, default="")
 @click.option('--template', help='Template to use')
 @click.option('--priority', type=int, default=0, help='Task priority')
+@with_prompt_option('add-task')
 def add_task(title: str, description: str = "", template: str = None, priority: int = 0):
     """Add a new task.
     
@@ -79,6 +80,7 @@ def add_task(title: str, description: str = "", template: str = None, priority: 
 @click.argument('title')
 @click.argument('status', type=click.Choice([s.value for s in TaskStatus]), required=True)
 @click.option('-n', '--note', help='Progress note')
+@with_prompt_option('update-progress')
 def update_progress(title, status, note=None):
     """Update task progress status."""
     manager = PromptManager(Path.cwd())
@@ -124,6 +126,7 @@ def update_progress(title, status, note=None):
         })
 
 @base.command()
+@with_prompt_option('list-tasks')
 def list_tasks():
     """List all tasks."""
     manager = get_manager()
@@ -167,6 +170,7 @@ def list_tasks():
 
 @base.command()
 @click.option('--output', '-o', required=True, type=click.Path(), help='Output file path')
+@with_prompt_option('export-tasks')
 def export_tasks(output: str):
     """Export tasks to a file."""
     manager = get_manager()
@@ -195,6 +199,7 @@ def export_tasks(output: str):
 
 @base.command()
 @click.option('--path', default='.', help='Path to initialize project at')
+@with_prompt_option('init')
 def init(path: str):
     """Initialize a new project."""
     try:
@@ -208,7 +213,9 @@ def init(path: str):
 @base.command()
 @click.argument('description')
 @click.option('--framework', '-f', help='Target framework')
-def generate_bolt_tasks(description: str, framework: Optional[str] = None):
+@click.option('--output', help='Output file path')
+@with_prompt_option('generate-bolt-tasks')
+def generate_bolt_tasks(description: str, framework: Optional[str] = None, output: Optional[str] = None):
     """Generate bolt.new tasks."""
     manager = get_manager()
     
@@ -231,5 +238,9 @@ def generate_bolt_tasks(description: str, framework: Optional[str] = None):
             click.echo(f"- {task}")
     else:
         click.echo("No tasks generated")
+
+    if output:
+        path = manager.export_tasks(output)
+        click.echo(f"Tasks exported to {path}")
 
 __all__ = ['base']

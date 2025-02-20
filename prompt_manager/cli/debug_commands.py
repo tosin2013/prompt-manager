@@ -2,8 +2,11 @@
 
 import click
 import sys
-from prompt_manager.debug import DebugManager
+from pathlib import Path
+from prompt_manager import PromptManager
+from prompt_manager.cli.utils import get_manager, with_prompt_option
 from prompt_manager.prompts import get_prompt_for_command
+from typing import Optional
 
 def print_prompt_info(prompt_name: str, prompt: str):
     """Print prompt information in a formatted way."""
@@ -19,11 +22,12 @@ def debug():
     pass
 
 @debug.command()
-@click.argument('file_path')
-@click.option('--context-lines', type=int, default=5, help='Number of context lines')
-def analyze_file(file_path, context_lines):
+@click.argument('file_path', type=click.Path(exists=True))
+@click.option('--output', help='Output file path')
+@with_prompt_option('analyze-file')
+def analyze_file(file_path: str, output: Optional[str] = None):
     """Analyze a file for potential issues."""
-    manager = DebugManager()
+    manager = get_manager()
     try:
         # Read file content
         with open(file_path, 'r') as f:
@@ -39,7 +43,7 @@ def analyze_file(file_path, context_lines):
         if prompt_template:
             context = {
                 "file_path": file_path,
-                "context_lines": context_lines,
+                "context_lines": 5,
                 "file_content": file_content,
                 "project_context": project_context,
                 "tech_stack": tech_stack,
@@ -49,9 +53,13 @@ def analyze_file(file_path, context_lines):
             print_prompt_info("analyze-file", prompt)
         
         # Run analysis
-        analysis = manager.debug_file(file_path)
-        click.echo(f"File analysis for {file_path}:")
-        click.echo(analysis)
+        analysis = manager.analyze_file(file_path)
+        
+        if output:
+            Path(output).write_text(analysis)
+            click.echo(f"Analysis written to {output}")
+        else:
+            click.echo(analysis)
     except FileNotFoundError:
         click.echo(f"Error: File {file_path} not found", err=True)
         sys.exit(1)
@@ -60,35 +68,42 @@ def analyze_file(file_path, context_lines):
         sys.exit(2)
 
 @debug.command()
-@click.argument('error_message')
-@click.option('--file-path', help='Path to file with error')
-def find_root_cause(error_message, file_path=None):
-    """Find root cause of an error."""
-    manager = DebugManager()
+@click.argument('error_log', type=click.Path(exists=True))
+@click.option('--output', help='Output file path')
+@with_prompt_option('find-root-cause')
+def find_root_cause(error_log: str, output: Optional[str] = None):
+    """Find root cause from error log."""
+    manager = get_manager()
     try:
         # Get and format prompt
         prompt_template = get_prompt_for_command("find-root-cause")
         if prompt_template:
             context = {
-                "error_message": error_message,
-                "file_path": file_path or ""
+                "error_message": error_log,
+                "file_path": ""
             }
             prompt = prompt_template.format(**context)
             print_prompt_info("find-root-cause", prompt)
         
         # Find root cause
-        root_cause = manager.find_root_cause(file_path, error_message)
-        click.echo("Root cause analysis:")
-        click.echo(root_cause)
+        analysis = manager.analyze_error_log(error_log)
+        
+        if output:
+            Path(output).write_text(analysis)
+            click.echo(f"Analysis written to {output}")
+        else:
+            click.echo(analysis)
     except Exception as e:
         click.echo(f"Error finding root cause: {str(e)}", err=True)
         sys.exit(1)
 
 @debug.command()
-@click.argument('file_path')
-def test_roadmap(file_path):
-    """Generate a test roadmap for a file."""
-    manager = DebugManager()
+@click.argument('file_path', type=click.Path(exists=True))
+@click.option('--output', help='Output file path')
+@with_prompt_option('test-roadmap')
+def test_roadmap(file_path: str, output: Optional[str] = None):
+    """Generate test roadmap for a file."""
+    manager = get_manager()
     try:
         # Read file content
         with open(file_path, 'r') as f:
@@ -116,8 +131,12 @@ def test_roadmap(file_path):
         
         # Generate roadmap
         roadmap = manager.generate_test_roadmap(file_path)
-        click.echo(f"Test roadmap for {file_path}:")
-        click.echo(roadmap)
+        
+        if output:
+            Path(output).write_text(roadmap)
+            click.echo(f"Test roadmap written to {output}")
+        else:
+            click.echo(roadmap)
     except FileNotFoundError:
         click.echo(f"Error: File {file_path} not found", err=True)
         sys.exit(1)
@@ -129,7 +148,7 @@ def test_roadmap(file_path):
 @click.argument('file_path')
 def analyze_dependencies(file_path):
     """Analyze dependencies of a file."""
-    manager = DebugManager()
+    manager = get_manager()
     try:
         # Get dependency context
         direct_deps = manager.get_direct_dependencies(file_path)
@@ -166,7 +185,7 @@ def analyze_dependencies(file_path):
 @click.option('--max-depth', type=int, default=5, help='Maximum trace depth')
 def trace_error(error_message, file_path=None, max_depth=5):
     """Trace error through the codebase."""
-    manager = DebugManager()
+    manager = get_manager()
     try:
         # Get trace context
         error_context = manager.get_error_context(error_message, file_path)

@@ -9,6 +9,35 @@ The Memory Bank system is now integrated with the Prompt Manager (`prompt_manage
 - Task-aware context updates
 - Automated progress tracking
 - Token usage monitoring
+- Transparent prompt display and validation
+
+### Prompt Display and Validation
+
+All commands now support the `--show-prompt` flag, which displays the prompt template being used for the command. This feature is invaluable for:
+- Understanding how commands interpret context
+- Validating prompt templates
+- Debugging command behavior
+- Training new users
+
+Example usage:
+```bash
+# Show prompt for adding a task
+prompt-manager base add-task "New Task" "Description" --show-prompt
+
+# Output will include:
+================================================================================
+Using prompt template: add-task
+================================================================================
+Task Analysis Request
+...
+================================================================================
+
+# Show prompt for updating progress
+prompt-manager base update-progress "Task Name" "in_progress" --show-prompt
+
+# Show prompt for memory operations
+prompt-manager memory store "key" "value" --show-prompt
+```
 
 ### Version Compatibility
 
@@ -18,6 +47,7 @@ This documentation is for version 0.3.18 of tosins-prompt-manager, which support
 - Enhanced task management and tracking
 - Automated documentation updates
 - LLM Enhancement features for code improvement
+- Transparent prompt display with `--show-prompt` flag
 
 ## Installation
 
@@ -599,3 +629,100 @@ if improvements:
 3. **Documentation**: Update documentation to reflect changes
 4. **Impact Analysis**: Include impact analysis in PR descriptions
 5. **Gradual Changes**: Prefer smaller, focused improvements over large changes
+
+### Learning Session Prompts
+
+When running a learning session, you can view the prompts being used:
+
+```bash
+# Start learning session for current directory and display prompt
+prompt-manager repo learn-session . --show-prompt
+
+# Start learning session for specific path
+prompt-manager repo learn-session path/to/directory --show-prompt
+
+# Start learning session with custom duration
+prompt-manager repo learn-session . --duration 60 --show-prompt
+
+# Example output:
+================================================================================
+Using prompt template: learn-session
+================================================================================
+Repository Learning Analysis Request
+==================================
+
+Repository: {repo_path}
+Current Branch: {current_branch}
+File Count: {file_count}
+Main Languages: {main_languages}
+
+Previous Analysis:
+{previous_analysis}
+
+Please analyze this repository focusing on:
+
+1. Code Patterns
+   - Architecture patterns
+   - Design patterns
+   - Common idioms
+   - Best practices
+
+2. Development Workflow
+   - Commit patterns
+   - Branch strategy
+   - Testing approach
+   - Documentation style
+
+3. Technical Stack
+   - Framework usage
+   - Dependencies
+   - Tools and utilities
+   - Integration patterns
+
+4. Areas for Improvement
+   - Code quality
+   - Test coverage
+   - Documentation
+   - Performance
+
+Please provide specific, actionable insights that can be used to:
+- Improve code quality
+- Enhance development workflow
+- Optimize performance
+- Strengthen testing
+================================================================================
+```
+
+The prompt can be customized by creating a custom template in your project:
+
+```python
+# Create custom learning session prompt
+pm.memory_bank.update_context(
+    "prompts.md",
+    "Learning Session",
+    """
+    Custom learning session prompt template:
+    {your_custom_template}
+    """
+)
+
+# Use custom prompt in session
+pm.llm.start_learning_session(use_custom_prompt=True)
+```
+
+You can also access the prompt programmatically:
+
+```python
+# Get current learning session prompt
+prompt = pm.llm.get_session_prompt()
+print(prompt)
+
+# Get prompt with specific context
+prompt = pm.llm.get_session_prompt(
+    context={
+        "focus_areas": ["testing", "documentation"],
+        "analysis_depth": "detailed"
+    }
+)
+print(prompt)
+```
