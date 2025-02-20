@@ -41,3 +41,7 @@ htmlcov/
 cline_docs/
 docs/prompt-engineering/*.md
 !docs/prompt-engineering/README.md
+
+# SonarQube
+.scannerwork/
+coverage.xml
