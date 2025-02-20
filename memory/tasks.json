@@ -1,0 +1,14 @@
+{
+  "test-task": {
+    "id": "85a301b9-5855-43be-81c4-8df3d994511e",
+    "description": "Test task description",
+    "status": "not_started",
+    "created_at": "2025-02-20T13:57:36.713955",
+    "updated_at": "2025-02-20T13:57:36.713955",
+    "completed_at": null,
+    "dependencies": [],
+    "tags": [],
+    "priority": 0,
+    "notes": []
+  }
+}

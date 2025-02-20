@@ -9,6 +9,7 @@ for the prompt management system.
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Union
 import yaml
+import json
 
 from .models import Task, TaskStatus, BoltTask
 from .memory import MemoryBank
@@ -254,7 +255,10 @@ class PromptManager:
         path = Path(path)
         tasks_data = [task.to_dict() for task in self.tasks.values()]
         with open(path, "w") as f:
-            yaml.safe_dump(tasks_data, f)
+            if path.suffix == '.json':
+                json.dump(tasks_data, f, indent=2)
+            else:
+                yaml.safe_dump(tasks_data, f)
 
     def import_tasks(self, path: Union[str, Path]) -> None:
         """Import tasks from a JSON file.

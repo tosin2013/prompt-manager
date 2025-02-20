@@ -61,8 +61,8 @@ def test_add_task(cli_runner, test_data_dir):
     result = cli_runner.invoke(
         cli,
         ['--project-dir', str(test_data_dir), 'base', 'add-task',
-         '--title', TASK_TITLE,
-         '--description', TASK_DESCRIPTION,
+         TASK_TITLE,  # Positional argument for title
+         TASK_DESCRIPTION,  # Positional argument for description
          '--template', TASK_TEMPLATE,
          '--priority', TASK_PRIORITY]
     )

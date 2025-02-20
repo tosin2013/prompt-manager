@@ -1,0 +1,4 @@
+default_template: default
+memory_path: memory
+templates_path: templates
+version: 0.3.18

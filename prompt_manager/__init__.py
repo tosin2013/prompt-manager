@@ -47,12 +47,12 @@ class Task:
 class PromptManager:
     """Manages prompts and tasks for a project."""
     
-    def __init__(self, project_path: str = None):
+    def __init__(self, project_path: str = None, memory_path: str = None):
         """Initialize PromptManager."""
         self.project_path = project_path or os.getcwd()
         self.config_file = os.path.join(self.project_path, ".prompt-manager", "config.yaml")
         self.tasks_file = os.path.join(self.project_path, ".prompt-manager", "tasks.json")
-        self.memory = MemoryBank(self.project_path)
+        self.memory = MemoryBank(memory_path or self.project_path)
         self.llm = LLMEnhancement(self.memory)
         self._load_or_create_config()
         self._load_tasks()
@@ -143,9 +143,22 @@ class PromptManager:
         with open(tasks_file, "w") as f:
             json.dump({}, f)
         
-        # Create memory directory
-        memory_dir = os.path.join(path, "memory")
+        # Create memory directory and files
+        memory_dir = os.path.join(path, "prompt_manager_data", "memory")
         os.makedirs(memory_dir, exist_ok=True)
+        
+        # Create required memory files
+        context_file = os.path.join(memory_dir, "context.json")
+        with open(context_file, "w") as f:
+            json.dump({"exports": []}, f, indent=2)
+        
+        tasks_json = os.path.join(memory_dir, "tasks.json")
+        with open(tasks_json, "w") as f:
+            json.dump({}, f, indent=2)
+        
+        progress_md = os.path.join(memory_dir, "progress.md")
+        with open(progress_md, "w") as f:
+            f.write("# Progress Tracking\n\n")
         
         # Create templates directory
         templates_dir = os.path.join(path, "templates")
@@ -297,20 +310,25 @@ class PromptManager:
         
         exports = []
         content = self.memory.load_context_memory()
-        if content:
-            for line in content.get("exports", []):
-                try:
-                    timestamp = datetime.datetime.strptime(
-                        line.split("_")[1].strip(),
-                        "%Y%m%d_%H%M%S"
-                    )
-                    exports.append({
-                        "id": line.strip(),
-                        "timestamp": timestamp.isoformat(),
-                        "task_count": len(self.tasks)
-                    })
-                except (ValueError, IndexError):
-                    continue
+        if content and "exports" in content:
+            for export in content["exports"]:
+                if isinstance(export, dict) and "id" in export:
+                    exports.append(export)
+                else:
+                    try:
+                        # Handle legacy format
+                        export_id = str(export).strip()
+                        timestamp = datetime.datetime.strptime(
+                            export_id.split("_")[1],
+                            "%Y%m%d_%H%M%S"
+                        )
+                        exports.append({
+                            "id": export_id,
+                            "timestamp": timestamp.isoformat(),
+                            "task_count": len(self.tasks)
+                        })
+                    except (ValueError, IndexError, AttributeError):
+                        continue
         return exports
 
     def export_tasks(self, filename: str):
@@ -321,17 +339,16 @@ class PromptManager:
         """
         tasks_data = {}
         for task_id, task in self.tasks.items():
-            tasks_data[task_id] = {
-                "title": task.title,
-                "description": task.description,
-                "status": task.status.value,
-                "created_at": task.created_at.isoformat(),
-                "updated_at": task.updated_at.isoformat(),
-                "completed_at": task.completed_at.isoformat() if task.completed_at else None,
+            tasks_data[task.title] = {
+                "assignee": None,  # For compatibility with existing format
                 "dependencies": task.dependencies,
-                "tags": task.tags,
+                "description": task.description,
+                "due_date": None,  # For compatibility with existing format
                 "priority": task.priority,
-                "notes": task.notes
+                "status": task.status.value,
+                "status_notes": task.notes,
+                "template": "",  # For compatibility with existing format
+                "title": task.title
             }
         
         try:
