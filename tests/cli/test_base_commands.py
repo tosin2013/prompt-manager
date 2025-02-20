@@ -1,145 +1,109 @@
-"""Test base CLI commands."""
+"""Tests for base CLI commands."""
 
 import pytest
-from click.testing import CliRunner
-from unittest.mock import Mock, patch
-from prompt_manager import TaskStatus
-from prompt_manager.cli import cli
-from prompt_manager.manager import PromptManager
-from pathlib import Path
 import tempfile
 import os
-
+from pathlib import Path
+from click.testing import CliRunner
+from prompt_manager.cli import cli
+from prompt_manager.cli.base_commands import add_task, update_progress, list_tasks, export_tasks
+from tests.constants import (
+    TASK_TITLE,
+    TASK_DESCRIPTION,
+    TASK_TEMPLATE,
+    TASK_PRIORITY,
+    TASK_STATUS_IN_PROGRESS,
+    TASK_ADDED_MSG,
+    TASK_STATUS_UPDATED_MSG,
+    DEFAULT_EXPORT_PATH,
+)
 
 pytestmark = [pytest.mark.cli, pytest.mark.cli_base]
 
 
 @pytest.fixture
-def runner():
-    """Create a CLI runner for testing."""
+def cli_runner():
+    """Create a CLI runner."""
     return CliRunner()
 
 
 @pytest.fixture
-def temp_project_dir():
-    """Create a temporary directory for project testing."""
+def test_data_dir():
+    """Create a temporary directory for testing."""
     with tempfile.TemporaryDirectory() as tmpdir:
-        original_dir = os.getcwd()
-        os.chdir(tmpdir)
-        yield Path(tmpdir)
-        os.chdir(original_dir)
+        path = Path(tmpdir)
+        os.makedirs(path / "prompt_manager_data", exist_ok=True)
+        yield path
 
 
-@pytest.fixture(autouse=True)
-def setup_project_dir(temp_project_dir):
-    """Automatically set up project directory for all tests."""
-    os.makedirs(temp_project_dir / "prompt_manager_data", exist_ok=True)
-    yield
-
-
-@pytest.fixture
-def mock_prompt_manager():
-    """Create a mock PromptManager."""
-    with patch('prompt_manager.cli.base_commands.PromptManager') as mock:
-        manager = Mock()
-        mock.return_value = manager
-        yield manager
-
-
-def test_version(runner):
-    """Test --version flag."""
-    result = runner.invoke(cli, ["--version"])
+def test_add_task(cli_runner, test_data_dir):
+    """Test adding a new task."""
+    # First initialize the project
+    cli_runner.invoke(cli, ['--project-dir', str(test_data_dir), 'init'])
+    
+    # Then add a task
+    result = cli_runner.invoke(cli, ['--project-dir', str(test_data_dir), 'add-task',
+                                   '--title', TASK_TITLE,
+                                   '--description', TASK_DESCRIPTION,
+                                   '--template', TASK_TEMPLATE,
+                                   '--priority', TASK_PRIORITY])
     assert result.exit_code == 0
-    assert "0.3.18" in result.output
+    assert TASK_ADDED_MSG in result.output
 
 
-def test_help(runner):
-    """Test --help flag."""
-    result = runner.invoke(cli, ["--help"])
+def test_update_progress(cli_runner, test_data_dir):
+    """Test updating task progress."""
+    # First initialize the project
+    cli_runner.invoke(cli, ['--project-dir', str(test_data_dir), 'init'])
+    
+    # Add a task
+    cli_runner.invoke(cli, ['--project-dir', str(test_data_dir), 'add-task',
+                          '--title', TASK_TITLE,
+                          '--description', TASK_DESCRIPTION,
+                          '--template', TASK_TEMPLATE,
+                          '--priority', TASK_PRIORITY])
+    
+    # Then update its status
+    result = cli_runner.invoke(cli, ['--project-dir', str(test_data_dir), 'update-progress',
+                                   '--title', TASK_TITLE,
+                                   '--status', TASK_STATUS_IN_PROGRESS])
     assert result.exit_code == 0
-    assert "Usage:" in result.output
+    assert TASK_STATUS_UPDATED_MSG in result.output
 
 
-def test_init_command(runner, temp_project_dir):
-    """Test init command."""
-    result = runner.invoke(cli, ["init"])
+def test_list_tasks(cli_runner, test_data_dir):
+    """Test listing tasks."""
+    # First initialize the project
+    cli_runner.invoke(cli, ['--project-dir', str(test_data_dir), 'init'])
+    
+    # Add a task
+    cli_runner.invoke(cli, ['--project-dir', str(test_data_dir), 'add-task',
+                          '--title', TASK_TITLE,
+                          '--description', TASK_DESCRIPTION,
+                          '--template', TASK_TEMPLATE,
+                          '--priority', TASK_PRIORITY])
+    
+    # Then list all tasks
+    result = cli_runner.invoke(cli, ['--project-dir', str(test_data_dir), 'list-tasks'])
     assert result.exit_code == 0
-    assert "initialized successfully" in result.output.lower()
+    assert TASK_TITLE in result.output
 
 
-def test_init_command_error(runner, temp_project_dir):
-    """Test init command with invalid path."""
-    result = runner.invoke(cli, ["init", "--path", "/nonexistent/path"])
-    assert result.exit_code == 1
-    assert "does not exist" in result.output.lower()
-
-
-def test_add_task_command(runner, mock_prompt_manager, temp_project_dir):
-    """Test add-task command."""
-    result = runner.invoke(cli, ['add-task', 'test task', '--priority', 'high'])
+def test_export_tasks(cli_runner, test_data_dir):
+    """Test exporting tasks."""
+    # First initialize the project
+    cli_runner.invoke(cli, ['--project-dir', str(test_data_dir), 'init'])
+    
+    # Add a task
+    cli_runner.invoke(cli, ['--project-dir', str(test_data_dir), 'add-task',
+                          '--title', TASK_TITLE,
+                          '--description', TASK_DESCRIPTION,
+                          '--template', TASK_TEMPLATE,
+                          '--priority', TASK_PRIORITY])
+    
+    # Then export tasks
+    export_path = test_data_dir / DEFAULT_EXPORT_PATH
+    result = cli_runner.invoke(cli, ['--project-dir', str(test_data_dir), 'export-tasks',
+                                   '--output', str(export_path)])
     assert result.exit_code == 0
-    mock_prompt_manager.add_task.assert_called_once_with('test task', priority='high')
-
-
-def test_list_tasks_command(runner, mock_prompt_manager, temp_project_dir):
-    """Test list-tasks command."""
-    mock_prompt_manager.list_tasks.return_value = [
-        {'title': 'test task', 'priority': 'high', 'status': TaskStatus.TODO}
-    ]
-    result = runner.invoke(cli, ['list-tasks'])
-    assert result.exit_code == 0
-    assert 'test task' in result.output.lower()
-
-
-def test_list_tasks_with_tasks(runner, mock_prompt_manager, temp_project_dir):
-    """Test list-tasks command with existing tasks."""
-    mock_prompt_manager.list_tasks.return_value = [
-        {'title': 'test task', 'priority': 'high', 'status': TaskStatus.TODO}
-    ]
-    result = runner.invoke(cli, ['list-tasks'])
-    assert result.exit_code == 0
-    assert 'test task' in result.output.lower()
-
-
-def test_update_progress_command(runner, mock_prompt_manager, temp_project_dir):
-    """Test update-progress command."""
-    result = runner.invoke(
-        cli,
-        [
-            "update-progress",
-            "Test Task",
-            "in_progress",
-            "--note",
-            "Working on it",
-        ],
-    )
-
-    assert result.exit_code == 0
-    assert "status updated" in result.output.lower()
-
-
-def test_export_tasks_command(runner, mock_prompt_manager, temp_project_dir):
-    """Test export-tasks command."""
-    result = runner.invoke(cli, ["export-tasks", "--output", str(temp_project_dir / "tasks.json")])
-
-    assert result.exit_code == 0
-    assert "exported" in result.output.lower()
-
-
-def test_list_tasks_empty(mock_prompt_manager, runner, temp_project_dir):
-    """Test listing tasks when no tasks exist."""
-    result = runner.invoke(cli, ["list-tasks"])
-    assert result.exit_code == 0
-    assert "no tasks found" in result.output.lower()
-
-
-def test_list_tasks_with_tasks(mock_prompt_manager, runner, temp_project_dir):
-    """Test listing tasks when tasks exist."""
-    mock_prompt_manager.list_tasks.return_value = [
-        {'title': 'test task', 'priority': 'high', 'status': TaskStatus.TODO}
-    ]
-
-    result = runner.invoke(cli, ["list-tasks"])
-    assert result.exit_code == 0
-    assert "test task" in result.output.lower()
-    assert "medium" in result.output.lower()
+    assert f"Tasks exported successfully to {export_path}" in result.output

@@ -1,0 +1,6 @@
+prompt_manager.debug.DebugManager.analyze_dependencies
+false
+8932e4afbde4fed2368bf919c226d6a3
+prompt_manager.debug.DebugManager._identify_error_sources
+prompt_manager.debug.DebugManager._map_dependencies
+prompt_manager.debug.DebugManager._suggest_cross_file_fixes

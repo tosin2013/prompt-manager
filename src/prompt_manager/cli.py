@@ -25,17 +25,71 @@ def init(ctx, path):
         click.secho(f"Error initializing project: {str(e)}", fg='red')
 
 @cli.command()
-@click.argument('description')
-@click.option('--priority', type=int, default=3)
+@click.option('--title', required=True, help='Task title')
+@click.option('--description', required=True, help='Task description')
+@click.option('--template', required=True, help='Task prompt template')
+@click.option('--priority', type=str, default='medium', help='Task priority (low/medium/high)')
 @click.pass_context
-def add_task(ctx, description, priority):
+def add_task(ctx, title, description, template, priority):
     """Add new task"""
     pm = ctx.obj['pm']
     try:
-        task = pm.create_task(description, priority=priority)
-        click.echo(f"Created task #{task.id}: {task.description}")
+        task = pm.add_task(
+            title=title,
+            description=description,
+            template=template,
+            priority=priority
+        )
+        click.echo(f"Task {title} added successfully")
     except ValueError as e:
         click.secho(f"Validation error: {str(e)}", fg='yellow')
+        ctx.exit(1)
+
+@cli.command()
+@click.option('--title', required=True, help='Task title')
+@click.option('--status', required=True, type=click.Choice(['PENDING', 'IN_PROGRESS', 'DONE', 'FAILED']), help='New task status')
+@click.option('--note', help='Optional note about the status update')
+@click.pass_context
+def update_progress(ctx, title, status, note=None):
+    """Update task progress"""
+    pm = ctx.obj['pm']
+    try:
+        task = pm.update_task_status(title, status, notes=note)
+        click.echo(f"Task {title} status updated to {status}")
+    except (KeyError, ValueError) as e:
+        click.secho(f"Error: {str(e)}", fg='red')
+        ctx.exit(1)
+
+@cli.command()
+@click.option('--status', type=click.Choice(['PENDING', 'IN_PROGRESS', 'DONE', 'FAILED']), help='Filter by status')
+@click.pass_context
+def list_tasks(ctx, status=None):
+    """List all tasks"""
+    pm = ctx.obj['pm']
+    try:
+        tasks = pm.list_tasks(status=TaskStatus(status.lower()) if status else None)
+        if not tasks:
+            click.echo("No tasks found")
+            return
+        
+        for task in tasks:
+            click.echo(f"{task.title} - {task.status.value} - {task.priority}")
+    except Exception as e:
+        click.secho(f"Error: {str(e)}", fg='red')
+        ctx.exit(1)
+
+@cli.command()
+@click.option('--output', type=click.Path(), required=True, help='Output file path')
+@click.pass_context
+def export_tasks(ctx, output):
+    """Export tasks to JSON file"""
+    pm = ctx.obj['pm']
+    try:
+        pm.export_tasks(Path(output))
+        click.echo(f"Tasks exported successfully to {output}")
+    except Exception as e:
+        click.secho(f"Error exporting tasks: {str(e)}", fg='red')
+        ctx.exit(1)
 
 if __name__ == '__main__':
     cli()

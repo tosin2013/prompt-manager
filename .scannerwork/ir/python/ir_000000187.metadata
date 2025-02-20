@@ -1,0 +1,11 @@
+prompt_manager.PromptManager.analyze_dependencies
+false
+47c858124b4b338e4436d060c2a47f04
+builtins.__has_next
+builtins.iter
+builtins.next
+os.path.exists
+==
+_identify_error_sources
+_map_dependencies
+_suggest_cross_file_fixes

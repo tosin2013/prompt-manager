@@ -1,0 +1,9 @@
+prompt_manager.memory.MemoryBank.reset
+false
+efc396b686b883d9e4d636329ba5af8e
+builtins.__has_next
+builtins.iter
+builtins.next
+==
+exists
+unlink

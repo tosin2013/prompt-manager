@@ -1,0 +1,10 @@
+prompt_manager.BoltTask.generate_prompt
+false
+8a77319e236fa0181fee0dfcd6fac247
+builtins.__has_next
+builtins.iter
+builtins.next
+==
+format
+get
+join

@@ -1,0 +1,7 @@
+prompt_manager.debug.DebugManager.debug_file
+false
+f71d950a1739d9a415b58c989ba15db5
+prompt_manager.debug.DebugManager._analyze_code_logic
+prompt_manager.debug.DebugManager._analyze_integration
+prompt_manager.debug.DebugManager._check_environment
+prompt_manager.debug.DebugManager._infer_file_purpose

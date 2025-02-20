@@ -1,0 +1,11 @@
+prompt_manager.llm_enhancement.LLMEnhancement.get_debug_guidance
+false
+d7f1eb74394684524a69ae9c37668235
+builtins.__has_next
+builtins.iter
+builtins.next
+prompt_manager.llm_enhancement.LLMEnhancement.get_debug_guidance.format_principle
+==
+append
+join
+values

@@ -1,0 +1,13 @@
+prompt_manager.llm_enhancement.LLMEnhancement.suggest_pull_request
+false
+e7256897081ba7983c4170995120574e
+builtins.print
+prompt_manager.llm_enhancement.PullRequestSuggestion.__init__
+==
+_analyze_change_impact
+_calculate_test_coverage
+_generate_branch_name
+_generate_reviewer_notes
+_get_guidance
+_validate_changes
+append

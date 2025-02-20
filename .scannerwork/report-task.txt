@@ -1,0 +1,7 @@
+organization=testing-tosin2013
+projectKey=testing-tosin2013_prompt-manager
+serverUrl=https://sonarcloud.io
+serverVersion=8.0.0.59862
+dashboardUrl=https://sonarcloud.io/dashboard?id=testing-tosin2013_prompt-manager
+ceTaskId=AZUg5uAtJTroTxdGttuT
+ceTaskUrl=https://sonarcloud.io/api/ce/task?id=AZUg5uAtJTroTxdGttuT

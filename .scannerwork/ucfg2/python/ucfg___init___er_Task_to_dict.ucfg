@@ -1,0 +1,205 @@
+
+prompt_manager.Task.to_dictZ
+P/Users/tosinakinosho/CascadeProjects/windsurf-project/prompt_manager/__init__.pyA A("2*ü
+2B B(;
+C L(	
+%1"dictX
+V
+D D(
+%2"__id*>
+
+__unknown_file ("* 
+prompt_manager.Task"
+titleå
+â
+D D(
+%3"__mapSet*"
+
+__unknown_file (
+
+%1*%
+
+__unknown_file (	
+title*"
+
+__unknown_file (
+
+%2^
+\
+E E(+
+%4"__id*D
+
+__unknown_file ((*&
+prompt_manager.Task"
+descriptioní
+è
+E E(+
+%5"__mapSet*"
+
+__unknown_file (
+
+%1*+
+
+__unknown_file (
+description*"
+
+__unknown_file (
+
+%4[
+Y
+F F(%
+%6"__id*A
+
+__unknown_file (%*#
+prompt_manager.Task"
+
+priorityè
+å
+F F(%
+%7"__mapSet*"
+
+__unknown_file (
+
+%1*(
+
+__unknown_file (
+
+priority*"
+
+__unknown_file (
+
+%6Y
+W
+G G(!
+%8"__id*?
+
+__unknown_file (#*!
+prompt_manager.Task"
+statusG
+E
+G G('
+%9"__id*-
+
+__unknown_file (*
+
+%8"
+valueé
+ã
+G G('
+%10"__mapSet*"
+
+__unknown_file (
+
+%1*&
+
+__unknown_file (
+
+status*"
+
+__unknown_file (
+
+%9c
+a
+H H(3
+%11"__id*H
+
+__unknown_file (,**
+prompt_manager.Task"
+prompt_templateò
+ï
+H H(3
+%12"__mapSet*"
+
+__unknown_file (
+
+%1*/
+
+__unknown_file (
+prompt_template*#
+
+__unknown_file (
+
+%11Y
+W
+I I(
+%13"__id*>
+
+__unknown_file ("* 
+prompt_manager.Task"
+notesé
+ã
+I I(
+%14"__mapSet*"
+
+__unknown_file (
+
+%1*%
+
+__unknown_file (	
+notes*#
+
+__unknown_file (
+
+%13^
+\
+J J()
+%15"__id*C
+
+__unknown_file ('*%
+prompt_manager.Task"
+
+created_atCA
+J J(5
+%16*#
+
+__unknown_file (
+
+%152	isoformatì
+ê
+J J(5
+%17"__mapSet*"
+
+__unknown_file (
+
+%1**
+
+__unknown_file (
+
+created_at*#
+
+__unknown_file (
+
+%16^
+\
+K K()
+%18"__id*C
+
+__unknown_file ('*%
+prompt_manager.Task"
+
+updated_atCA
+K K(5
+%19*#
+
+__unknown_file (
+
+%182	isoformatì
+ê
+K K(5
+%20"__mapSet*"
+
+__unknown_file (
+
+%1**
+
+__unknown_file (
+
+updated_at*#
+
+__unknown_file (
+
+%19"
+C L(	
+
+%1B
+prompt_manager.TaskH

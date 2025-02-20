@@ -9,33 +9,37 @@ from typing import List, Optional, Dict
 
 class TaskStatus(Enum):
     """Task status."""
-    TODO = "todo"
+    PENDING = "pending"
     IN_PROGRESS = "in_progress"
     DONE = "done"
-    BLOCKED = "blocked"
+    FAILED = "failed"
 
 
 @dataclass
 class Task:
     """Task model."""
     title: str
-    description: Optional[str] = None
-    status: TaskStatus = TaskStatus.TODO
+    description: str
+    template: str  # Required prompt template
+    status: TaskStatus = TaskStatus.PENDING
     priority: str = "medium"
     dependencies: Optional[List[str]] = None
     assignee: Optional[str] = None
     due_date: Optional[str] = None
+    status_notes: List[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         """Convert Task to a dictionary."""
         return {
             "title": self.title,
             "description": self.description,
+            "template": self.template,
             "status": self.status.value,
             "priority": self.priority,
             "dependencies": self.dependencies,
             "assignee": self.assignee,
-            "due_date": self.due_date
+            "due_date": self.due_date,
+            "status_notes": self.status_notes
         }
 
     @classmethod
@@ -43,12 +47,14 @@ class Task:
         """Create a Task from a dictionary."""
         return cls(
             title=data["title"],
-            description=data.get("description"),
+            description=data["description"],
+            template=data["template"],
+            status=TaskStatus(data.get("status", "pending")),
             priority=data.get("priority", "medium"),
-            status=TaskStatus(data.get("status", "todo")),
             dependencies=data.get("dependencies"),
             assignee=data.get("assignee"),
-            due_date=data.get("due_date")
+            due_date=data.get("due_date"),
+            status_notes=data.get("status_notes", [])
         )
 
 
@@ -65,7 +71,7 @@ class BoltTask:
     # Optional fields with defaults
     description: Optional[str] = None
     priority: str = "medium"
-    status: TaskStatus = TaskStatus.TODO
+    status: TaskStatus = TaskStatus.PENDING
     dependencies: Optional[List[str]] = None
     subtasks: Optional[List['BoltTask']] = field(default_factory=list)
     metadata: Optional[Dict[str, str]] = field(default_factory=dict)
@@ -101,7 +107,7 @@ class BoltTask:
             title=data["title"],
             description=data.get("description"),
             priority=data.get("priority", "medium"),
-            status=TaskStatus(data.get("status", "todo")),
+            status=TaskStatus(data.get("status", "pending")),
             dependencies=data.get("dependencies"),
             subtasks=[cls.from_dict(t) for t in data["subtasks"]] if data.get("subtasks") else [],
             metadata=data.get("metadata", {}),

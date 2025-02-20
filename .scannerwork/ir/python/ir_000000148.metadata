@@ -1,0 +1,10 @@
+prompt_manager.llm_enhancement.LLMEnhancement._generate_improvement_suggestions
+false
+c9bb762c895dfdbc00d299718ee6ccfd
+builtins.__has_next
+builtins.iter
+builtins.next
+==
+_identify_issues
+append
+split

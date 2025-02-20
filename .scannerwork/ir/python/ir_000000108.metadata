@@ -1,0 +1,6 @@
+prompt_manager.llm_manager.LLMManager.suggest_improvements
+false
+caaaf4d36681dcc86a58d82e81cc9ae5
+pathlib.Path.__init__
+==
+exists

@@ -1,0 +1,216 @@
+
+"prompt_manager.models.Task.to_dicta
+W/Users/tosinakinosho/CascadeProjects/windsurf-project/prompt_manager/models/__init__.py ("2*∆
+2   (+
+! +(	
+%1"dict_
+]
+" "(
+%2"__id*E
+
+__unknown_file ()*'
+prompt_manager.models.Task"
+titleå
+â
+" "(
+%3"__mapSet*"
+
+__unknown_file (
+
+%1*%
+
+__unknown_file (	
+title*"
+
+__unknown_file (
+
+%2e
+c
+# #(+
+%4"__id*K
+
+__unknown_file (/*-
+prompt_manager.models.Task"
+descriptioní
+è
+# #(+
+%5"__mapSet*"
+
+__unknown_file (
+
+%1*+
+
+__unknown_file (
+description*"
+
+__unknown_file (
+
+%4b
+`
+$ $(%
+%6"__id*H
+
+__unknown_file (,**
+prompt_manager.models.Task"
+
+templateè
+å
+$ $(%
+%7"__mapSet*"
+
+__unknown_file (
+
+%1*(
+
+__unknown_file (
+
+template*"
+
+__unknown_file (
+
+%6`
+^
+% %(!
+%8"__id*F
+
+__unknown_file (**(
+prompt_manager.models.Task"
+statusG
+E
+% %('
+%9"__id*-
+
+__unknown_file (*
+
+%8"
+valueé
+ã
+% %('
+%10"__mapSet*"
+
+__unknown_file (
+
+%1*&
+
+__unknown_file (
+
+status*"
+
+__unknown_file (
+
+%9c
+a
+& &(%
+%11"__id*H
+
+__unknown_file (,**
+prompt_manager.models.Task"
+
+priorityë
+é
+& &(%
+%12"__mapSet*"
+
+__unknown_file (
+
+%1*(
+
+__unknown_file (
+
+priority*#
+
+__unknown_file (
+
+%11g
+e
+' '(-
+%13"__id*L
+
+__unknown_file (0*.
+prompt_manager.models.Task"
+dependenciesï
+í
+' '(-
+%14"__mapSet*"
+
+__unknown_file (
+
+%1*,
+
+__unknown_file (
+dependencies*#
+
+__unknown_file (
+
+%13c
+a
+( ((%
+%15"__id*H
+
+__unknown_file (,**
+prompt_manager.models.Task"
+
+assigneeë
+é
+( ((%
+%16"__mapSet*"
+
+__unknown_file (
+
+%1*(
+
+__unknown_file (
+
+assignee*#
+
+__unknown_file (
+
+%15c
+a
+) )(%
+%17"__id*H
+
+__unknown_file (,**
+prompt_manager.models.Task"
+
+due_dateë
+é
+) )(%
+%18"__mapSet*"
+
+__unknown_file (
+
+%1*(
+
+__unknown_file (
+
+due_date*#
+
+__unknown_file (
+
+%17g
+e
+* *(-
+%19"__id*L
+
+__unknown_file (0*.
+prompt_manager.models.Task"
+status_notesï
+í
+* *(-
+%20"__mapSet*"
+
+__unknown_file (
+
+%1*,
+
+__unknown_file (
+status_notes*#
+
+__unknown_file (
+
+%19"
+! +(	
+
+%1B
+prompt_manager.models.TaskH

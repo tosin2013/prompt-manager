@@ -1,0 +1,7 @@
+prompt_manager.manager.PromptManager.handle_task_failure
+false
+f0fb5d58f6132a57b2060766011ddb2a
+prompt_manager.debug.DebugManager.__init__
+prompt_manager.debug.DebugManager.trace_error
+==
+update_task_status

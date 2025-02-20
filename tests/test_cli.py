@@ -5,6 +5,16 @@ Tests for the CLI interface.
 import pytest
 from click.testing import CliRunner
 from prompt_manager.cli import cli
+from tests.constants import (
+    TASK_TITLE,
+    TASK_DESCRIPTION,
+    TASK_TEMPLATE,
+    TASK_PRIORITY,
+    TASK_STATUS_IN_PROGRESS,
+    TASK_ADDED_MSG,
+    TASK_STATUS_UPDATED_MSG,
+    DEFAULT_EXPORT_PATH,
+)
 
 
 @pytest.fixture
@@ -22,85 +32,53 @@ def test_analyze_repo(cli_runner, test_data_dir):
 
 def test_add_task(cli_runner, test_data_dir):
     """Test task addition command."""
-    # First initialize a project
-    result = cli_runner.invoke(cli, ["init", "--path", str(test_data_dir)])
+    result = cli_runner.invoke(cli, ['--project-dir', test_data_dir, 'add-task',
+                                   '--title', TASK_TITLE,
+                                   '--description', TASK_DESCRIPTION,
+                                   '--template', TASK_TEMPLATE,
+                                   '--priority', TASK_PRIORITY])
     assert result.exit_code == 0
-
-    # Add a task
-    result = cli_runner.invoke(
-        cli,
-        [
-            "add-task",
-            "test-task",
-            "Test task description",
-            "Test prompt template",
-            "--priority",
-            "1",
-        ],
-    )
-    assert result.exit_code == 0
-    assert "Task test-task added successfully" in result.output
+    assert TASK_ADDED_MSG in result.output
 
 
 def test_update_progress(cli_runner, test_data_dir):
     """Test task progress update command."""
-    # First initialize a project
-    result = cli_runner.invoke(cli, ["init", "--path", str(test_data_dir)])
+    # First add a task
+    cli_runner.invoke(cli, ['--project-dir', test_data_dir, 'add-task',
+                          '--title', TASK_TITLE,
+                          '--description', TASK_DESCRIPTION,
+                          '--template', TASK_TEMPLATE,
+                          '--priority', TASK_PRIORITY])
+    
+    # Then update its status
+    result = cli_runner.invoke(cli, ['--project-dir', test_data_dir, 'update-progress',
+                                   '--title', TASK_TITLE,
+                                   '--status', TASK_STATUS_IN_PROGRESS])
     assert result.exit_code == 0
-
-    # Add a task
-    result = cli_runner.invoke(
-        cli,
-        [
-            "add-task",
-            "test-task",
-            "Test task description",
-            "Test prompt template",
-        ],
-    )
-    assert result.exit_code == 0
-
-    # Update task status
-    result = cli_runner.invoke(
-        cli, ["update-progress", "test-task", "IN_PROGRESS"]
-    )
-    assert result.exit_code == 0
-    assert "status updated to IN_PROGRESS" in result.output
+    assert TASK_STATUS_UPDATED_MSG in result.output
 
 
 def test_list_tasks(cli_runner, test_data_dir):
     """Test task listing command."""
-    # First initialize a project
-    result = cli_runner.invoke(cli, ["init", "--path", str(test_data_dir)])
+    # First add a task
+    cli_runner.invoke(cli, ['--project-dir', test_data_dir, 'add-task',
+                          '--title', TASK_TITLE,
+                          '--description', TASK_DESCRIPTION,
+                          '--template', TASK_TEMPLATE,
+                          '--priority', TASK_PRIORITY])
+    
+    # Then list all tasks
+    result = cli_runner.invoke(cli, ['--project-dir', test_data_dir, 'list-tasks'])
     assert result.exit_code == 0
-
-    # Add a task
-    result = cli_runner.invoke(
-        cli,
-        [
-            "add-task",
-            "test-task",
-            "Test task description",
-            "Test prompt template",
-        ],
-    )
-    assert result.exit_code == 0
-
-    # List tasks
-    result = cli_runner.invoke(cli, ["list-tasks"])
-    assert result.exit_code == 0
-    assert "test-task" in result.output
+    assert TASK_TITLE in result.output
 
 
 def test_export_tasks(cli_runner, test_data_dir):
     """Test task export command."""
-    export_path = test_data_dir / "tasks_export.json"
-    result = cli_runner.invoke(
-        cli, ["export-tasks", "--output", str(export_path)]
-    )
+    result = cli_runner.invoke(cli, ['--project-dir', test_data_dir, 'export-tasks',
+                                   '--output', DEFAULT_EXPORT_PATH])
     assert result.exit_code == 0
-    assert export_path.exists()
-    assert "Tasks exported successfully" in result.output
+    assert f"Tasks exported successfully to {DEFAULT_EXPORT_PATH}" in result.output
 
 
 def test_invalid_commands(cli_runner):

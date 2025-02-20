@@ -1,0 +1,7 @@
+prompt_manager.PromptManager.generate_bolt_tasks
+false
+ff52c015d790d8af93493837a8e7caa6
+prompt_manager.BoltTask.__init__
+==
+append
+strip

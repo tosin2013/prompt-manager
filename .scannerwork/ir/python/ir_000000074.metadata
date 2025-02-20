@@ -1,0 +1,11 @@
+prompt_manager.debug.DebugManager.iterative_fix
+false
+32394ac6eb67f0b86bd938a04b498dc3
+builtins.__has_next
+builtins.iter
+builtins.next
+prompt_manager.debug.DebugManager._apply_fix
+prompt_manager.debug.DebugManager._identify_key_functions
+prompt_manager.debug.DebugManager._validate_fix
+==
+append

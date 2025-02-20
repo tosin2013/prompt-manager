@@ -1,0 +1,15 @@
+prompt_manager.llm_enhancement.LLMEnhancement._analyze_project_needs
+false
+41df57c36f7e8e9e2b5512dabf69b93b
+builtins.__has_next
+builtins.iter
+builtins.list
+builtins.next
+set.__init__
+==
+_analyze_command_patterns
+add
+count
+join
+lower
+split

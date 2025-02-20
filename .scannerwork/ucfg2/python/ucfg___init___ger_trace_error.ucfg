@@ -1,0 +1,137 @@
+
+(prompt_manager.PromptManager.trace_error\
+P/Users/tosinakinosho/CascadeProjects/windsurf-project/prompt_manager/__init__.py ("4"5*3
+3
+__init__.py"
+” ”(
+implicit return*¡
+4
+† †(K
+I
+
+† †(
+%2"__id*/
+
+__unknown_file (*
+
+task"
+title>
+<
+
+† †(
+%1"__id*"
+
+__unknown_file (
+
+%2*
+6*Y
+5
+†- †(6C
+A
+
+†- †(6
+%1"__id*'
+
+__unknown_file (	
+Unknown*
+6*Ê
+6
+†- †(6F
+D
+
+† †(6
+
+task_title"__id*"
+
+__unknown_file (
+
+%1i
+g
+
+‡ ‡(
+%3"__id*M
+
+__unknown_file (1*/
+prompt_manager.PromptManager"
+memory_bank›
+˜
+
+Š Š(?
+%4"__concat*
+
+Š Š(
+
+- Failed: *
+
+Š Š(#
+
+
+task_title*
+
+Š$ Š(/
+\n  Error: *
+
+Š0 Š(=
+
+error_messageÏÌ
+
+‡ ‹(	
+%5*"
+
+__unknown_file (
+
+%3*0
+
+__unknown_file (
+activeContext.md*.
+
+__unknown_file (
+Recent Changes*"
+
+__unknown_file (
+
+%42update_contexti
+g
+
+Ž Ž(
+%6"__id*M
+
+__unknown_file (1*/
+prompt_manager.PromptManager"
+memory_bank\
+Z
+
+‘ ‘('
+%7"__concat*
+
+‘ ‘(
+	- Error: *
+
+‘ ‘(%
+
+error_messageÇÄ
+
+Ž ’(	
+%8*"
+
+__unknown_file (
+
+%6*)
+
+__unknown_file (
+	errors.md*-
+
+__unknown_file (
+Recent Errors*"
+
+__unknown_file (
+
+%72update_context*
+3:
+
+‚ ‚( 
+error_message:
+
+‚" ‚(?
+taskB 
+prompt_manager.PromptManagerH
