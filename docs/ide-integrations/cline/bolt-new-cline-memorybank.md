@@ -6,30 +6,23 @@ The Memory Bank system now integrates with bolt.new through the Prompt Manager, 
 
 ### For Users
 
-You can install the latest release (v0.3.0) using pip:
-
 ```bash
-# Install from GitHub release
-pip install https://github.com/tosin2013/prompt-manager/releases/download/v0.3.0/prompt_manager-0.3.0.tar.gz
+# Install latest development version from GitHub main branch
+pip install git+https://github.com/tosin2013/prompt-manager.git@main
 
-# Or install directly from the repository
-pip install git+https://github.com/tosin2013/prompt-manager.git@v0.3.0
+# Or install specific version from PyPI (when released)
+pip install tosins-prompt-manager==0.3.18
 ```
 
 ### For Development
-
-If you're working on the project locally:
 
 ```bash
 # Clone the repository
 git clone https://github.com/tosin2013/prompt-manager.git
 cd prompt-manager
 
-# Install in editable mode
-pip install -e .
-
-# Install development dependencies
-pip install -r requirements.txt
+# Install in editable mode with development dependencies
+pip install -e .[dev]
 ```
 
 ## Core Features
@@ -226,3 +219,262 @@ tasks = pm.generate_bolt_tasks("project_name")
 3. API specification import/export
 4. Automated testing setup
 5. CI/CD pipeline generation
+
+## LLM Enhancement for Web Development
+
+### Code Analysis and Improvement
+
+```python
+from prompt_manager import PromptManager
+
+# Initialize project with bolt.new integration
+pm = PromptManager("web_project")
+
+# Generate tasks with LLM enhancement
+tasks = pm.generate_bolt_tasks(
+    project_name="My Web App",
+    framework="Next.js",
+    llm_enhanced=True  # Enable LLM enhancement
+)
+
+# Analyze web components
+impact = pm.llm.analyze_impact(["components/Button.tsx"])
+
+# Get component improvement suggestions
+suggestions = pm.llm.suggest_improvements(
+    file_path="components/Button.tsx",
+    max_suggestions=5
+)
+
+# Create PR for component improvements
+pr = pm.llm.suggest_pull_request(
+    changes=[{"components/Button.tsx": "updated content"}],
+    title="Enhance Button Component",
+    description="Improve accessibility and performance"
+)
+```
+
+### Command Line Interface for Web Development
+
+```bash
+# Generate enhanced bolt.new tasks
+prompt-manager generate-bolt-tasks "Create a blog with auth" --framework Next.js --llm-enhanced
+
+# Analyze web components
+prompt-manager llm analyze-impact components/Button.tsx
+
+# Get component suggestions
+prompt-manager llm suggest-improvements components/Button.tsx
+
+# Create component PR
+prompt-manager llm create-pr "Enhance Button" "Improve component"
+
+# Self-improvement for web components
+prompt-manager improve enhance components/ --type tests
+prompt-manager improve enhance pages/ --type commands
+```
+
+### Memory Bank Integration for Web Development
+
+The Memory Bank now tracks web development specific information:
+
+```python
+# Update technical context with component analysis
+pm.memory_bank.update_context(
+    "techContext.md",
+    "Component Analysis",
+    {
+        "components": {
+            "Button": {
+                "impact_analysis": impact,
+                "suggestions": suggestions,
+                "test_coverage": test_coverage
+            }
+        }
+    }
+)
+
+# Track learning sessions for web development
+pm.memory_bank.update_context(
+    "activeContext.md",
+    "Learning Sessions",
+    {
+        "web_components": learning_sessions,
+        "api_endpoints": api_analysis,
+        "performance_metrics": metrics
+    }
+)
+```
+
+### Enhanced Task Generation
+
+The bolt.new task generation now includes:
+
+1. Code Quality Analysis
+   - Component structure review
+   - Performance optimization
+   - Accessibility compliance
+
+2. Testing Strategy
+   - Unit test generation
+   - Integration test planning
+   - E2E test scenarios
+
+3. Documentation
+   - Component API docs
+   - Usage examples
+   - Best practices
+
+4. Deployment
+   - Build optimization
+   - CI/CD integration
+   - Performance monitoring
+
+```python
+# Generate enhanced tasks with testing focus
+tasks = pm.generate_bolt_tasks(
+    project_name="My Web App",
+    framework="Next.js",
+    enhancement_focus="testing"
+)
+
+# Generate tasks with accessibility focus
+tasks = pm.generate_bolt_tasks(
+    project_name="My Web App",
+    framework="Next.js",
+    enhancement_focus="accessibility"
+)
+```
+
+### Self-Improvement and Code Modification
+
+The bolt.new integration includes self-improvement capabilities specifically for web development:
+
+```python
+from prompt_manager import PromptManager
+
+# Initialize with web-focused self-improvement
+pm = PromptManager(
+    "web_project",
+    enable_self_improvement=True,
+    improvement_focus="web_development"
+)
+
+# Analyze and improve web-specific templates
+web_improvements = pm.llm.analyze_web_templates()
+for improvement in web_improvements:
+    # Apply template improvements
+    pm.llm.improve_template(
+        template_name=improvement["template"],
+        changes=improvement["changes"],
+        framework="Next.js"
+    )
+
+# Analyze and improve web components
+component_improvements = pm.llm.analyze_component_quality(
+    target="components/",
+    aspects=[
+        "accessibility",
+        "performance",
+        "reusability",
+        "testing"
+    ]
+)
+
+# Create pull request with web-focused improvements
+pr = pm.llm.create_improvement_pr(
+    title="Enhancement: Improved web components and templates",
+    description="Automated improvements to web development workflow",
+    changes={
+        "templates": web_improvements,
+        "components": component_improvements
+    },
+    target_repo="tosin2013/prompt-manager",
+    target_branch="main"
+)
+```
+
+### Command Line Interface for Web Development Improvements
+
+```bash
+# Analyze and improve web templates
+prompt-manager improve web-templates
+
+# Analyze and improve components
+prompt-manager improve components --focus accessibility
+
+# Create web-focused improvement PR
+prompt-manager improve create-pr --focus web-development
+
+# Enhance specific web components
+prompt-manager improve enhance components/ --type react
+prompt-manager improve enhance pages/ --type next
+```
+
+### Memory Bank Integration for Web Improvements
+
+The Memory Bank tracks web-specific improvements:
+
+```python
+# Track web component improvements
+pm.memory_bank.update_context(
+    "systemPatterns.md",
+    "Web Component Improvements",
+    {
+        "component_improvements": component_history,
+        "accessibility_fixes": accessibility_improvements,
+        "performance_optimizations": performance_history
+    }
+)
+
+# Track successful web patterns
+pm.memory_bank.update_context(
+    "techContext.md",
+    "Web Development Patterns",
+    {
+        "successful_components": successful_components,
+        "reusable_patterns": reusable_code,
+        "optimization_techniques": performance_patterns
+    }
+)
+```
+
+### Automated Pull Request Creation for Web Development
+
+The system can automatically create web-focused pull requests:
+
+```python
+# Configure GitHub credentials
+pm.configure_github(
+    token=os.getenv("GITHUB_TOKEN"),
+    username="your-username"
+)
+
+# Create and submit web-focused improvements
+improvements = pm.llm.suggest_web_improvements()
+if improvements:
+    pr = pm.llm.create_pull_request(
+        title="Enhancement: Web development improvements",
+        description="""
+        This PR contains automated web development improvements:
+        - Component optimizations
+        - Accessibility enhancements
+        - Performance improvements
+        - Testing coverage
+        """,
+        changes=improvements,
+        base_repo="tosin2013/prompt-manager",
+        base_branch="main"
+    )
+    
+    # Track PR in memory bank
+    pm.memory_bank.track_pull_request(pr)
+```
+
+### Best Practices for Web Development Modifications
+
+1. **Accessibility First**: Ensure all component improvements maintain or enhance accessibility
+2. **Performance Impact**: Analyze performance impact of changes
+3. **Cross-browser Testing**: Include cross-browser compatibility in test coverage
+4. **Mobile Responsiveness**: Verify improvements work on all device sizes
+5. **Documentation**: Update component documentation and examples

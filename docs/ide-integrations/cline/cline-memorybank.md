@@ -12,46 +12,34 @@ The Memory Bank system is now integrated with the Prompt Manager (`prompt_manage
 
 ### Version Compatibility
 
-This documentation is for version 0.3.16 of tosins-prompt-manager, which supports:
+This documentation is for version 0.3.18 of tosins-prompt-manager, which supports:
 - Python versions 3.9 through 3.13
 - Full CLI command set with memory bank integration
 - Enhanced task management and tracking
 - Automated documentation updates
+- LLM Enhancement features for code improvement
 
 ## Installation
 
 ### For Users
 
-You can install the latest release (v0.3.16) using pip:
-
 ```bash
-# Install from PyPI
-pip install tosins-prompt-manager==0.3.16
+# Install latest development version from GitHub main branch
+pip install git+https://github.com/tosin2013/prompt-manager.git@main
 
-# Or install from GitHub release
-pip install https://github.com/tosin2013/prompt-manager/releases/download/v0.3.16/tosins_prompt_manager-0.3.16.tar.gz
-
-# Or install directly from the repository
-pip install git+https://github.com/tosin2013/prompt-manager.git@v0.3.16
+# Or install specific version from PyPI (when released)
+pip install tosins-prompt-manager==0.3.18
 ```
 
 ### For Development
-
-If you're working on the project locally:
 
 ```bash
 # Clone the repository
 git clone https://github.com/tosin2013/prompt-manager.git
 cd prompt-manager
 
-# Checkout the latest release
-git checkout v0.3.16
-
-# Install in editable mode
-pip install -e .
-
-# Install development dependencies
-pip install -r requirements.txt
+# Install in editable mode with development dependencies
+pip install -e .[dev]
 ```
 
 ## Project Structure
@@ -402,93 +390,212 @@ else:
 
 The Command Line Interface (CLI) Memory Bank is a powerful tool that helps maintain context and preferences across coding sessions.
 
-## Installation
+## LLM Enhancement Features
 
-You can install the prompt-manager package using pip:
+### Code Analysis and Improvement
 
-```bash
-pip install tosins-prompt-manager==0.3.16
+```python
+from prompt_manager import PromptManager, LLMEnhancement
+
+# Initialize LLM Enhancement
+pm = PromptManager("project_name")
+llm = pm.llm
+
+# Start a learning session
+llm.start_learning_session()
+
+# Analyze code impact
+impact = llm.analyze_impact(["path/to/file.py"])
+print(f"Impact Analysis: {impact}")
+
+# Get code improvement suggestions
+suggestions = llm.suggest_improvements(max_suggestions=5)
+for suggestion in suggestions:
+    print(f"Suggestion: {suggestion['description']}")
+
+# Create and submit pull request
+pr = llm.suggest_pull_request(
+    changes=[{"file.py": "updated content"}],
+    title="Code Improvements",
+    description="Enhance code quality"
+)
+success, message = llm.create_pull_request(pr)
 ```
 
-## Getting Started
-
-After installation, you can explore the available commands and features using the help command:
+### Command Line Interface for LLM Features
 
 ```bash
-prompt-manager --help
+# Analyze code impact
+prompt-manager llm analyze-impact path/to/file.py
+
+# Start learning session
+prompt-manager llm learn-session
+
+# Get improvement suggestions
+prompt-manager llm suggest-improvements path/to/file.py --max-suggestions 5
+
+# Create pull request
+prompt-manager llm create-pr "Title" "Description"
+
+# Generate custom commands
+prompt-manager llm generate-commands path/to/file.py
+
+# Self-improvement commands
+prompt-manager improve enhance path/to/file.py --type tests
+prompt-manager improve enhance . --type commands
+prompt-manager improve enhance plugins --type plugins
 ```
 
-This will display all available commands and their descriptions. Each command also has its own help information:
+### Memory Bank Integration with LLM
 
-```bash
-prompt-manager <command> --help
+The Memory Bank now tracks:
+- Code analysis results
+- Learning session insights
+- Improvement suggestions
+- Pull request history
+- Generated commands
+
+```python
+# Access LLM-related memory
+context = pm.memory_bank.load_context_memory()
+command_history = context.get("commandHistory", [])
+learning_sessions = context.get("learningSessions", [])
+
+# Save LLM analysis results
+pm.memory_bank.save_context_memory({
+    "codeAnalysis": impact,
+    "suggestions": suggestions,
+    "pullRequests": pr_history
+})
 ```
-
-Available commands include:
-- `analyze-repo`: Analyze a repository for patterns and suggestions
-- `init`: Initialize a new prompt-manager configuration
-- `add-task`: Add a new task to track
-- `update-progress`: Update the progress of a task
-- `list-tasks`: List all tracked tasks
-- `export-tasks`: Export tasks to various formats
-- `generate-bolt-tasks`: Generate Bolt-compatible task definitions
-
-## Using Memory Bank
-
-The Memory Bank allows you to:
-1. Store and retrieve important context about your codebase
-2. Track user preferences and coding patterns
-3. Maintain a history of decisions and their rationales
-4. Share knowledge across team members
-
-### Basic Commands
-
-Initialize a new configuration:
-```bash
-prompt-manager init
-```
-
-Add a new task:
-```bash
-prompt-manager add-task "Implement new feature"
-```
-
-List all tasks:
-```bash
-prompt-manager list-tasks
-```
-
-### Advanced Usage
-
-Analyze a repository for patterns:
-```bash
-prompt-manager analyze-repo /path/to/repo
-```
-
-Export tasks to JSON:
-```bash
-prompt-manager export-tasks --format json
-```
-
-## Best Practices
-
-1. Always initialize prompt-manager in your project root
-2. Regularly update task progress to maintain accurate status
-3. Use descriptive task names and detailed descriptions
-4. Tag tasks appropriately for better organization
-5. Export tasks regularly for backup and sharing
-
-## Troubleshooting
-
-If you encounter any issues:
-1. Check your prompt-manager version:
-   ```bash
-   prompt-manager --version
-   ```
-2. Verify your configuration is initialized correctly
-3. Ensure you have appropriate permissions in your project directory
-4. Check the logs for detailed error messages
 
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](../../CONTRIBUTING.md) for details on how to submit pull requests, report issues, and contribute to the project.
+
+## Self-Improvement and Code Modification
+
+The Memory Bank system is designed to be self-improving. It can:
+1. Analyze its own code and prompt templates
+2. Suggest and implement improvements
+3. Create pull requests back to the main repository
+
+### Code and Template Modification
+
+```python
+from prompt_manager import PromptManager
+
+# Initialize with self-improvement capabilities
+pm = PromptManager("project_name", enable_self_improvement=True)
+
+# Analyze and improve prompt templates
+improvements = pm.llm.analyze_templates()
+for improvement in improvements:
+    # Apply template improvements
+    pm.llm.improve_template(
+        template_name=improvement["template"],
+        changes=improvement["changes"]
+    )
+
+# Analyze and improve code
+code_improvements = pm.llm.analyze_code_quality(
+    target="prompt_manager/",
+    focus=["performance", "maintainability"]
+)
+
+# Create pull request with improvements
+pr = pm.llm.create_improvement_pr(
+    title="Enhancement: Improved prompt templates and code quality",
+    description="Automated improvements to templates and core functionality",
+    changes={
+        "templates": improvements,
+        "code": code_improvements
+    },
+    target_repo="tosin2013/prompt-manager",
+    target_branch="main"
+)
+```
+
+### Command Line Interface for Self-Improvement
+
+```bash
+# Analyze and improve prompt templates
+prompt-manager improve templates
+
+# Analyze and improve code
+prompt-manager improve code --focus performance
+
+# Create improvement PR
+prompt-manager improve create-pr --target-repo tosin2013/prompt-manager
+
+# Enhance specific components
+prompt-manager improve enhance prompt_manager/templates/ --type templates
+prompt-manager improve enhance prompt_manager/core/ --type code
+```
+
+### Memory Bank Integration for Improvements
+
+The Memory Bank tracks all improvements and their impacts:
+
+```python
+# Track improvement history
+pm.memory_bank.update_context(
+    "systemPatterns.md",
+    "Self-Improvement History",
+    {
+        "template_improvements": template_history,
+        "code_improvements": code_history,
+        "impact_analysis": improvement_impact
+    }
+)
+
+# Track successful patterns
+pm.memory_bank.update_context(
+    "techContext.md",
+    "Improvement Patterns",
+    {
+        "successful_patterns": successful_improvements,
+        "failed_attempts": failed_improvements,
+        "lessons_learned": improvement_lessons
+    }
+)
+```
+
+### Automated Pull Request Creation
+
+The system can automatically create pull requests to the main repository:
+
+```python
+# Configure GitHub credentials
+pm.configure_github(
+    token=os.getenv("GITHUB_TOKEN"),
+    username="your-username"
+)
+
+# Create and submit improvements
+improvements = pm.llm.suggest_improvements()
+if improvements:
+    pr = pm.llm.create_pull_request(
+        title="Enhancement: Automated improvements",
+        description="""
+        This PR contains automated improvements:
+        - Template optimizations
+        - Code quality enhancements
+        - Documentation updates
+        """,
+        changes=improvements,
+        base_repo="tosin2013/prompt-manager",
+        base_branch="main"
+    )
+    
+    # Track PR in memory bank
+    pm.memory_bank.track_pull_request(pr)
+```
+
+### Best Practices for Code Modification
+
+1. **Review Before Submit**: Always review suggested changes before creating PRs
+2. **Test Coverage**: Ensure changes include appropriate test coverage
+3. **Documentation**: Update documentation to reflect changes
+4. **Impact Analysis**: Include impact analysis in PR descriptions
+5. **Gradual Changes**: Prefer smaller, focused improvements over large changes
