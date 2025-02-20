@@ -1,0 +1,41 @@
+name: generate-commands
+description: Template for generating CLI commands
+required_context:
+  - file_path
+  - file_content
+  - command_history
+template: |
+  CLI Command Generation Request
+  ============================
+  
+  File: {file_path}
+  
+  Content:
+  {file_content}
+  
+  Command History:
+  {command_history}
+  
+  Please analyze the code and generate CLI commands for the following:
+  
+  1. Core Operations
+     - Essential functionality
+     - Common use cases
+     - Required parameters
+  
+  2. Utility Commands
+     - Helper functions
+     - Convenience operations
+     - Batch processing
+  
+  3. Management Commands
+     - Configuration
+     - Maintenance
+     - Monitoring
+  
+  4. Documentation
+     - Command descriptions
+     - Usage examples
+     - Parameter details
+  
+  Please provide commands in Click format with comprehensive documentation. 

@@ -5,6 +5,7 @@ from pathlib import Path
 from prompt_manager import PromptManager, TaskStatus, MemoryBank
 from prompt_manager.cli.utils import get_manager
 from prompt_manager.prompts import get_prompt_for_command
+from typing import Optional
 
 def print_prompt_info(prompt_name: str, prompt: str):
     """Print prompt information in a formatted way."""
@@ -165,10 +166,10 @@ def list_tasks():
         click.echo(tasks_text)
 
 @base.command()
-@click.option('--status', type=click.Choice([s.value for s in TaskStatus]), help='Filter by status')
-def export_tasks(output_file):
+@click.option('--output', '-o', required=True, type=click.Path(), help='Output file path')
+def export_tasks(output: str):
     """Export tasks to a file."""
-    manager = PromptManager(Path.cwd())
+    manager = get_manager()
     
     # Get export context
     tasks = manager.list_tasks()
@@ -180,8 +181,8 @@ def export_tasks(output_file):
     if prompt_template:
         context = {
             "tasks": "\n".join(str(task) for task in tasks),
-            "export_format": output_file.split('.')[-1],
-            "export_path": output_file,
+            "export_format": output.split('.')[-1],
+            "export_path": output,
             "project_metadata": project_metadata,
             "historical_exports": historical_exports
         }
@@ -189,8 +190,8 @@ def export_tasks(output_file):
         print_prompt_info("export-tasks", prompt)
     
     # Export tasks
-    manager.export_tasks(output_file)
-    click.echo(f"Exported tasks to: {output_file}")
+    manager.export_tasks(output)
+    click.echo(f"Exported tasks to: {output}")
 
 @base.command()
 @click.option('--path', default='.', help='Path to initialize project at')
@@ -203,5 +204,32 @@ def init(path: str):
     except Exception as e:
         click.echo(f"Error initializing project: {e}", err=True)
         raise click.Abort()
+
+@base.command()
+@click.argument('description')
+@click.option('--framework', '-f', help='Target framework')
+def generate_bolt_tasks(description: str, framework: Optional[str] = None):
+    """Generate bolt.new tasks."""
+    manager = get_manager()
+    
+    # Get and format prompt
+    prompt_template = get_prompt_for_command("generate-bolt-tasks")
+    if prompt_template:
+        context = {
+            "description": description,
+            "framework": framework or "any",
+            "existing_tasks": "\n".join(str(task) for task in manager.list_tasks())
+        }
+        prompt = prompt_template.format(**context)
+        print_prompt_info("generate-bolt-tasks", prompt)
+    
+    # Generate tasks
+    tasks = manager.generate_bolt_tasks(description, framework)
+    if tasks:
+        click.echo("Generated tasks:")
+        for task in tasks:
+            click.echo(f"- {task}")
+    else:
+        click.echo("No tasks generated")
 
 __all__ = ['base']

@@ -2,7 +2,7 @@
 
 from typing import Dict, List, Optional
 from pathlib import Path
-import datetime
+from datetime import datetime
 import yaml
 import os
 
@@ -88,25 +88,20 @@ class PromptManager:
             for template in self.templates.values()
         ]
 
-def save_prompt_history(memory_bank, command: str, prompt: str, response: str) -> None:
-    """Save the prompt and response to the memory bank."""
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    content = f"""## {command} - {timestamp}
-
-### Prompt:
-{prompt}
-
-### Response:
-{response}
-
----
-"""
-    memory_bank.update_context(
-        "commandHistory.md",
-        f"{command} Execution",
-        content,
-        mode="append"
-    )
+def save_prompt_history(memory_bank, command_name: str, prompt: str, response: str):
+    """Save prompt and response to memory bank."""
+    context = memory_bank.load_context_memory()
+    if "commandHistory" not in context:
+        context["commandHistory"] = []
+    
+    context["commandHistory"].append({
+        "command": command_name,
+        "prompt": prompt,
+        "response": response,
+        "timestamp": datetime.now().isoformat()
+    })
+    
+    memory_bank.save_context_memory(context)
 
 # Initialize the global prompt manager
 _prompt_manager = PromptManager()

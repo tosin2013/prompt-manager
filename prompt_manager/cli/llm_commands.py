@@ -46,7 +46,7 @@ def analyze_impact(file_path):
     prompt_template = get_prompt_for_command("analyze-impact")
     
     # Get file changes
-    repo = git.Repo(manager.project_dir, search_parent_directories=True)
+    repo = git.Repo(manager.project_path, search_parent_directories=True)
     file_path = str(Path(file_path).resolve())
     rel_path = str(Path(file_path).relative_to(repo.working_dir))
     
@@ -57,7 +57,7 @@ def analyze_impact(file_path):
     dependencies = "TODO: Implement dependency analysis"
     
     # Get previous analysis from memory
-    previous_analysis = manager.memory_bank.get_context("commandHistory.md") or "No previous analysis found."
+    previous_analysis = manager.memory.load_context_memory().get("commandHistory", "No previous analysis found.")
     
     context = {
         "file_path": rel_path,
@@ -72,7 +72,7 @@ def analyze_impact(file_path):
     response = "TODO: Implement LLM call"
     
     # Save to memory bank
-    save_prompt_history(manager.memory_bank, "analyze-impact", prompt, response)
+    save_prompt_history(manager.memory, "analyze-impact", prompt, response)
     
     click.echo(response)
 
@@ -83,10 +83,10 @@ def analyze_repo():
     prompt_template = get_prompt_for_command("analyze-repo")
     
     # Get repo info
-    repo_info = get_repo_info(manager.project_dir)
+    repo_info = get_repo_info(manager.project_path)
     
     # Get previous analysis from memory
-    previous_analysis = manager.memory_bank.get_context("commandHistory.md") or "No previous analysis found."
+    previous_analysis = manager.memory.load_context_memory().get("commandHistory", "No previous analysis found.")
     
     context = {
         **repo_info,
@@ -99,7 +99,7 @@ def analyze_repo():
     response = "TODO: Implement LLM call"
     
     # Save to memory bank
-    save_prompt_history(manager.memory_bank, "analyze-repo", prompt, response)
+    save_prompt_history(manager.memory, "analyze-repo", prompt, response)
     
     click.echo(response)
 
@@ -115,7 +115,7 @@ def generate_commands(file_path):
         file_content = f.read()
     
     # Get command history from memory
-    command_history = manager.memory_bank.get_context("commandHistory.md") or "No previous commands found."
+    command_history = manager.memory.load_context_memory().get("commandHistory", "No previous commands found.")
     
     context = {
         "file_path": str(file_path),
@@ -129,7 +129,7 @@ def generate_commands(file_path):
     response = "TODO: Implement LLM call"
     
     # Save to memory bank
-    save_prompt_history(manager.memory_bank, "generate-commands", prompt, response)
+    save_prompt_history(manager.memory, "generate-commands", prompt, response)
     
     click.echo(response)
 
@@ -146,7 +146,7 @@ def suggest_improvements(file_path, max_suggestions):
         file_content = f.read()
     
     # Get previous suggestions from memory
-    previous_suggestions = manager.memory_bank.get_context("commandHistory.md") or "No previous suggestions found."
+    previous_suggestions = manager.memory.load_context_memory().get("commandHistory", "No previous suggestions found.")
     
     context = {
         "file_path": str(file_path),
@@ -161,7 +161,7 @@ def suggest_improvements(file_path, max_suggestions):
     response = "TODO: Implement LLM call"
     
     # Save to memory bank
-    save_prompt_history(manager.memory_bank, "suggest-improvements", prompt, response)
+    save_prompt_history(manager.memory, "suggest-improvements", prompt, response)
     
     click.echo(response)
 
@@ -173,7 +173,7 @@ def create_pr(title, description):
     manager = get_manager()
     prompt_template = get_prompt_for_command("create-pr")
     
-    repo = git.Repo(manager.project_dir, search_parent_directories=True)
+    repo = git.Repo(manager.project_path, search_parent_directories=True)
     
     # Get changed files
     changed_files = repo.git.diff('--name-status')
@@ -182,7 +182,7 @@ def create_pr(title, description):
     commit_history = repo.git.log('--oneline', '-n', '5')
     
     # Get previous PRs from memory
-    previous_prs = manager.memory_bank.get_context("commandHistory.md") or "No previous PRs found."
+    previous_prs = manager.memory.load_context_memory().get("commandHistory", "No previous PRs found.")
     
     context = {
         "title": title,
@@ -198,7 +198,7 @@ def create_pr(title, description):
     response = "TODO: Implement LLM call"
     
     # Save to memory bank
-    save_prompt_history(manager.memory_bank, "create-pr", prompt, response)
+    save_prompt_history(manager.memory, "create-pr", prompt, response)
     
     click.echo(response)
 

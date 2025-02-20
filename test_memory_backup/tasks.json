@@ -1,0 +1,16 @@
+{
+  "test-task": {
+    "id": "e42c8a2b-ebd8-4559-a038-43a8156ecc1d",
+    "description": "Test task description",
+    "status": "in_progress",
+    "created_at": "2025-02-20T11:46:18.050313",
+    "updated_at": "2025-02-20T11:46:18.330452",
+    "completed_at": null,
+    "dependencies": [],
+    "tags": [],
+    "priority": 0,
+    "notes": [
+      "Started working"
+    ]
+  }
+}

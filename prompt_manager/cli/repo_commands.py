@@ -61,15 +61,20 @@ def learn_session(file_path, duration):
     """Start a learning session for repository understanding."""
     manager = RepoManager()
     try:
-        # Get repo context
-        stats = manager.get_repo_stats(file_path)
-        recent_changes = manager.get_recent_changes(file_path)
-        
         # Start session
-        session = manager.learn_session(file_path, duration)
+        session = manager.learn_session(file_path, duration=duration)
         if 'error' in session:
             click.echo(f"Error: {session['error']}", err=True)
             sys.exit(1)
+
+        # Display session information
+        click.echo("\nLearning Session Started:")
+        click.echo(f"Duration: {session['session']['duration']} minutes")
+        click.echo(f"Start Time: {session['session']['start_time']}")
+        click.echo(f"End Time: {session['session']['end_time']}")
+        click.echo(f"Status: {'Active' if session['session']['is_active'] else 'Inactive'}")
+        if session['session']['time_remaining']:
+            click.echo(f"Time Remaining: {session['session']['time_remaining']}")
 
         # Get and format prompt
         prompt_template = get_prompt_for_command("learn-session")

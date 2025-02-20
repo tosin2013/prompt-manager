@@ -14,6 +14,7 @@ from datetime import datetime
 import subprocess
 import uuid
 from dataclasses import dataclass
+from prompt_manager.prompts import get_prompt_for_command
 
 
 @dataclass
@@ -55,7 +56,7 @@ Next Steps: {self.next_steps}
 class LLMEnhancement:
     """Provides advanced LLM capabilities for code improvement and automation."""
 
-    def __init__(self, memory_bank):
+    def __init__(self, memory_bank=None):
         """Initialize the LLM Enhancement system.
 
         Args:
@@ -1206,3 +1207,107 @@ When to Use:
         enhanced = self._optimize_length(enhanced)
 
         return enhanced
+
+    def analyze_code(self, file_path: str) -> Dict[str, Any]:
+        """Analyze code for potential issues."""
+        prompt = get_prompt_for_command("analyze-file")
+        # TODO: Implement LLM analysis
+        return {"issues": []}
+        
+    def analyze_error(self, error_message: str, file_path: Optional[str] = None) -> Dict[str, Any]:
+        """Analyze error message to find root cause."""
+        prompt = get_prompt_for_command("find-root-cause")
+        # TODO: Implement LLM analysis
+        return {"root_cause": "", "suggestions": []}
+        
+    def suggest_fixes(self, file_path: str) -> List[Dict[str, Any]]:
+        """Suggest fixes for code issues."""
+        prompt = get_prompt_for_command("suggest-fixes")
+        # TODO: Implement LLM suggestions
+        return []
+        
+    def generate_test_plan(self, file_path: str) -> Dict[str, Any]:
+        """Generate testing roadmap."""
+        prompt = get_prompt_for_command("test-roadmap")
+        # TODO: Implement LLM test planning
+        return {"test_cases": []}
+        
+    def analyze_dependencies(self, file_path: str, recursive: bool = False) -> Dict[str, Any]:
+        """Analyze file dependencies."""
+        prompt = get_prompt_for_command("analyze-dependencies")
+        # TODO: Implement LLM dependency analysis
+        return {"dependencies": []}
+        
+    def trace_error(self, error_message: str, file_path: Optional[str] = None, 
+                   line_number: Optional[int] = None) -> Dict[str, Any]:
+        """Trace error through codebase."""
+        prompt = get_prompt_for_command("trace-error")
+        # TODO: Implement LLM error tracing
+        return {"trace": []}
+        
+    def analyze_repository(self, repo_path: str) -> Dict[str, Any]:
+        """Analyze repository structure and patterns."""
+        prompt = get_prompt_for_command("analyze-repo")
+        # TODO: Implement LLM repo analysis
+        return {"analysis": {}}
+        
+    def learn_from_session(self, duration: int) -> Dict[str, Any]:
+        """Learn from coding session."""
+        prompt = get_prompt_for_command("learn-session")
+        # TODO: Implement LLM session learning
+        return {"insights": []}
+        
+    def analyze_impact(self, changes: List[str]) -> Dict[str, Any]:
+        """Analyze impact of code changes."""
+        prompt = get_prompt_for_command("analyze-impact")
+        # TODO: Implement LLM impact analysis
+        return {"impact": {}}
+        
+    def suggest_improvements(self, max_suggestions: int = 5) -> List[Dict[str, Any]]:
+        """Suggest code improvements."""
+        prompt = get_prompt_for_command("suggest-improvements")
+        # TODO: Implement LLM improvement suggestions
+        return []
+        
+    def create_pull_request(self, title: str, description: str, changes: List[str]) -> Dict[str, Any]:
+        """Create pull request with changes."""
+        prompt = get_prompt_for_command("create-pr")
+        # TODO: Implement LLM PR creation
+        return {"pr": {}}
+
+    def generate_tasks(self, description: str, framework: Optional[str] = None, 
+                      existing_tasks: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
+        """Generate tasks for a project.
+        
+        Args:
+            description: Project description
+            framework: Optional target framework
+            existing_tasks: Optional list of existing tasks
+            
+        Returns:
+            Dict containing generated tasks
+        """
+        prompt = get_prompt_for_command("generate-bolt-tasks")
+        if not prompt:
+            return {"tasks": []}
+            
+        # Format prompt with context
+        context = {
+            "description": description,
+            "framework": framework or "any",
+            "existing_tasks": "\n".join(str(task) for task in (existing_tasks or []))
+        }
+        prompt = prompt.format(**context)
+        
+        # TODO: Replace with actual LLM call
+        # For now, return some sample tasks
+        return {
+            "tasks": [
+                "Set up development environment",
+                "Create project structure",
+                "Install dependencies",
+                "Implement core features",
+                "Add tests",
+                "Set up deployment"
+            ]
+        }

@@ -1,0 +1,44 @@
+name: suggest-improvements
+description: Template for suggesting code improvements
+required_context:
+  - file_path
+  - file_content
+  - previous_suggestions
+  - max_suggestions
+template: |
+  Code Improvement Suggestions Request
+  ==================================
+  
+  File: {file_path}
+  
+  Content:
+  {file_content}
+  
+  Previous Suggestions:
+  {previous_suggestions}
+  
+  Maximum Suggestions: {max_suggestions}
+  
+  Please analyze the code and suggest improvements in the following areas:
+  
+  1. Code Quality
+     - Readability
+     - Maintainability
+     - Best practices
+  
+  2. Performance
+     - Algorithmic efficiency
+     - Resource usage
+     - Bottlenecks
+  
+  3. Architecture
+     - Design patterns
+     - Code organization
+     - Modularity
+  
+  4. Testing
+     - Test coverage
+     - Test quality
+     - Edge cases
+  
+  Please provide specific, actionable suggestions with example code where appropriate. 

@@ -1,0 +1,47 @@
+name: generate-bolt-tasks
+description: Template for generating bolt.new tasks
+required_context:
+  - description
+  - framework
+  - existing_tasks
+template: |
+  Task Generation Request
+  ======================
+  
+  Project Description: {description}
+  Target Framework: {framework}
+  
+  Existing Tasks:
+  {existing_tasks}
+  
+  Please generate a list of tasks to implement this project:
+  
+  1. Setup and Configuration
+     - Development environment
+     - Project structure
+     - Dependencies
+  
+  2. Core Features
+     - Essential functionality
+     - User interface
+     - Data management
+  
+  3. Testing and Documentation
+     - Unit tests
+     - Integration tests
+     - Documentation
+  
+  4. Deployment and Maintenance
+     - Build process
+     - Deployment steps
+     - Monitoring
+  
+  Please provide tasks in a clear, actionable format.
+  Each task should be self-contained and have a clear completion criteria.
+  
+  Tasks should be returned in the following format:
+  [
+    "Task 1: Description",
+    "Task 2: Description",
+    ...
+  ] 

@@ -9,4 +9,4 @@ from prompt_manager.memory import MemoryBank
 
 def get_manager() -> PromptManager:
     """Get a PromptManager instance for the current directory."""
-    return PromptManager()
+    return PromptManager(Path.cwd())

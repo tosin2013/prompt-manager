@@ -131,6 +131,24 @@ if ! validate_prompt_display "$output" "list-tasks"; then
   exit 1
 fi
 
+# Test export-tasks
+echo -e "\n${YELLOW}Testing export-tasks command...${NC}"
+output=$(prompt-manager base export-tasks --output tasks_export.json)
+if ! validate_prompt_display "$output" "export-tasks"; then
+  exit 1
+fi
+if [ ! -f "tasks_export.json" ]; then
+  echo -e "${RED}❌ Export file not created${NC}"
+  exit 1
+fi
+
+# Test generate-bolt-tasks
+echo -e "\n${YELLOW}Testing generate-bolt-tasks command...${NC}"
+output=$(prompt-manager base generate-bolt-tasks "Create a simple blog" --framework Next.js)
+if ! validate_prompt_display "$output" "generate-bolt-tasks"; then
+  exit 1
+fi
+
 # Test debug commands with prompt validation
 echo -e "\n${YELLOW}Testing debug commands with prompts...${NC}"
 
@@ -144,6 +162,13 @@ Traceback (most recent call last):
   File 'test_file.py', line 2
     print('Hello World')
 TypeError: str object is not callable" > test_error.log
+
+# Initialize git repository for testing
+git init
+git add .
+git config --global user.email "test@example.com"
+git config --global user.name "Test User"
+git commit -m "Initial commit"
 
 # Test analyze-file
 output=$(prompt-manager debug analyze-file "test_file.py")
@@ -163,34 +188,81 @@ if ! validate_prompt_display "$output" "test-roadmap"; then
   exit 1
 fi
 
-# Initialize git repo
-git config --global user.email "test@example.com"
-git config --global user.name "Test User"
-git init .
-git add .
-git commit -m "Initial commit"
-
-# Test repo commands with prompt validation
+# Test repo commands with prompts
 echo -e "\n${YELLOW}Testing repo commands with prompts...${NC}"
 
 # Test analyze-repo
-output=$(prompt-manager repo analyze-repo "test_file.py")
+output=$(prompt-manager repo analyze-repo ".")
 if ! validate_prompt_display "$output" "analyze-repo"; then
   exit 1
 fi
 
 # Test learn-session
-output=$(prompt-manager repo learn-session "test_file.py")
+output=$(prompt-manager repo learn-session "." --duration 5)
 if ! validate_prompt_display "$output" "learn-session"; then
+  exit 1
+fi
+
+# Test LLM commands
+echo -e "\n${YELLOW}Testing LLM commands with prompts...${NC}"
+
+# Test analyze-impact
+output=$(prompt-manager llm analyze-impact test_file.py)
+if ! validate_prompt_display "$output" "analyze-impact"; then
+  exit 1
+fi
+
+# Test suggest-improvements
+output=$(prompt-manager llm suggest-improvements test_file.py --max-suggestions 2)
+if ! validate_prompt_display "$output" "suggest-improvements"; then
+  exit 1
+fi
+
+# Test create-pr
+# First make some changes
+echo "# Added comment" >> test_file.py
+git add test_file.py
+output=$(prompt-manager llm create-pr "Test PR" "Test Description")
+if ! validate_prompt_display "$output" "create-pr"; then
+  exit 1
+fi
+
+# Test generate-commands
+output=$(prompt-manager llm generate-commands test_file.py)
+if ! validate_prompt_display "$output" "generate-commands"; then
+  exit 1
+fi
+
+# Test self-improvement commands
+echo -e "\n${YELLOW}Testing self-improvement commands...${NC}"
+
+# Test enhance command for tests
+output=$(prompt-manager improve enhance test_file.py --type tests --no-pr)
+if ! validate_prompt_display "$output" "enhance-system"; then
+  exit 1
+fi
+
+# Test enhance command for commands
+output=$(prompt-manager improve enhance . --type commands --no-pr)
+if ! validate_prompt_display "$output" "enhance-system"; then
+  exit 1
+fi
+
+# Test enhance command for plugins
+mkdir -p plugins
+touch plugins/test_plugin.py
+output=$(prompt-manager improve enhance plugins --type plugins --no-pr)
+if ! validate_prompt_display "$output" "enhance-system"; then
   exit 1
 fi
 
 # Verify memory files
 verify_memory_files "."
 
-# Backup memory files for inspection
-echo -e "\nAll tests completed!"
+echo -e "\n${GREEN}All tests completed!${NC}"
+
+# Backup memory files
 BACKUP_DIR="../test_memory_backup"
 mkdir -p "$BACKUP_DIR"
-cp -r memory/ "$BACKUP_DIR/"
+cp -r memory/* "$BACKUP_DIR/"
 echo "Memory files backed up to $BACKUP_DIR"

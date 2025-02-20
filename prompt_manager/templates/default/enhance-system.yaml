@@ -1,0 +1,53 @@
+name: enhance-system
+description: Template for system self-improvement suggestions
+required_context:
+  - target_path
+  - improvement_type
+  - current_state
+  - system_capabilities
+template: |
+  System Enhancement Request
+  =========================
+  
+  Target: {target_path}
+  Enhancement Type: {improvement_type}
+  
+  Current State:
+  {current_state}
+  
+  System Capabilities:
+  {system_capabilities}
+  
+  Task:
+  You are an AI system with the capability to improve the Prompt Manager codebase.
+  Please analyze the current state and suggest improvements for the specified target.
+  
+  Requirements:
+  1. All suggestions must be actionable and specific
+  2. Code changes must follow project conventions
+  3. New tests must be comprehensive and follow testing best practices
+  4. New commands must be well-documented and user-friendly
+  5. Plugin suggestions must be modular and maintainable
+  
+  Expected Output Format:
+  [
+    {{
+      "type": "new_file" | "modify_file",
+      "path": "relative/path/to/file",
+      "description": "Clear description of the change",
+      "content": "Full file content" | "changes": [
+        {{
+          "type": "replace" | "append" | "prepend",
+          "old": "text to replace",
+          "new": "replacement text",
+          "content": "content to add"
+        }}
+      ]
+    }}
+  ]
+  
+  Please provide your suggestions in the format above, ensuring each change is:
+  - Well-documented
+  - Properly tested
+  - Following best practices
+  - Maintainable and extensible 

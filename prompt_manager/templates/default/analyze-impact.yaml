@@ -1,0 +1,45 @@
+name: analyze-impact
+description: Template for analyzing impact of code changes
+required_context:
+  - file_path
+  - changes
+  - dependencies
+  - previous_analysis
+template: |
+  Code Impact Analysis Request
+  ===========================
+  
+  File: {file_path}
+  
+  Changes:
+  {changes}
+  
+  Dependencies:
+  {dependencies}
+  
+  Previous Analysis:
+  {previous_analysis}
+  
+  Please analyze the potential impact of these changes:
+  
+  1. Direct Impact
+     - Modified functionality
+     - API changes
+     - Performance implications
+  
+  2. Dependency Impact
+     - Affected modules
+     - Breaking changes
+     - Required updates
+  
+  3. Testing Requirements
+     - Unit tests
+     - Integration tests
+     - Performance tests
+  
+  4. Deployment Considerations
+     - Migration needs
+     - Rollback plan
+     - Monitoring requirements
+  
+  Please provide a detailed analysis with specific recommendations. 

@@ -1,0 +1,47 @@
+name: create-pr
+description: Template for creating pull requests
+required_context:
+  - title
+  - description
+  - changed_files
+  - commit_history
+  - previous_prs
+template: |
+  Pull Request Creation Request
+  ===========================
+  
+  Title: {title}
+  Description: {description}
+  
+  Changed Files:
+  {changed_files}
+  
+  Recent Commits:
+  {commit_history}
+  
+  Previous PRs:
+  {previous_prs}
+  
+  Please help create a pull request with the following:
+  
+  1. PR Overview
+     - Purpose and goals
+     - Key changes
+     - Breaking changes
+  
+  2. Implementation Details
+     - Technical approach
+     - Design decisions
+     - Trade-offs made
+  
+  3. Testing Strategy
+     - Test coverage
+     - Test cases
+     - Manual testing needed
+  
+  4. Review Guidelines
+     - Focus areas
+     - Potential risks
+     - Special considerations
+  
+  Please provide a comprehensive PR description that will help reviewers understand and evaluate the changes. 

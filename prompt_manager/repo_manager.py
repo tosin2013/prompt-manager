@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Union
 import subprocess
 import os
+from prompt_manager.models.learning_session import LearningSession
 
 
 class RepoManager:
@@ -12,6 +13,7 @@ class RepoManager:
     def __init__(self, project_dir: Optional[str] = None):
         """Initialize repository manager."""
         self.project_dir = Path(project_dir) if project_dir else Path.cwd()
+        self.current_session: Optional[LearningSession] = None
 
     def analyze_repo(self, file_path: str) -> Dict[str, Union[int, str]]:
         """Analyze repository structure and metrics."""
@@ -129,8 +131,24 @@ class RepoManager:
             return [{'error': f'Error getting recent changes: {str(e)}'}]
 
     def learn_session(self, file_path: str, duration: int = 30) -> Dict[str, Union[Dict, List, str]]:
-        """Start a learning session for repository understanding."""
+        """Start a learning session for repository understanding.
+        
+        Args:
+            file_path: Path to the file or directory to analyze
+            duration: Duration in minutes for the learning session
+            
+        Returns:
+            Dictionary containing session information and analysis results
+            
+        Raises:
+            ValueError: If duration is less than 1 minute
+            FileNotFoundError: If file_path does not exist
+        """
         try:
+            # Create and start learning session
+            self.current_session = LearningSession(duration=duration)
+            self.current_session.start()
+            
             # Validate file path
             if not Path(file_path).exists():
                 return {'error': f'File path does not exist: {file_path}'}
@@ -181,11 +199,15 @@ class RepoManager:
             # Get test coverage
             test_coverage = self._get_test_coverage(Path(file_path))
 
+            # Include session information in response
+            session_info = self.current_session.to_dict()
+
             return {
                 'stats': stats,
                 'recent_history': history,
                 'current_branch': branch,
                 'recent_changes': changes,
+                'session': session_info,
                 'template_context': {
                     'repo_path': file_path,
                     'file_path': file_path,
@@ -199,8 +221,10 @@ class RepoManager:
                     'recent_changes': changes
                 }
             }
-        except Exception as e:
+        except ValueError as e:
             return {'error': str(e)}
+        except Exception as e:
+            return {'error': f'Error starting learning session: {str(e)}'}
 
     def _analyze_code_patterns(self, content: str) -> str:
         """Analyze code patterns in content."""

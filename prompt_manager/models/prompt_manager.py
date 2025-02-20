@@ -2,16 +2,22 @@
 PromptManager class for managing code analysis and debugging.
 """
 from typing import Optional, List, Dict, Any
+from pathlib import Path
 from prompt_manager.llm_enhancement import LLMEnhancement
 from prompt_manager.memory_bank import MemoryBank
 
 class PromptManager:
     """Manages code analysis and debugging operations."""
     
-    def __init__(self):
-        """Initialize the PromptManager."""
+    def __init__(self, project_path: Optional[Path] = None):
+        """Initialize the PromptManager.
+        
+        Args:
+            project_path: Optional path to the project directory. Defaults to current directory.
+        """
+        self.project_path = project_path or Path.cwd()
         self.llm = LLMEnhancement()
-        self.memory = MemoryBank()
+        self.memory = MemoryBank(str(self.project_path))
 
     def analyze_code_file(self, file_path: str) -> Dict[str, Any]:
         """Analyze a code file for potential issues."""
@@ -54,8 +60,20 @@ class PromptManager:
         """Analyze a repository."""
         return self.llm.analyze_repository(repo_path)
 
-    def learn_session(self, duration: int) -> Dict[str, Any]:
-        """Learn from a coding session."""
+    def learn_session(self, duration: int = 30) -> Dict[str, Any]:
+        """Learn from a coding session.
+        
+        Args:
+            duration: Duration in minutes for the learning session (default: 30)
+            
+        Returns:
+            Dict containing session results
+            
+        Raises:
+            ValueError: If duration is less than 1
+        """
+        if duration < 1:
+            raise ValueError("Duration must be at least 1 minute")
         return self.llm.learn_from_session(duration)
 
     def analyze_impact(self, changes: List[str]) -> Dict[str, Any]:
@@ -69,3 +87,26 @@ class PromptManager:
     def create_pr(self, title: str, description: str, changes: List[str]) -> Dict[str, Any]:
         """Create a pull request."""
         return self.llm.create_pull_request(title, description, changes)
+
+    def generate_bolt_tasks(self, description: str, framework: Optional[str] = None) -> List[str]:
+        """Generate tasks for a bolt.new project.
+        
+        Args:
+            description: Project description
+            framework: Optional target framework
+            
+        Returns:
+            List of task descriptions
+        """
+        # Get existing tasks for context
+        existing_tasks = self.list_tasks()
+        
+        # Generate tasks using LLM
+        result = self.llm.generate_tasks(
+            description=description,
+            framework=framework,
+            existing_tasks=existing_tasks
+        )
+        
+        # Extract and return task list
+        return result.get('tasks', [])

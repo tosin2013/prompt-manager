@@ -10,6 +10,7 @@ from prompt_manager.cli.debug_commands import debug
 from prompt_manager.cli.memory_commands import memory
 from prompt_manager.cli.llm_commands import llm
 from prompt_manager.cli.repo_commands import repo
+from prompt_manager.cli.self_improvement_commands import improve
 from prompt_manager.cli.utils import get_manager
 
 
@@ -53,6 +54,7 @@ cli.add_command(debug)
 cli.add_command(memory)
 cli.add_command(llm)
 cli.add_command(repo)
+cli.add_command(improve)
 
 
 @cli.command()
@@ -129,21 +131,6 @@ def update_progress(ctx, title: str, status: str, note: Optional[str] = None):
         sys.exit(2)
 
 
-@cli.command()
-@click.option("--output", "-o", required=True, type=click.Path(), help="Output file path")
-@click.pass_context
-def export_tasks(ctx, output: str):
-    """Export tasks to JSON."""
-    try:
-        manager = get_manager()
-        manager.export_tasks(output)
-        click.echo(f"Tasks exported to {output}")
-        return 0
-    except Exception as e:
-        click.echo(f"Error exporting tasks: {str(e)}", err=True)
-        sys.exit(1)
-
-
 @cli.command(name="list-tasks")
 @click.pass_context
 def list_tasks(ctx):
@@ -173,24 +160,6 @@ def list_tasks(ctx):
         return 0
     except Exception as e:
         click.echo(f"Error listing tasks: {str(e)}", err=True)
-        sys.exit(1)
-
-
-@cli.command()
-@click.argument("description")
-@click.option("--framework", "-f", help="Target framework")
-@click.pass_context
-def generate_bolt_tasks(ctx, description: str, framework: Optional[str] = None):
-    """Generate bolt.new tasks."""
-    try:
-        manager = get_manager()
-        tasks = manager.generate_bolt_tasks(description, framework)
-        click.echo("Generated tasks:")
-        for task in tasks:
-            click.echo(f"- {task}")
-        return 0
-    except Exception as e:
-        click.echo(f"Error generating tasks: {str(e)}", err=True)
         sys.exit(1)
 
 
