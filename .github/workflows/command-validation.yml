@@ -123,15 +123,55 @@ jobs:
 
     - name: Test prompt display
       run: |
-        # Test --show-prompt flag for each command group
+        # Initialize test environment
+        mkdir -p test_project
+        cd test_project
+        prompt-manager init .
+        
+        # Create test files
+        echo "def test():" > test_file.py
+        echo "    pass" >> test_file.py
+        
+        # Test base commands
+        echo "Testing base commands..."
+        prompt-manager base add-task "test-task" "Test description" --show-prompt
+        prompt-manager base update-progress "test-task" "in_progress" --show-prompt
+        prompt-manager base list-tasks --show-prompt
+        prompt-manager base export-tasks --output tasks.json --show-prompt
+        
+        # Test debug commands
+        echo "Testing debug commands..."
+        prompt-manager debug analyze-file test_file.py --show-prompt
+        prompt-manager debug test-roadmap test_file.py --show-prompt
+        
+        # Test repo commands
+        echo "Testing repo commands..."
+        git init
+        git config --global user.email "test@example.com"
+        git config --global user.name "Test User"
+        git add .
+        git commit -m "Initial commit"
+        prompt-manager repo analyze-repo . --show-prompt
+        prompt-manager repo learn-session . --duration 5 --show-prompt
+        
+        # Test LLM commands
+        echo "Testing LLM commands..."
+        prompt-manager llm analyze-impact test_file.py --show-prompt
+        prompt-manager llm suggest-improvements test_file.py --show-prompt
+        
+        # Test memory commands
+        echo "Testing memory commands..."
+        prompt-manager memory store test-key "test value" --show-prompt
+        prompt-manager memory retrieve test-key --show-prompt
+        prompt-manager memory list-all --show-prompt
+        
+        # Verify all commands executed successfully
         for cmd in base debug llm repo improve memory; do
-          echo "Testing $cmd commands..."
+          echo "Verifying $cmd commands exist..."
           prompt-manager $cmd --help
-          for subcmd in $(prompt-manager $cmd --help | grep -oE '^  \w+' | tr -d ' '); do
-            echo "Testing: $cmd $subcmd --show-prompt"
-            prompt-manager $cmd $subcmd --help
+          for subcmd in $(prompt-manager $cmd --help | grep -oE '^  [a-z-]+' | tr -d ' '); do
             if [[ "$subcmd" != "help" ]]; then
-              # Skip actual execution but verify command exists
+              echo "Verifying: $cmd $subcmd"
               if ! prompt-manager $cmd $subcmd --help | grep -q "Usage:"; then
                 echo "Error: Invalid command $cmd $subcmd"
                 exit 1
