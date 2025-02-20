@@ -6,11 +6,11 @@ TASK_DESCRIPTION = "This is a test task"
 TASK_TEMPLATE = "Test template"
 TASK_PRIORITY = "medium"
 
-# Task Status Values
-TASK_STATUS_PENDING = "PENDING"
-TASK_STATUS_IN_PROGRESS = "IN_PROGRESS"
-TASK_STATUS_DONE = "DONE"
-TASK_STATUS_FAILED = "FAILED"
+# Task Status Values (matching base_commands.py implementation)
+TASK_STATUS_PENDING = "todo"
+TASK_STATUS_IN_PROGRESS = "in_progress"
+TASK_STATUS_DONE = "done"
+TASK_STATUS_BLOCKED = "blocked"
 
 # Success Messages
 TASK_ADDED_MSG = f"Task {TASK_TITLE} added successfully"

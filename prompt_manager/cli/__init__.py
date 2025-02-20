@@ -14,9 +14,14 @@ from prompt_manager.cli.utils import get_manager
 
 @click.group()
 @click.version_option(version="0.3.18")
-def cli():
+@click.option('--project-dir', type=click.Path(exists=True), help='Project directory')
+def cli(project_dir=None):
     """Prompt Manager CLI - Development workflow management system."""
-    pass
+    ctx = click.get_current_context()
+    if not hasattr(ctx, 'obj') or not ctx.obj:
+        ctx.obj = {}
+    if project_dir:
+        ctx.obj['project_dir'] = project_dir
 
 
 # Import and register commands
@@ -28,7 +33,8 @@ cli.add_command(repo)
 
 @cli.command()
 @click.option("--path", type=click.Path(), default=".")
-def init(path: str):
+@click.pass_context
+def init(ctx, path: str):
     """Initialize a new project."""
     try:
         project_path = Path(path).absolute()
@@ -52,7 +58,8 @@ def init(path: str):
 @click.argument("description", required=False)
 @click.option("--template", "-t", help="Task template")
 @click.option("--priority", "-p", type=click.Choice(['low', 'medium', 'high']), default='medium', help="Task priority")
-def add_task(title: str, description: Optional[str] = None, template: Optional[str] = None, priority: str = 'medium'):
+@click.pass_context
+def add_task(ctx, title: str, description: Optional[str] = None, template: Optional[str] = None, priority: str = 'medium'):
     """Add a new task."""
     try:
         manager = get_manager()
@@ -69,7 +76,8 @@ def add_task(title: str, description: Optional[str] = None, template: Optional[s
 @click.argument("title")
 @click.argument("status", type=click.Choice([s.value for s in TaskStatus]))
 @click.option("--note", "-n", help="Progress note")
-def update_progress(title: str, status: str, note: Optional[str] = None):
+@click.pass_context
+def update_progress(ctx, title: str, status: str, note: Optional[str] = None):
     """Update task progress status."""
     try:
         manager = get_manager()
@@ -83,7 +91,8 @@ def update_progress(title: str, status: str, note: Optional[str] = None):
 
 @cli.command()
 @click.option("--output", "-o", required=True, type=click.Path(), help="Output file path")
-def export_tasks(output: str):
+@click.pass_context
+def export_tasks(ctx, output: str):
     """Export tasks to JSON."""
     try:
         manager = get_manager()
@@ -96,7 +105,8 @@ def export_tasks(output: str):
 
 
 @cli.command(name="list-tasks")
-def list_tasks():
+@click.pass_context
+def list_tasks(ctx):
     """List all tasks."""
     try:
         manager = get_manager()
@@ -129,7 +139,8 @@ def list_tasks():
 @cli.command()
 @click.argument("description")
 @click.option("--framework", "-f", help="Target framework")
-def generate_bolt_tasks(description: str, framework: Optional[str] = None):
+@click.pass_context
+def generate_bolt_tasks(ctx, description: str, framework: Optional[str] = None):
     """Generate bolt.new tasks."""
     try:
         manager = get_manager()
@@ -144,4 +155,4 @@ def generate_bolt_tasks(description: str, framework: Optional[str] = None):
 
 
 if __name__ == "__main__":
-    cli()
+    cli(obj={})

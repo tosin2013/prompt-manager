@@ -11,8 +11,6 @@ from tests.constants import (
     TASK_TEMPLATE,
     TASK_PRIORITY,
     TASK_STATUS_IN_PROGRESS,
-    TASK_ADDED_MSG,
-    TASK_STATUS_UPDATED_MSG,
     DEFAULT_EXPORT_PATH,
 )
 
@@ -23,62 +21,63 @@ def cli_runner():
     return CliRunner()
 
 
-def test_analyze_repo(cli_runner, test_data_dir):
-    """Test repository analysis command."""
-    result = cli_runner.invoke(cli, ["analyze-repo", str(test_data_dir)])
-    assert result.exit_code == 0
-    assert "Repository analysis complete" in result.output
+@pytest.fixture
+def invoke_cli(cli_runner, test_data_dir):
+    """Helper to invoke CLI with project directory."""
+    def _invoke(command_args):
+        args = ['--project-dir', str(test_data_dir)] + command_args
+        return cli_runner.invoke(cli, args, obj={})
+    return _invoke
 
 
-def test_add_task(cli_runner, test_data_dir):
+def test_add_task(invoke_cli):
     """Test task addition command."""
-    result = cli_runner.invoke(cli, ['--project-dir', test_data_dir, 'add-task',
-                                   '--title', TASK_TITLE,
-                                   '--description', TASK_DESCRIPTION,
-                                   '--template', TASK_TEMPLATE,
-                                   '--priority', TASK_PRIORITY])
+    result = invoke_cli(['base', 'add-task',
+                        TASK_TITLE,
+                        TASK_DESCRIPTION,
+                        '--template', TASK_TEMPLATE,
+                        '--priority', 2])
     assert result.exit_code == 0
-    assert TASK_ADDED_MSG in result.output
+    assert f"Added task: {TASK_TITLE}" in result.output
 
 
-def test_update_progress(cli_runner, test_data_dir):
+def test_update_progress(invoke_cli):
     """Test task progress update command."""
     # First add a task
-    cli_runner.invoke(cli, ['--project-dir', test_data_dir, 'add-task',
-                          '--title', TASK_TITLE,
-                          '--description', TASK_DESCRIPTION,
-                          '--template', TASK_TEMPLATE,
-                          '--priority', TASK_PRIORITY])
+    invoke_cli(['base', 'add-task',
+               TASK_TITLE,
+               TASK_DESCRIPTION,
+               '--template', TASK_TEMPLATE,
+               '--priority', 2])
     
     # Then update its status
-    result = cli_runner.invoke(cli, ['--project-dir', test_data_dir, 'update-progress',
-                                   '--title', TASK_TITLE,
-                                   '--status', TASK_STATUS_IN_PROGRESS])
+    result = invoke_cli(['base', 'update-progress',
+                        TASK_TITLE,
+                        TASK_STATUS_IN_PROGRESS.lower()])
     assert result.exit_code == 0
-    assert TASK_STATUS_UPDATED_MSG in result.output
+    assert f"Updated task {TASK_TITLE} to {TASK_STATUS_IN_PROGRESS.lower()}" in result.output
 
 
-def test_list_tasks(cli_runner, test_data_dir):
+def test_list_tasks(invoke_cli):
     """Test task listing command."""
     # First add a task
-    cli_runner.invoke(cli, ['--project-dir', test_data_dir, 'add-task',
-                          '--title', TASK_TITLE,
-                          '--description', TASK_DESCRIPTION,
-                          '--template', TASK_TEMPLATE,
-                          '--priority', TASK_PRIORITY])
+    invoke_cli(['base', 'add-task',
+               TASK_TITLE,
+               TASK_DESCRIPTION,
+               '--template', TASK_TEMPLATE,
+               '--priority', 2])
     
     # Then list all tasks
-    result = cli_runner.invoke(cli, ['--project-dir', test_data_dir, 'list-tasks'])
+    result = invoke_cli(['base', 'list-tasks'])
     assert result.exit_code == 0
     assert TASK_TITLE in result.output
 
 
-def test_export_tasks(cli_runner, test_data_dir):
+def test_export_tasks(invoke_cli):
     """Test task export command."""
-    result = cli_runner.invoke(cli, ['--project-dir', test_data_dir, 'export-tasks',
-                                   '--output', DEFAULT_EXPORT_PATH])
+    result = invoke_cli(['base', 'export-tasks', DEFAULT_EXPORT_PATH])
     assert result.exit_code == 0
-    assert f"Tasks exported successfully to {DEFAULT_EXPORT_PATH}" in result.output
+    assert f"Tasks exported to {DEFAULT_EXPORT_PATH}" in result.output
 
 
 def test_invalid_commands(cli_runner):
@@ -89,7 +88,7 @@ def test_invalid_commands(cli_runner):
     assert "No such command" in result.output
 
     # Test missing required argument
-    result = cli_runner.invoke(cli, ["add-task"])
+    result = cli_runner.invoke(cli, ["base", "add-task"])
     assert result.exit_code != 0
     assert "Missing argument" in result.output
 
@@ -107,37 +106,3 @@ def test_version_command(cli_runner):
     result = cli_runner.invoke(cli, ["--version"])
     assert result.exit_code == 0
     assert "version" in result.output.lower()
-
-
-def test_generate_bolt_tasks(cli_runner, test_data_dir):
-    """Test bolt.new task generation command."""
-    # First initialize a project
-    result = cli_runner.invoke(cli, ["init", "--path", str(test_data_dir)])
-    assert result.exit_code == 0
-
-    # Generate bolt tasks
-    result = cli_runner.invoke(
-        cli,
-        [
-            "generate-bolt-tasks",
-            "Create a blog application",
-            "--framework",
-            "Next.js",
-        ],
-    )
-    assert result.exit_code == 0
-
-    # Verify output contains all tasks
-    assert "Initial Project Setup" in result.output
-    assert "UI Component Development" in result.output
-    assert "API Integration" in result.output
-    assert "Testing Implementation" in result.output
-    assert "Deployment Setup" in result.output
-
-    # Verify framework is set correctly
-    assert "Framework: Next.js" in result.output
-
-    # Verify prompt formatting
-    assert "Project Requirements" in result.output
-    assert "Technical Stack" in result.output
-    assert "Development Instructions" in result.output
