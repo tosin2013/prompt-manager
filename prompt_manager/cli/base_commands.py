@@ -183,7 +183,8 @@ def export_tasks(output: str):
         historical_exports = manager.get_historical_exports()
         
         # Format context for prompt if needed
-        if get_prompt_for_command("export-tasks"):
+        prompt = get_prompt_for_command("export-tasks")
+        if prompt:
             context = {
                 "tasks": "\n".join(str(task) for task in tasks),
                 "export_format": output.split('.')[-1],
@@ -191,10 +192,8 @@ def export_tasks(output: str):
                 "project_metadata": project_metadata,
                 "historical_exports": historical_exports
             }
-            prompt = get_prompt_for_command("export-tasks")
-            if prompt:
-                prompt = prompt.format(**context)
-                print_prompt_info("export-tasks", prompt)
+            prompt = prompt.format(**context)
+            print_prompt_info("export-tasks", prompt)
         
         # Export tasks
         manager.export_tasks(output)
@@ -204,7 +203,7 @@ def export_tasks(output: str):
         sys.exit(1)
 
 @base.command()
-@click.argument('path', type=click.Path(), default='.')
+@click.option('--path', type=click.Path(), default='.', help='Path to initialize project at')
 @with_prompt_option('init')
 def init(path: str):
     """Initialize a new project.
@@ -213,6 +212,7 @@ def init(path: str):
         path: Path to initialize project at (defaults to current directory)
     """
     try:
+        path = str(Path(path).resolve())
         manager = PromptManager(path)
         if manager.init_project(path):
             click.echo(f"Initialized project at {path}")
