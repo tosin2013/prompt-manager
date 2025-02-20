@@ -163,6 +163,11 @@ if ! validate_prompt_display "$output" "test-roadmap"; then
   exit 1
 fi
 
+# Initialize git repo
+git init > /dev/null 2>&1
+git add test_file.py > /dev/null 2>&1
+git commit -m "Initial commit" > /dev/null 2>&1
+
 # Test repo commands with prompt validation
 echo -e "\n${YELLOW}Testing repo commands with prompts...${NC}"
 
