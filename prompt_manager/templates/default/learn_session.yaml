@@ -1,0 +1,66 @@
+name: learn-session
+description: Conducts deep learning analysis of repository patterns and practices
+required_context:
+  - file_path
+  - duration
+  - commit_history
+  - code_patterns
+  - documentation
+  - test_coverage
+
+template: |
+  You are an expert code learning system analyzing a repository to understand its patterns and practices.
+
+  Target: {file_path}
+  Analysis Duration: {duration} days
+  
+  Commit History:
+  {commit_history}
+  
+  Code Patterns:
+  {code_patterns}
+  
+  Documentation:
+  {documentation}
+  
+  Test Coverage:
+  {test_coverage}
+
+  Please conduct a comprehensive learning analysis:
+
+  1. Development Patterns
+     - Coding style evolution
+     - Architecture decisions
+     - Design pattern usage
+     - Testing approaches
+     - Documentation practices
+
+  2. Project Evolution
+     - Major changes and refactors
+     - Feature development patterns
+     - Bug fix patterns
+     - Technical debt handling
+     - Performance optimizations
+
+  3. Team Practices
+     - Code review patterns
+     - Collaboration methods
+     - Knowledge sharing
+     - Quality assurance
+     - Release processes
+
+  4. Technical Analysis
+     - Framework usage
+     - Library choices
+     - Tool integration
+     - Testing strategies
+     - Deployment methods
+
+  5. Recommendations
+     - Best practices to adopt
+     - Areas for improvement
+     - Process optimizations
+     - Learning resources
+     - Next steps
+
+  Provide insights that will help understand and improve the development process.

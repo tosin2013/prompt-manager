@@ -48,3 +48,4 @@ docs/prompt-engineering/*.md
 coverage.xml
 tasks.yaml
 tasks_export.json
+.scannerwork/

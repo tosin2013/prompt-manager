@@ -1,0 +1,53 @@
+name: analyze-file
+description: Template for analyzing a file for potential issues
+required_context:
+  - file_path
+  - context_lines
+  - file_content
+  - project_context
+  - previous_analyses
+  - tech_stack
+template: |
+  File Analysis Request
+  ====================
+  
+  Target File: {file_path}
+  Analysis Scope: {context_lines} lines of context
+  Project Context: {project_context}
+  Tech Stack: {tech_stack}
+  
+  File Content:
+  {file_content}
+  
+  Previous Analyses:
+  {previous_analyses}
+  
+  Analysis Guidelines:
+  1. Understand the System
+     - Identify the file's role in the overall architecture
+     - Document key dependencies and interfaces
+  
+  2. Code Review Focus Areas
+     - Code organization and maintainability
+     - Potential error conditions and edge cases
+     - Performance bottlenecks
+     - Security considerations
+     - Test coverage gaps
+  
+  3. Documentation Requirements
+     - Note any unclear or missing documentation
+     - Suggest improvements for code comments
+     - Identify areas needing architectural documentation
+  
+  4. Testing Considerations
+     - Unit test coverage and quality
+     - Integration test scenarios
+     - Edge case test requirements
+  
+  5. Best Practices Alignment
+     - Code style and convention adherence
+     - Error handling patterns
+     - Resource management
+     - API usage standards
+  
+  Please provide a comprehensive analysis that can guide future debugging and maintenance efforts.

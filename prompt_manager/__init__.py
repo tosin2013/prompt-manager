@@ -10,343 +10,377 @@ import datetime
 from enum import Enum
 from typing import Dict, Any, List, Optional, Union
 from pathlib import Path
-from prompt_manager.models import Task, BoltTask, TaskStatus
+from dataclasses import dataclass
+import json
+from prompt_manager.memory import MemoryBank
+import uuid
 
+class TaskStatus(Enum):
+    """Task status enum."""
+    not_started = "not_started"
+    in_progress = "in_progress"
+    completed = "completed"
+    blocked = "blocked"
+    cancelled = "cancelled"
+
+@dataclass
+class Task:
+    id: str
+    title: str
+    description: str
+    status: TaskStatus
+    created_at: datetime
+    updated_at: datetime
+    completed_at: Optional[datetime] = None
+    dependencies: List[str] = None
+    tags: List[str] = None
+    priority: int = 0
+    notes: List[str] = None
 
 class PromptManager:
-    """Manages development workflow and task tracking."""
-
-    def __init__(
-        self,
-        project_name: str = "",
-        memory_path: Optional[Union[str, Path]] = None,
-        config: Optional[Dict[str, Any]] = None,
-    ) -> None:
-        """Initialize PromptManager with project configuration."""
-        self.project_name = project_name
-        self.project_dir = Path.cwd()
-        self.memory_bank = None
-        self.config = config or {}
+    """Manages prompts and tasks for a project."""
+    
+    def __init__(self, project_path: str = None):
+        """Initialize PromptManager."""
         self.tasks: Dict[str, Task] = {}
-        self.debug_mode = False
-        self.is_initialized = False
-        self.initialize()
-
-    def initialize(self) -> None:
-        """Initialize the prompt manager and memory bank."""
-        self._load_config()
-        self.load_tasks()
-        self.is_initialized = True
-
-    def _load_config(self) -> None:
-        """Load configuration from file if it exists."""
-        config_path = Path("prompt_manager_config.yaml")
-        if config_path.exists():
-            with open(config_path) as f:
-                self.config.update(yaml.safe_load(f))
-
-    def load_tasks(self) -> None:
-        """Load tasks from storage."""
-        tasks_path = self.project_dir / "tasks.yaml"
-        if not tasks_path.exists():
-            return
-            
-        with open(tasks_path) as f:
-            data = yaml.safe_load(f)
-            if not data or "tasks" not in data:
-                return
-                
-            for title, task_data in data["tasks"].items():
-                self.tasks[title] = Task(
-                    title=title,
-                    description=task_data.get("description", ""),
-                    status=TaskStatus(task_data.get("status", "todo")),
-                    template=task_data.get("template"),
-                    priority=task_data.get("priority", "medium")
-                )
-
-    def save_tasks(self) -> None:
-        """Save tasks to storage."""
-        tasks_path = self.project_dir / "tasks.yaml"
-        tasks_path.parent.mkdir(parents=True, exist_ok=True)
-        tasks_data = {
-            "tasks": {
-                title: {
-                    "description": task.description,
-                    "status": task.status.value,
-                    "template": task.template,
-                    "priority": task.priority
-                }
-                for title, task in self.tasks.items()
-            }
+        self.config = {
+            "version": "0.3.18",
+            "memory_path": "memory",
+            "templates_path": "templates",
+            "default_template": "default",
         }
-        with open(tasks_path, "w") as f:
-            yaml.dump(tasks_data, f)
+        
+        if project_path:
+            self.project_path = Path(project_path).resolve()
+            # Try to load existing config
+            config_file = self.project_path / ".prompt-manager/config.yaml"
+            if config_file.exists():
+                with open(config_file, "r") as f:
+                    self.config.update(yaml.safe_load(f))
+            self._load_tasks()
+        else:
+            # Try to load config from current directory
+            self.project_path = Path.cwd()
+            config_file = self.project_path / ".prompt-manager/config.yaml"
+            if config_file.exists():
+                with open(config_file, "r") as f:
+                    self.config.update(yaml.safe_load(f))
+                self._load_tasks()
+        self.memory_bank = None
 
-    def init_project(self, path: str) -> None:
-        """Initialize a new project at the specified path.
+    def _load_or_create_config(self):
+        config_path = self.project_path / "prompt_manager_config.yaml"
+        if config_path.exists():
+            with open(config_path, "r") as f:
+                return yaml.safe_load(f)
+        else:
+            return {
+                "memory_path": str(self.project_path / "memory"),
+                "created_at": datetime.datetime.now().isoformat()
+            }
+
+    def _load_tasks(self) -> Dict[str, Task]:
+        """Load tasks from memory directory."""
+        try:
+            memory_bank = MemoryBank(str(self.project_path))
+            tasks_data = memory_bank.load_task_memory()
+            
+            tasks = {}
+            for title, data in tasks_data.items():
+                tasks[title] = Task(
+                    id=data.get("id", title),
+                    title=title,
+                    description=data.get("description", ""),
+                    status=TaskStatus(data.get("status", "not_started")),
+                    created_at=datetime.datetime.fromisoformat(data.get("created_at")),
+                    updated_at=datetime.datetime.fromisoformat(data.get("updated_at")),
+                    completed_at=datetime.datetime.fromisoformat(data["completed_at"]) if data.get("completed_at") else None,
+                    dependencies=data.get("dependencies", []),
+                    tags=data.get("tags", []),
+                    priority=data.get("priority", 0),
+                    notes=data.get("notes", [])
+                )
+            return tasks
+        except Exception as e:
+            print(f"Warning: Failed to load tasks: {e}")
+            return {}
+
+    def _save_tasks(self):
+        """Save tasks to disk."""
+        tasks_file = self.project_path / self.config["memory_path"] / "tasks.json"
+        tasks_data = {}
+        for title, task in self.tasks.items():
+            tasks_data[title] = {
+                "id": task.id,
+                "description": task.description,
+                "status": task.status.value,
+                "created_at": task.created_at.isoformat(),
+                "updated_at": task.updated_at.isoformat(),
+                "completed_at": task.completed_at.isoformat() if task.completed_at else None,
+                "dependencies": task.dependencies,
+                "tags": task.tags,
+                "priority": task.priority,
+                "notes": task.notes
+            }
+        
+        with open(tasks_file, "w") as f:
+            json.dump(tasks_data, f, indent=2)
+
+    def init_project(self, path: str):
+        """Initialize a new project.
         
         Args:
-            path (str): Path to initialize project at
+            path: Path to initialize project at
         """
-        project_dir = Path(path)
-        project_dir.mkdir(parents=True, exist_ok=True)
+        self.project_path = Path(path).resolve()
+        
+        # Create project directory if it doesn't exist
+        self.project_path.mkdir(parents=True, exist_ok=True)
+        
+        # Create config directory
+        config_dir = self.project_path / ".prompt-manager"
+        config_dir.mkdir(exist_ok=True)
         
         # Create memory directory
-        memory_dir = project_dir / "memory"
-        memory_dir.mkdir(parents=True, exist_ok=True)
+        memory_dir = self.project_path / "memory"
+        memory_dir.mkdir(exist_ok=True)
         
-        # Create config file
-        config_path = project_dir / "prompt_manager_config.yaml"
-        config = {
-            "project_name": project_dir.name,
-            "memory_path": str(memory_dir),
-            "created_at": datetime.datetime.now().isoformat()
-        }
-        with open(config_path, "w") as f:
-            yaml.dump(config, f)
+        # Create initial memory files
+        memory_bank = MemoryBank(str(self.project_path))
+        memory_bank._init_memory_files()
         
-        # Initialize memory bank
-        self.memory_bank = MemoryBank(memory_dir)
-        self.memory_bank.initialize()
+        # Create config file if it doesn't exist
+        config_file = config_dir / "config.yaml"
+        if not config_file.exists():
+            with open(config_file, "w") as f:
+                yaml.dump(self.config, f)
         
-        # Update project context
-        self.memory_bank.update_context(
-            "activeContext.md",
-            "Project Initialization",
-            f"Project initialized on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-            f"Project Name: {project_dir.name}\n"
-            f"Project Path: {project_dir}",
-            mode="append"
+        # Create templates directory
+        templates_dir = self.project_path / self.config["templates_path"]
+        templates_dir.mkdir(exist_ok=True)
+        
+        # Create default template directory
+        default_template_dir = templates_dir / self.config["default_template"]
+        default_template_dir.mkdir(exist_ok=True)
+        
+        print(f"Initialized project at {self.project_path}")
+        return True
+
+    def add_task(self, title: str, description: str = "", template: str = None, priority: int = 0) -> Task:
+        """Add a new task.
+        
+        Args:
+            title: Task title
+            description: Task description
+            template: Optional task template
+            priority: Task priority
+            
+        Returns:
+            Task: The created task
+        """
+        now = datetime.datetime.now()
+        task = Task(
+            id=str(uuid.uuid4()),
+            title=title,
+            description=description,
+            status=TaskStatus.not_started,
+            created_at=now,
+            updated_at=now,
+            completed_at=None,
+            dependencies=[],
+            tags=[],
+            priority=priority,
+            notes=[]
         )
+        
+        self.tasks[title] = task
+        self._save_tasks()
+        return task
 
-    def add_task(
-        self,
-        title_or_task: Union[str, Task],
-        description: Optional[str] = None,
-        template: Optional[str] = None,
-        priority: str = "medium",
-    ) -> Task:
-        """Add a new task to the workflow.
-
+    def update_task_progress(self, title: str, status: str, note: str = "") -> Task:
+        """Update task progress.
+        
         Args:
-            title_or_task: Task title or Task object
-            description: Task description (if title_or_task is str)
-            template: Optional prompt template (if title_or_task is str)
-            priority: Task priority (low/medium/high) (if title_or_task is str)
-
+            title: Task title
+            status: New task status
+            note: Optional note about the update
+            
         Returns:
-            Task: The added task
-
-        Raises:
-            ValueError: If task title already exists or priority is invalid
+            Task: Updated task
         """
-        if isinstance(title_or_task, Task):
-            task = title_or_task
-        else:
-            task = Task(
-                title=title_or_task,
-                description=description or "",
-                template=template or "",
-                priority=priority.lower()
+        # Load latest tasks from memory
+        self.tasks = self._load_tasks()
+        
+        if title not in self.tasks:
+            raise ValueError(f"Task '{title}' not found")
+            
+        task = self.tasks[title]
+        task.status = TaskStatus(status)
+        task.updated_at = datetime.datetime.now()
+        
+        if status == TaskStatus.completed.value:
+            task.completed_at = datetime.datetime.now()
+            
+        if note:
+            task.notes.append(note)
+            
+        # Save updated task
+        self._save_tasks()
+        return task
+
+    def list_tasks(self) -> List[Task]:
+        """List all tasks.
+        
+        Returns:
+            List[Task]: List of tasks
+        """
+        # Load tasks from memory
+        self.tasks = self._load_tasks()
+        return list(self.tasks.values())
+    
+    def get_task(self, title: str) -> Optional[Task]:
+        """Get a task by title.
+        
+        Args:
+            title: Task title
+            
+        Returns:
+            Optional[Task]: Task if found, None otherwise
+        """
+        # Load latest tasks from memory
+        self.tasks = self._load_tasks()
+        return self.tasks.get(title)
+    
+    def get_related_tasks(self, title: str) -> List[Task]:
+        """Get tasks related to the given task.
+        
+        Args:
+            title: Task title
+            
+        Returns:
+            List of related tasks
+        """
+        task = self.get_task(title)
+        if not task:
+            return []
+        
+        # For now, just return tasks with same priority
+        return [t for t in self.tasks.values() 
+                if t.priority == task.priority and t.title != title]
+    
+    def get_project_timeline(self) -> Dict[str, Any]:
+        """Get project timeline information.
+        
+        Returns:
+            Dictionary with timeline information
+        """
+        if not self.tasks:
+            return {"start": None, "end": None, "duration": 0}
+        
+        dates = [task.created_at for task in self.tasks.values()]
+        start = min(dates)
+        end = max(task.updated_at for task in self.tasks.values())
+        
+        return {
+            "start": start.isoformat(),
+            "end": end.isoformat(),
+            "duration": (end - start).days
+        }
+    
+    def get_completion_stats(self) -> Dict[str, Any]:
+        """Get task completion statistics.
+        
+        Returns:
+            Dictionary with completion statistics
+        """
+        total = len(self.tasks)
+        if not total:
+            return {"total": 0, "completed": 0, "completion_rate": 0}
+        
+        completed = len([t for t in self.tasks.values() if t.status == TaskStatus.completed])
+        return {
+            "total": total,
+            "completed": completed,
+            "completion_rate": completed / total
+        }
+    
+    def get_project_metadata(self) -> Dict[str, Any]:
+        """Get project metadata.
+        
+        Returns:
+            Dictionary with project metadata
+        """
+        return {
+            "tasks": len(self.tasks),
+            "timeline": self.get_project_timeline(),
+            "completion": self.get_completion_stats()
+        }
+    
+    def get_historical_exports(self) -> List[Dict[str, Any]]:
+        """Get history of task exports.
+        
+        Returns:
+            List of export records
+        """
+        if not self.memory_bank:
+            return []
+        
+        exports = []
+        content = self.memory_bank.read_context("productContext.md")
+        if content:
+            for line in content.split("\n"):
+                if line.startswith("TaskExport_"):
+                    exports.append({
+                        "timestamp": line.split("_")[1],
+                        "description": line
+                    })
+        return exports
+    
+    def export_tasks(self, filename: str):
+        """Export tasks to a file.
+        
+        Args:
+            filename: Output filename
+        """
+        tasks_data = []
+        for task in self.tasks.values():
+            task_data = {
+                "title": task.title,
+                "description": task.description,
+                "status": task.status.value,
+                "priority": task.priority,
+                "created_at": task.created_at.isoformat(),
+                "updated_at": task.updated_at.isoformat(),
+                "notes": task.notes
+            }
+            tasks_data.append(task_data)
+        
+        with open(filename, "w") as f:
+            yaml.dump(tasks_data, f)
+        
+        if self.memory_bank:
+            self.memory_bank.update_context(
+                "productContext.md",
+                f"TaskExport_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                f"Tasks exported to {filename}",
+                mode="append"
             )
 
-        if task.title in self.tasks:
-            raise ValueError(f"Task with title '{task.title}' already exists")
-
-        self.tasks[task.title] = task
-        if self.memory_bank:
-            self.memory_bank.add_task(task.title, task.description, task.priority)
-        self.save_tasks()
-        return task
-
-    def get_task(self, task_id: Union[str, int]) -> Task:
-        """Get a task by its ID."""
-        if isinstance(task_id, int):
-            task_id = str(task_id)
-        if task_id not in self.tasks:
-            raise KeyError(f"Task '{task_id}' not found")
-        return self.tasks[task_id]
-
-    def update_task(
-        self,
-        task_id: Union[str, int],
-        description: Optional[str] = None,
-        template: Optional[str] = None,
-        priority: Optional[str] = None,
-    ) -> Task:
-        """Update task details."""
-        task = self.get_task(task_id)
-
-        if description is not None:
-            task.description = description
-        if template is not None:
-            task.template = template
-        if priority is not None:
-            task.priority = priority.lower()
-
-        if self.memory_bank:
-            self.memory_bank.update_task(task.title, description, priority)
-        self.save_tasks()
-        return task
-
-    def update_task_status(
-        self,
-        task_id: Union[str, int],
-        status: Union[str, TaskStatus],
-        notes: Optional[str] = None,
-    ) -> Task:
-        """Update task status.
-
+    def delete_task(self, title: str) -> bool:
+        """Delete a task.
+        
         Args:
-            task_id: ID of the task to update
-            status: New status (either TaskStatus enum or string)
-            notes: Optional notes about the status update
-
+            title: Task title
+            
         Returns:
-            Task: The updated task
-
-        Raises:
-            KeyError: If task does not exist
-            ValueError: If status string is invalid
+            bool: True if task was deleted, False otherwise
         """
-        task = self.get_task(task_id)
-        if isinstance(status, str):
-            try:
-                status = TaskStatus[status.upper()]
-            except KeyError:
-                raise ValueError(f"Invalid status: {status}")
-
-        task.status = status
-        if self.memory_bank:
-            self.memory_bank.update_task_status(task.title, status.value, notes)
-        self.save_tasks()
-        return task
-
-    def delete_task(self, task_id: Union[str, int]) -> None:
-        """Delete a task."""
-        if isinstance(task_id, int):
-            task_id = str(task_id)
-        if task_id not in self.tasks:
-            raise KeyError(f"Task '{task_id}' not found")
-        del self.tasks[task_id]
-        self.save_tasks()
-
-    def list_tasks(
-        self,
-        status: Optional[TaskStatus] = None,
-        sort_by: Optional[str] = None,
-    ) -> List[Task]:
-        """List tasks with optional filtering and sorting."""
-        tasks = list(self.tasks.values())
-
-        if status:
-            tasks = [task for task in tasks if task.status == status]
-
-        if sort_by:
-            tasks.sort(key=lambda x: getattr(x, sort_by))
-
-        return tasks
-
-    def export_tasks(self, path: Union[str, Path]) -> None:
-        """Export tasks to a JSON file."""
-        path = Path(path)
-        with open(path, "w") as f:
-            yaml.dump(
-                {title: task.to_dict() for title, task in self.tasks.items()},
-                f,
-                default_flow_style=False,
-            )
-
-    def import_tasks(self, path: Union[str, Path]) -> None:
-        """Import tasks from a JSON file."""
-        path = Path(path)
-        with open(path) as f:
-            data = yaml.safe_load(f)
-            if data and isinstance(data, dict):
-                self.tasks = {
-                    title: Task.from_dict(task_data)
-                    for title, task_data in data.items()
-                }
-                self.save_tasks()
-
-
-class MemoryBank:
-    """Manages persistent memory and context for the development workflow."""
-
-    def __init__(
-        self, docs_path: Union[str, Path], max_tokens: int = 2_000_000
-    ) -> None:
-        """Initialize MemoryBank with path and token limit."""
-        self.docs_path = Path(docs_path)
-        self.max_tokens = max_tokens
-        self.is_active = False
-        self.current_tokens = 0
-        self.required_files = [
-            "productContext.md",
-            "activeContext.md",
-            "systemPatterns.md",
-            "techContext.md",
-            "progress.md",
-            "commandHistory.md"
-        ]
-
-    def initialize(self) -> None:
-        """Initialize the memory bank by creating required files."""
-        self.docs_path.mkdir(parents=True, exist_ok=True)
-        for file_name in self.required_files:
-            file_path = self.docs_path / file_name
-            if not file_path.exists():
-                file_path.touch()
-        self.is_active = True
-
-    def update_context(
-        self, file_name: str, section: str, content: str, mode: str = "append"
-    ) -> None:
-        """Update a specific context file with new content."""
-        if not self.is_active:
-            return
-
-        file_path = self.docs_path / file_name
-        if not file_path.exists():
-            return
-
-        if mode == "append":
-            with open(file_path, "a") as f:
-                f.write(f"\n\n## {section}\n{content}")
-        else:
-            with open(file_path, "w") as f:
-                f.write(f"# {section}\n{content}")
-
-    def check_token_limit(self) -> bool:
-        """Check if current token count exceeds limit."""
-        return self.current_tokens <= self.max_tokens
-
-    def increment_tokens(self, count: int) -> None:
-        """Increment token count."""
-        self.current_tokens += count
-
-    def decrement_tokens(self, count: int) -> None:
-        """Decrement token count."""
-        self.current_tokens = max(0, self.current_tokens - count)
-
-    def reset(self) -> None:
-        """Reset memory bank state."""
-        self.current_tokens = 0
-        for file_name in self.required_files:
-            file_path = self.docs_path / file_name
-            if file_path.exists():
-                file_path.unlink()
-        self.initialize()
-
-    def add_task(self, title: str, description: str, priority: str) -> None:
-        """Add a new task to the memory bank."""
-        self.update_context("progress.md", title, f"Priority: {priority}\n{description}")
-
-    def update_task(self, title: str, description: str, priority: str) -> None:
-        """Update a task in the memory bank."""
-        self.update_context("progress.md", title, f"Priority: {priority}\n{description}", mode="replace")
-
-    def update_task_status(self, title: str, status: str, notes: str) -> None:
-        """Update a task status in the memory bank."""
-        self.update_context("progress.md", title, f"Status: {status}\n{notes}")
+        # Load latest tasks from memory
+        self.tasks = self._load_tasks()
+        
+        if title not in self.tasks:
+            return False
+            
+        del self.tasks[title]
+        self._save_tasks()
+        return True

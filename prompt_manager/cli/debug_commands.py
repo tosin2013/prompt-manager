@@ -1,122 +1,198 @@
 """Debug CLI commands."""
 
 import click
-from prompt_manager.cli.utils import get_manager
-from prompt_manager.debug_manager import DebugManager
+import sys
+from prompt_manager.debug import DebugManager
+from prompt_manager.prompts import get_prompt_for_command
 
+def print_prompt_info(prompt_name: str, prompt: str):
+    """Print prompt information in a formatted way."""
+    click.echo("\n" + "="*80)
+    click.echo(f"Using prompt template: {prompt_name}")
+    click.echo("="*80)
+    click.echo(prompt)
+    click.echo("="*80 + "\n")
 
 @click.group()
 def debug():
-    """Debug commands for analyzing and fixing code."""
+    """Debug commands."""
     pass
 
-
 @debug.command()
-@click.argument('file')
-def analyze_file(file):
+@click.argument('file_path')
+@click.option('--context-lines', type=int, default=5, help='Number of context lines')
+def analyze_file(file_path, context_lines):
     """Analyze a file for potential issues."""
     manager = DebugManager()
-    result = manager.analyze_file(file)
-    click.echo(f"Analysis results: {result}")
-    
-    # Update memory bank
-    prompt_manager = get_manager()
-    prompt_manager.memory_bank.update_context(
-        "techContext.md",
-        f"Analysis_{file}",
-        f"File Analysis Results:\n{result}",
-        mode="replace"
-    )
-
+    try:
+        # Read file content
+        with open(file_path, 'r') as f:
+            file_content = f.read()
+        
+        # Get project context
+        project_context = "Python CLI Application"  # This should be determined dynamically
+        tech_stack = "Python, Click, YAML"  # This should be determined dynamically
+        previous_analyses = "No previous analyses found"  # This should be loaded from history
+        
+        # Get and format prompt
+        prompt_template = get_prompt_for_command("analyze-file")
+        if prompt_template:
+            context = {
+                "file_path": file_path,
+                "context_lines": context_lines,
+                "file_content": file_content,
+                "project_context": project_context,
+                "tech_stack": tech_stack,
+                "previous_analyses": previous_analyses
+            }
+            prompt = prompt_template.format(**context)
+            print_prompt_info("analyze-file", prompt)
+        
+        # Run analysis
+        analysis = manager.debug_file(file_path)
+        click.echo(f"File analysis for {file_path}:")
+        click.echo(analysis)
+    except FileNotFoundError:
+        click.echo(f"Error: File {file_path} not found", err=True)
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"Error analyzing file: {str(e)}", err=True)
+        sys.exit(2)
 
 @debug.command()
-@click.argument('file')
-def find_root_cause(file):
-    """Find root cause of an issue in a file."""
+@click.argument('error_message')
+@click.option('--file-path', help='Path to file with error')
+def find_root_cause(error_message, file_path=None):
+    """Find root cause of an error."""
     manager = DebugManager()
-    result = manager.find_root_cause(file)
-    click.echo(f"Root cause: {result}")
-    
-    # Update memory bank
-    prompt_manager = get_manager()
-    prompt_manager.memory_bank.update_context(
-        "techContext.md",
-        f"RootCause_{file}",
-        f"Root Cause Analysis:\n{result}",
-        mode="replace"
-    )
-
-
-@debug.command()
-@click.argument('file')
-def iterative_fix(file):
-    """Apply iterative fixes to resolve issues."""
-    manager = DebugManager()
-    result = manager.iterative_fix(file)
-    click.echo(f"Applied fixes: {result}")
-    
-    # Update memory bank
-    prompt_manager = get_manager()
-    prompt_manager.memory_bank.update_context(
-        "techContext.md",
-        f"Fixes_{file}",
-        f"Applied Fixes:\n{result}",
-        mode="replace"
-    )
-
+    try:
+        # Get and format prompt
+        prompt_template = get_prompt_for_command("find-root-cause")
+        if prompt_template:
+            context = {
+                "error_message": error_message,
+                "file_path": file_path or ""
+            }
+            prompt = prompt_template.format(**context)
+            print_prompt_info("find-root-cause", prompt)
+        
+        # Find root cause
+        root_cause = manager.find_root_cause(file_path, error_message)
+        click.echo("Root cause analysis:")
+        click.echo(root_cause)
+    except Exception as e:
+        click.echo(f"Error finding root cause: {str(e)}", err=True)
+        sys.exit(1)
 
 @debug.command()
-@click.argument('file')
-def test_roadmap(file):
+@click.argument('file_path')
+def test_roadmap(file_path):
     """Generate a test roadmap for a file."""
     manager = DebugManager()
-    result = manager.generate_test_roadmap(file)
-    click.echo(f"Test roadmap: {result}")
-    
-    # Update memory bank
-    prompt_manager = get_manager()
-    prompt_manager.memory_bank.update_context(
-        "techContext.md",
-        f"TestRoadmap_{file}",
-        f"Test Roadmap:\n{result}",
-        mode="replace"
-    )
-
+    try:
+        # Read file content
+        with open(file_path, 'r') as f:
+            file_content = f.read()
+        
+        # Get test context
+        test_framework = "pytest"  # This should be determined from project config
+        existing_tests = "No existing tests found"  # This should be loaded from test directory
+        coverage_report = "No coverage report available"  # This should be generated from pytest-cov
+        project_requirements = "Standard unit test coverage required"  # This should be loaded from project config
+        
+        # Get and format prompt
+        prompt_template = get_prompt_for_command("test-roadmap")
+        if prompt_template:
+            context = {
+                "file_path": file_path,
+                "file_content": file_content,
+                "test_framework": test_framework,
+                "existing_tests": existing_tests,
+                "coverage_report": coverage_report,
+                "project_requirements": project_requirements
+            }
+            prompt = prompt_template.format(**context)
+            print_prompt_info("test-roadmap", prompt)
+        
+        # Generate roadmap
+        roadmap = manager.generate_test_roadmap(file_path)
+        click.echo(f"Test roadmap for {file_path}:")
+        click.echo(roadmap)
+    except FileNotFoundError:
+        click.echo(f"Error: File {file_path} not found", err=True)
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"Error generating test roadmap: {str(e)}", err=True)
+        sys.exit(2)
 
 @debug.command()
-@click.argument('file')
-def analyze_dependencies(file):
+@click.argument('file_path')
+def analyze_dependencies(file_path):
     """Analyze dependencies of a file."""
     manager = DebugManager()
-    result = manager.analyze_dependencies(file)
-    click.echo(f"Dependencies: {result}")
-    
-    # Update memory bank
-    prompt_manager = get_manager()
-    prompt_manager.memory_bank.update_context(
-        "techContext.md",
-        f"Dependencies_{file}",
-        f"Dependencies:\n{result}",
-        mode="replace"
-    )
-
+    try:
+        # Get dependency context
+        direct_deps = manager.get_direct_dependencies(file_path)
+        indirect_deps = manager.get_indirect_dependencies(file_path)
+        dep_graph = manager.get_dependency_graph(file_path)
+        
+        # Get and format prompt
+        prompt_template = get_prompt_for_command("analyze-dependencies")
+        if prompt_template:
+            context = {
+                "file_path": file_path,
+                "direct_dependencies": direct_deps,
+                "indirect_dependencies": indirect_deps,
+                "dependency_graph": dep_graph,
+                "system_packages": manager.get_system_packages()
+            }
+            prompt = prompt_template.format(**context)
+            print_prompt_info("analyze-dependencies", prompt)
+        
+        # Run analysis
+        analysis = manager.analyze_dependencies(file_path)
+        click.echo(f"Dependency analysis for {file_path}:")
+        click.echo(analysis)
+    except FileNotFoundError:
+        click.echo(f"Error: File {file_path} not found", err=True)
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"Error analyzing dependencies: {str(e)}", err=True)
+        sys.exit(2)
 
 @debug.command()
-@click.argument('file')
-def trace_error(file):
-    """Trace an error through the codebase."""
+@click.argument('error_message')
+@click.option('--file-path', help='Path to file with error')
+@click.option('--max-depth', type=int, default=5, help='Maximum trace depth')
+def trace_error(error_message, file_path=None, max_depth=5):
+    """Trace error through the codebase."""
     manager = DebugManager()
-    result = manager.trace_error(file)
-    click.echo(f"Error trace: {result}")
-    
-    # Update memory bank
-    prompt_manager = get_manager()
-    prompt_manager.memory_bank.update_context(
-        "techContext.md",
-        f"ErrorTrace_{file}",
-        f"Error Trace:\n{result}",
-        mode="replace"
-    )
-
+    try:
+        # Get trace context
+        error_context = manager.get_error_context(error_message, file_path)
+        call_stack = manager.get_call_stack()
+        error_history = manager.get_error_history()
+        
+        # Get and format prompt
+        prompt_template = get_prompt_for_command("trace-error")
+        if prompt_template:
+            context = {
+                "error_message": error_message,
+                "file_path": file_path or "unknown",
+                "max_depth": max_depth,
+                "error_context": error_context,
+                "call_stack": call_stack,
+                "error_history": error_history
+            }
+            prompt = prompt_template.format(**context)
+            print_prompt_info("trace-error", prompt)
+        
+        # Trace error
+        trace = manager.trace_error(error_message, file_path, max_depth)
+        click.echo("Error trace:")
+        click.echo(trace)
+    except Exception as e:
+        click.echo(f"Error tracing error: {str(e)}", err=True)
+        sys.exit(1)
 
 __all__ = ['debug']

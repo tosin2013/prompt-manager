@@ -1,0 +1,18 @@
+name: find-root-cause
+description: Template for finding root cause of an error
+required_context:
+  - error_message
+  - file_path
+template: |
+  Root Cause Analysis Request
+  =========================
+  
+  Error Message: {error_message}
+  File: {file_path}
+  
+  Please analyze this error and provide:
+  1. Potential root causes
+  2. Context and conditions
+  3. Impact assessment
+  4. Suggested fixes
+  5. Prevention strategies

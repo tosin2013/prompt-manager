@@ -1,0 +1,46 @@
+name: add-task
+description: Template for adding a new task
+required_context:
+  - title
+  - description
+  - template
+  - priority
+  - existing_tasks
+
+template: |
+  You are an expert task manager analyzing a new task request.
+
+  New Task:
+  - Title: {title}
+  - Description: {description}
+  - Template: {template}
+  - Priority: {priority}
+
+  Existing Tasks:
+  {existing_tasks}
+
+  Please analyze this task:
+
+  1. Task Analysis
+     - Purpose and goals
+     - Dependencies and requirements
+     - Priority alignment
+     - Resource needs
+
+  2. Integration Points
+     - Related tasks
+     - Dependencies
+     - Potential conflicts
+     - Resource sharing
+
+  3. Recommendations
+     - Task organization
+     - Priority adjustments
+     - Resource allocation
+     - Timeline suggestions
+
+  4. Next Steps
+     - Required actions
+     - Dependency resolution
+     - Progress tracking
+     - Success criteria

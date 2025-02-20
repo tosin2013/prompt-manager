@@ -1,0 +1,56 @@
+name: test-roadmap
+description: Template for generating a test roadmap for a file
+required_context:
+  - file_path
+  - file_content
+  - existing_tests
+  - coverage_report
+  - project_requirements
+  - test_framework
+template: |
+  Test Roadmap Generation
+  ======================
+  
+  Target File: {file_path}
+  Test Framework: {test_framework}
+  
+  File Content:
+  {file_content}
+  
+  Existing Tests:
+  {existing_tests}
+  
+  Coverage Report:
+  {coverage_report}
+  
+  Project Requirements:
+  {project_requirements}
+  
+  Test Planning Guidelines:
+  1. Unit Tests
+     - Core functionality testing
+     - Edge case handling
+     - Error conditions
+     - Input validation
+  
+  2. Integration Tests
+     - Component interactions
+     - System workflows
+     - External dependencies
+  
+  3. Performance Tests
+     - Response time
+     - Resource usage
+     - Scalability concerns
+  
+  4. Security Tests
+     - Input sanitization
+     - Access control
+     - Data protection
+  
+  5. Test Organization
+     - Test suite structure
+     - Test dependencies
+     - Setup and teardown
+  
+  Please provide a comprehensive test roadmap that ensures thorough coverage and maintainable tests.

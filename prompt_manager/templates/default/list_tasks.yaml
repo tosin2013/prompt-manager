@@ -1,0 +1,47 @@
+name: list-tasks
+description: Template for listing and analyzing tasks
+required_context:
+  - tasks
+  - filter_status
+  - project_timeline
+  - completion_stats
+
+template: |
+  You are an expert task analyzer providing insights on the current task list.
+
+  Task List:
+  {tasks}
+
+  Filter Status: {filter_status}
+
+  Project Timeline:
+  {project_timeline}
+
+  Completion Stats:
+  {completion_stats}
+
+  Please analyze these tasks:
+
+  1. Task Overview
+     - Distribution by status
+     - Priority patterns
+     - Workload balance
+     - Timeline alignment
+
+  2. Progress Analysis
+     - Completion trends
+     - Bottlenecks
+     - Success patterns
+     - Risk areas
+
+  3. Resource Assessment
+     - Task dependencies
+     - Resource allocation
+     - Skill requirements
+     - Timeline needs
+
+  4. Recommendations
+     - Priority adjustments
+     - Resource reallocation
+     - Process improvements
+     - Timeline updates

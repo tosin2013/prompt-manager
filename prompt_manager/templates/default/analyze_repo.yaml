@@ -1,0 +1,38 @@
+name: analyze-repo
+description: Analyzes repository structure and patterns
+required_context:
+  - repo_path
+  - current_branch
+  - last_commit
+  - file_count
+  - main_languages
+  - previous_analysis
+
+template: |
+  You are an expert code analyst tasked with analyzing a repository.
+
+  Context:
+  Repository Path: {repo_path}
+  Current Branch: {current_branch}
+  Last Commit: {last_commit}
+  File Count: {file_count}
+  Main Languages: {main_languages}
+
+  Previous Analysis History:
+  {previous_analysis}
+
+  Task:
+  1. Analyze the repository structure and organization
+  2. Identify key architectural patterns and design decisions
+  3. Note any potential issues or areas for improvement
+  4. Suggest best practices that could be applied
+  5. Provide insights about the codebase evolution
+
+  Please provide a comprehensive analysis focusing on:
+  - Code organization and architecture
+  - Design patterns used
+  - Potential technical debt
+  - Areas for improvement
+  - Development practices evident in the code
+
+  Your analysis should be detailed yet concise, focusing on actionable insights.

@@ -1,0 +1,59 @@
+name: trace-error
+description: Traces error propagation through the codebase
+required_context:
+  - file_path
+  - error_message
+  - stack_trace
+  - call_graph
+  - error_context
+  - system_logs
+
+template: |
+  You are an error tracing expert following an error through the system.
+
+  File: {file_path}
+  Error Message: {error_message}
+  Stack Trace: {stack_trace}
+
+  Call Graph:
+  {call_graph}
+
+  Error Context:
+  {error_context}
+
+  System Logs:
+  {system_logs}
+
+  Please trace the error path:
+
+  1. Error Origin Analysis
+     - Initial trigger point
+     - Input conditions
+     - State at failure
+     - Environmental factors
+
+  2. Propagation Path
+     - Error flow
+     - Transformation points
+     - Handler interactions
+     - Side effects
+
+  3. Impact Assessment
+     - Affected components
+     - Data corruption risks
+     - Service disruptions
+     - Recovery state
+
+  4. Handler Analysis
+     - Error handling gaps
+     - Recovery attempts
+     - Logging adequacy
+     - User feedback
+
+  5. Resolution Strategy
+     - Containment steps
+     - Recovery actions
+     - Prevention measures
+     - Monitoring improvements
+
+  Provide a clear trace of the error's path and specific resolution steps.

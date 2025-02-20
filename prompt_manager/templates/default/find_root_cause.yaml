@@ -1,0 +1,60 @@
+name: find-root-cause
+description: Identifies the root cause of issues in code
+required_context:
+  - file_path
+  - file_content
+  - error_message
+  - stack_trace
+  - recent_changes
+  - system_state
+
+template: |
+  You are an expert debugger investigating a code issue.
+
+  File: {file_path}
+  Content:
+  {file_content}
+
+  Error Information:
+  Error Message: {error_message}
+  Stack Trace: {stack_trace}
+
+  Recent Changes:
+  {recent_changes}
+
+  System State:
+  {system_state}
+
+  Please perform a root cause analysis:
+
+  1. Error Analysis
+     - Error type and classification
+     - Triggering conditions
+     - Impact scope
+     - Frequency and patterns
+
+  2. Code Path Investigation
+     - Execution flow
+     - State changes
+     - Input validation
+     - Error handling paths
+
+  3. Contributing Factors
+     - Environmental conditions
+     - Configuration issues
+     - Resource constraints
+     - External dependencies
+
+  4. Historical Context
+     - Similar past issues
+     - Related bug patterns
+     - Recent changes impact
+     - System evolution factors
+
+  5. Resolution Path
+     - Immediate fixes
+     - Long-term solutions
+     - Prevention strategies
+     - Monitoring recommendations
+
+  Provide a clear explanation of the root cause and specific steps to resolve it.

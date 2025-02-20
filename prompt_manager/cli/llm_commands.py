@@ -1,90 +1,219 @@
-"""LLM CLI commands."""
+"""LLM-related CLI commands."""
 
 import click
-import sys
-from prompt_manager.llm_manager import LLMManager
+from pathlib import Path
+import git
+from typing import List, Dict
+import os
 
+from prompt_manager.cli.utils import get_manager
+from prompt_manager.prompts import get_prompt_for_command, save_prompt_history, list_available_templates
+
+def get_repo_info(repo_path: str) -> Dict[str, str]:
+    """Get repository information for context."""
+    repo = git.Repo(repo_path)
+    
+    # Count files
+    file_count = sum(1 for _ in Path(repo_path).rglob('*') if _.is_file())
+    
+    # Get main languages
+    extensions = {}
+    for file in Path(repo_path).rglob('*'):
+        if file.is_file():
+            ext = file.suffix
+            if ext:
+                extensions[ext] = extensions.get(ext, 0) + 1
+    main_languages = sorted(extensions.items(), key=lambda x: x[1], reverse=True)[:5]
+    
+    return {
+        "repo_path": repo_path,
+        "current_branch": repo.active_branch.name,
+        "last_commit": str(repo.head.commit.message),
+        "file_count": str(file_count),
+        "main_languages": ", ".join(f"{ext} ({count})" for ext, count in main_languages)
+    }
 
 @click.group()
 def llm():
     """LLM commands."""
     pass
 
-
 @llm.command()
-@click.argument('file_path')
+@click.argument('file_path', type=click.Path(exists=True))
 def analyze_impact(file_path):
     """Analyze impact of changes in a file."""
-    manager = LLMManager()
-    try:
-        impact = manager.analyze_impact(file_path)
-        click.echo(f"Impact analysis for {file_path}:")
-        click.echo(impact)
-    except FileNotFoundError:
-        click.echo(f"Error: File {file_path} not found", err=True)
-        sys.exit(1)
-    except Exception as e:
-        click.echo(f"Error analyzing impact: {str(e)}", err=True)
-        sys.exit(2)
-
+    manager = get_manager()
+    prompt_template = get_prompt_for_command("analyze-impact")
+    
+    # Get file changes
+    repo = git.Repo(manager.project_dir, search_parent_directories=True)
+    file_path = str(Path(file_path).resolve())
+    rel_path = str(Path(file_path).relative_to(repo.working_dir))
+    
+    # Get changes using git diff
+    changes = repo.git.diff(file_path)
+    
+    # Get dependencies (files that import or are imported by this file)
+    dependencies = "TODO: Implement dependency analysis"
+    
+    # Get previous analysis from memory
+    previous_analysis = manager.memory_bank.get_context("commandHistory.md") or "No previous analysis found."
+    
+    context = {
+        "file_path": rel_path,
+        "changes": changes,
+        "dependencies": dependencies,
+        "previous_analysis": previous_analysis
+    }
+    
+    prompt = prompt_template.format(**context)
+    
+    # TODO: Send to LLM and get response
+    response = "TODO: Implement LLM call"
+    
+    # Save to memory bank
+    save_prompt_history(manager.memory_bank, "analyze-impact", prompt, response)
+    
+    click.echo(response)
 
 @llm.command()
-@click.argument('file_path')
-@click.option('--max-suggestions', type=int, default=3)
+def analyze_repo():
+    """Analyze repository changes."""
+    manager = get_manager()
+    prompt_template = get_prompt_for_command("analyze-repo")
+    
+    # Get repo info
+    repo_info = get_repo_info(manager.project_dir)
+    
+    # Get previous analysis from memory
+    previous_analysis = manager.memory_bank.get_context("commandHistory.md") or "No previous analysis found."
+    
+    context = {
+        **repo_info,
+        "previous_analysis": previous_analysis
+    }
+    
+    prompt = prompt_template.format(**context)
+    
+    # TODO: Send to LLM and get response
+    response = "TODO: Implement LLM call"
+    
+    # Save to memory bank
+    save_prompt_history(manager.memory_bank, "analyze-repo", prompt, response)
+    
+    click.echo(response)
+
+@llm.command()
+@click.argument('file_path', type=click.Path(exists=True))
+def generate_commands(file_path):
+    """Generate CLI commands from file."""
+    manager = get_manager()
+    prompt_template = get_prompt_for_command("generate-commands")
+    
+    file_path = Path(file_path).resolve()
+    with open(file_path) as f:
+        file_content = f.read()
+    
+    # Get command history from memory
+    command_history = manager.memory_bank.get_context("commandHistory.md") or "No previous commands found."
+    
+    context = {
+        "file_path": str(file_path),
+        "file_content": file_content,
+        "command_history": command_history
+    }
+    
+    prompt = prompt_template.format(**context)
+    
+    # TODO: Send to LLM and get response
+    response = "TODO: Implement LLM call"
+    
+    # Save to memory bank
+    save_prompt_history(manager.memory_bank, "generate-commands", prompt, response)
+    
+    click.echo(response)
+
+@llm.command()
+@click.argument('file_path', type=click.Path(exists=True))
+@click.option('--max-suggestions', default=5, help='Maximum number of suggestions to provide')
 def suggest_improvements(file_path, max_suggestions):
     """Suggest code improvements."""
-    if max_suggestions <= 0:
-        click.echo("Error: max-suggestions must be greater than 0", err=True)
-        sys.exit(1)
+    manager = get_manager()
+    prompt_template = get_prompt_for_command("suggest-improvements")
     
-    manager = LLMManager()
-    try:
-        suggestions = manager.suggest_improvements(file_path)  # Test expects no max_suggestions param
-        click.echo(f"Improvement suggestions for {file_path}:")
-        for i, suggestion in enumerate(suggestions, 1):
-            click.echo(f"{i}. {suggestion}")
-    except FileNotFoundError:
-        click.echo(f"Error: File {file_path} not found", err=True)
-        sys.exit(1)
-    except Exception as e:
-        click.echo(f"Error suggesting improvements: {str(e)}", err=True)
-        sys.exit(2)
-
+    file_path = Path(file_path).resolve()
+    with open(file_path) as f:
+        file_content = f.read()
+    
+    # Get previous suggestions from memory
+    previous_suggestions = manager.memory_bank.get_context("commandHistory.md") or "No previous suggestions found."
+    
+    context = {
+        "file_path": str(file_path),
+        "file_content": file_content,
+        "previous_suggestions": previous_suggestions,
+        "max_suggestions": max_suggestions
+    }
+    
+    prompt = prompt_template.format(**context)
+    
+    # TODO: Send to LLM and get response
+    response = "TODO: Implement LLM call"
+    
+    # Save to memory bank
+    save_prompt_history(manager.memory_bank, "suggest-improvements", prompt, response)
+    
+    click.echo(response)
 
 @llm.command()
 @click.argument('title')
 @click.argument('description')
 def create_pr(title, description):
     """Create a pull request."""
-    if not title or not description:
-        click.echo("Error: Both title and description are required", err=True)
-        sys.exit(1)
+    manager = get_manager()
+    prompt_template = get_prompt_for_command("create-pr")
     
-    manager = LLMManager()
-    try:
-        pr_url = manager.create_pr(title, description)
-        click.echo(f"Created PR: {pr_url}")
-    except Exception as e:
-        click.echo(f"Error creating PR: {str(e)}", err=True)
-        sys.exit(2)
-
+    repo = git.Repo(manager.project_dir, search_parent_directories=True)
+    
+    # Get changed files
+    changed_files = repo.git.diff('--name-status')
+    
+    # Get recent commits
+    commit_history = repo.git.log('--oneline', '-n', '5')
+    
+    # Get previous PRs from memory
+    previous_prs = manager.memory_bank.get_context("commandHistory.md") or "No previous PRs found."
+    
+    context = {
+        "title": title,
+        "description": description,
+        "changed_files": changed_files,
+        "commit_history": commit_history,
+        "previous_prs": previous_prs
+    }
+    
+    prompt = prompt_template.format(**context)
+    
+    # TODO: Send to LLM and get response
+    response = "TODO: Implement LLM call"
+    
+    # Save to memory bank
+    save_prompt_history(manager.memory_bank, "create-pr", prompt, response)
+    
+    click.echo(response)
 
 @llm.command()
-@click.argument('file_path')
-def generate_commands(file_path):
-    """Generate CLI commands from file."""
-    manager = LLMManager()
-    try:
-        commands = manager.generate_commands(file_path)
-        click.echo(f"Generated commands for {file_path}:")
-        for command in commands:
-            click.echo(f"- {command}")
-    except FileNotFoundError:
-        click.echo(f"Error: File {file_path} not found", err=True)
-        sys.exit(1)
-    except Exception as e:
-        click.echo(f"Error generating commands: {str(e)}", err=True)
-        sys.exit(2)
-
-
-__all__ = ['llm']
+def list_templates():
+    """List all available prompt templates."""
+    from prompt_manager.prompts import list_available_templates
+    
+    templates = list_available_templates()
+    if not templates:
+        click.echo("No templates found.")
+        return
+        
+    click.echo("\nAvailable prompt templates:")
+    for template in templates:
+        click.echo(f"\n{template['name']}:")
+        click.echo(f"  Description: {template['description']}")
+        click.echo(f"  Required context: {', '.join(template['required_context'])}")

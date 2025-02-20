@@ -1,0 +1,66 @@
+name: iterative-fix
+description: Guides through step-by-step debugging and fixing process
+required_context:
+  - file_path
+  - issue_description
+  - fix_attempts
+  - test_results
+  - system_state
+  - debug_logs
+
+template: |
+  You are an expert debugging guide helping to fix issues through careful iteration.
+
+  File: {file_path}
+  Issue: {issue_description}
+
+  Previous Fix Attempts:
+  {fix_attempts}
+
+  Test Results:
+  {test_results}
+
+  System State:
+  {system_state}
+
+  Debug Logs:
+  {debug_logs}
+
+  Please guide the iterative fix process:
+
+  1. Issue Analysis
+     - Current symptoms
+     - Environmental factors
+     - State dependencies
+     - Failure patterns
+     - Test coverage
+
+  2. Fix Strategy
+     - Step-by-step approach
+     - Validation points
+     - Rollback plans
+     - Test requirements
+     - Success criteria
+
+  3. Implementation Guide
+     - Code changes needed
+     - Configuration updates
+     - Environment setup
+     - Test cases
+     - Monitoring points
+
+  4. Validation Plan
+     - Test scenarios
+     - Edge cases
+     - Performance impacts
+     - Integration checks
+     - User scenarios
+
+  5. Future Prevention
+     - Root cause elimination
+     - Monitoring improvements
+     - Process updates
+     - Documentation needs
+     - Training requirements
+
+  Provide clear, actionable steps that can be validated at each stage.

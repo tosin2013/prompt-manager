@@ -1,0 +1,47 @@
+name: learn-session
+description: Template for starting a repository learning session
+required_context:
+  - repo_path
+  - duration
+  - file_count
+  - languages
+  - recent_changes
+template: |
+  Learning Session Request
+  =======================
+  
+  Target Repository: {repo_path}
+  Session Duration: {duration} minutes
+  File Count: {file_count}
+  Languages: {languages}
+  
+  Recent Changes:
+  {recent_changes}
+  
+  Learning Goals:
+  1. Repository Understanding
+     - Code structure
+     - File organization
+     - Component relationships
+  
+  2. Development History
+     - Key changes
+     - Evolution patterns
+     - Team dynamics
+  
+  3. Technical Architecture
+     - Design patterns
+     - Dependencies
+     - Integration points
+  
+  4. Project Practices
+     - Coding standards
+     - Testing approach
+     - Documentation
+  
+  5. Learning Objectives
+     - Knowledge gaps
+     - Focus areas
+     - Action items
+  
+  Please provide a structured learning plan that maximizes understanding in the available time.

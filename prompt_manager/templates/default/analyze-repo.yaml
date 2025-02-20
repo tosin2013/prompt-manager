@@ -1,0 +1,49 @@
+name: analyze-repo
+description: Template for analyzing repository changes
+required_context:
+  - repo_path
+  - last_commit
+  - file_count
+  - main_languages
+  - previous_analysis
+  - current_branch
+template: |
+  Repository Analysis Request
+  ==========================
+  
+  Target Repository: {repo_path}
+  Current Branch: {current_branch}
+  Last Commit: {last_commit}
+  File Count: {file_count}
+  Main Languages: {main_languages}
+  
+  Previous Analysis:
+  {previous_analysis}
+  
+  Analysis Guidelines:
+  1. Repository Structure
+     - Code organization
+     - File distribution
+     - Module relationships
+  
+  2. Development Patterns
+     - Commit frequency
+     - Code churn
+     - Team collaboration
+  
+  3. Code Quality
+     - Complexity trends
+     - Test coverage
+     - Documentation status
+  
+  4. Project Health
+     - Active development areas
+     - Stale code
+     - Technical debt
+  
+  5. Recommendations
+     - Areas for improvement
+     - Best practices alignment
+     - Next steps
+  
+  Please provide a comprehensive analysis that can guide repository maintenance and improvement efforts.

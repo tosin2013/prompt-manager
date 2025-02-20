@@ -1,0 +1,50 @@
+name: update-progress
+description: Template for updating task progress
+required_context:
+  - task_title
+  - new_status
+  - current_status
+  - progress_note
+  - task_history
+  - related_tasks
+
+template: |
+  You are an expert progress tracker analyzing a task status update.
+
+  Task Update:
+  - Title: {task_title}
+  - Current Status: {current_status}
+  - New Status: {new_status}
+  - Progress Note: {progress_note}
+
+  Task History:
+  {task_history}
+
+  Related Tasks:
+  {related_tasks}
+
+  Please analyze this update:
+
+  1. Status Change Analysis
+     - Reason for change
+     - Progress indicators
+     - Blockers resolved
+     - New challenges
+
+  2. Impact Assessment
+     - Dependencies affected
+     - Timeline implications
+     - Resource adjustments
+     - Risk changes
+
+  3. Progress Evaluation
+     - Completion percentage
+     - Quality indicators
+     - Performance metrics
+     - Success criteria status
+
+  4. Next Actions
+     - Required follow-ups
+     - Dependency updates
+     - Resource reallocation
+     - Communication needs

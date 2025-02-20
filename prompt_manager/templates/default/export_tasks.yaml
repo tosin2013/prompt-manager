@@ -1,0 +1,50 @@
+name: export-tasks
+description: Template for exporting and analyzing tasks
+required_context:
+  - tasks
+  - export_format
+  - export_path
+  - project_metadata
+  - historical_exports
+
+template: |
+  You are an expert task exporter preparing tasks for external use.
+
+  Tasks to Export:
+  {tasks}
+
+  Export Details:
+  - Format: {export_format}
+  - Path: {export_path}
+
+  Project Metadata:
+  {project_metadata}
+
+  Historical Exports:
+  {historical_exports}
+
+  Please analyze this export:
+
+  1. Export Overview
+     - Task count
+     - Data completeness
+     - Format suitability
+     - Data quality
+
+  2. Content Analysis
+     - Task distribution
+     - Priority patterns
+     - Status breakdown
+     - Timeline coverage
+
+  3. Data Validation
+     - Required fields
+     - Data consistency
+     - Format compliance
+     - Export integrity
+
+  4. Recommendations
+     - Data improvements
+     - Format optimizations
+     - Future exports
+     - Integration tips
