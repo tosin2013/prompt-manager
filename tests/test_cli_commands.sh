@@ -83,13 +83,13 @@ test_subcommands() {
         ;;
       "base add-task")
         # Test add-task with all options
-        test_command "$full_cmd" "'Test Task' 'Test Description' --template 'Test Template'"
-        test_command "$full_cmd" "'High Priority Task' 'Important task' --template 'Test Template' --priority 1"  # high priority
-        test_command "$full_cmd" "'Low Priority Task' 'Optional task' --template 'Test Template' --priority 3"  # low priority
+        test_command "$full_cmd" "--title 'Test Task' --description 'Test Description' --template 'Test Template'"
+        test_command "$full_cmd" "--title 'High Priority Task' --description 'Important task' --template 'Test Template' --priority high"
+        test_command "$full_cmd" "--title 'Low Priority Task' --description 'Optional task' --template 'Test Template' --priority low"
         ;;
       "base update-progress")
         # First create a task to update
-        test_command "base add-task" "'Progress Task' 'Task to update' --template 'Test Template' --priority 2"
+        test_command "base add-task" "--title 'Progress Task' --description 'Task to update' --template 'Test Template' --priority medium"
         # Test all status transitions
         test_command "$full_cmd" "'Progress Task' todo"
         test_command "$full_cmd" "'Progress Task' in_progress"
