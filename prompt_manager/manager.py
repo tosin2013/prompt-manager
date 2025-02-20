@@ -123,7 +123,7 @@ class PromptManager:
         task = Task(
             title=title,
             description=description,
-            prompt_template=template or "",
+            template=template or "",
             priority=priority,
         )
         self.tasks[title] = task
@@ -169,7 +169,7 @@ class PromptManager:
         if description is not None:
             task.description = description
         if template is not None:
-            task.prompt_template = template
+            task.template = template
         if priority is not None:
             if priority not in ["low", "medium", "high"]:
                 raise ValueError(f"Invalid priority '{priority}'. Must be one of: low, medium, high")
@@ -195,13 +195,12 @@ class PromptManager:
             Task: Updated task
         """
         task = self.get_task(task_id)
-        
         if isinstance(status, str):
             try:
                 status = TaskStatus(status.lower())
             except ValueError:
-                raise ValueError(f"Invalid status '{status}'. Must be one of: {[s.value for s in TaskStatus]}")
-                
+                raise ValueError(f"Invalid status '{status}'. Must be one of: {', '.join(s.value for s in TaskStatus)}")
+        
         task.update_status(status, notes)
         self.save_tasks()
         return task
@@ -308,7 +307,7 @@ class PromptManager:
         task = self.get_task(task_title)
         if isinstance(task, BoltTask):
             return task.generate_prompt()
-        return task.prompt_template.format(**kwargs)
+        return task.template.format(**kwargs)
 
     def load_project(self) -> None:
         """Load existing project data if available."""
@@ -318,18 +317,18 @@ class PromptManager:
         """Save project data to YAML."""
         self.save_tasks()
 
-    def add_task_to_project(self, title: str, description: str, prompt_template: str) -> Task:
+    def add_task_to_project(self, title: str, description: str, template: str) -> Task:
         """Add a new task to the project.
         
         Args:
             title: Task title
             description: Task description
-            prompt_template: Prompt template
+            template: Prompt template
         
         Returns:
             Task: Newly created task
         """
-        return self.add_task(title, description, prompt_template)
+        return self.add_task(title, description, template)
 
     def get_task_from_project(self, title: str) -> Task:
         """Get a task by title.

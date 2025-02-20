@@ -24,7 +24,7 @@ class Task:
         description: str = "",
         priority: str = "medium",
         status: TaskStatus = TaskStatus.PENDING,
-        prompt_template: str = "",
+        template: str = "",  
         notes: List[str] = None,
     ):
         """Initialize a new task.
@@ -34,14 +34,14 @@ class Task:
             description: Detailed description
             priority: Task priority (low/medium/high)
             status: Current status
-            prompt_template: Template for task prompts
+            template: Template for task prompts
             notes: List of notes about the task
         """
         self.title = title
         self.description = description
         self.priority = priority
         self.status = status
-        self.prompt_template = prompt_template
+        self.template = template  
         self.notes = notes or []
         self.created_at = datetime.datetime.now()
         self.updated_at = self.created_at
@@ -61,7 +61,7 @@ class Task:
             "description": self.description,
             "priority": self.priority,
             "status": self.status.value,
-            "prompt_template": self.prompt_template,
+            "template": self.template,
             "notes": self.notes,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
@@ -75,7 +75,7 @@ class Task:
             description=data.get("description", ""),
             priority=data.get("priority", "medium"),
             status=TaskStatus(data.get("status", "pending")),
-            prompt_template=data.get("prompt_template", ""),
+            template=data.get("template", ""),
             notes=data.get("notes", []),
         )
         task.created_at = datetime.datetime.fromisoformat(data["created_at"])
@@ -90,7 +90,7 @@ class BoltTask(Task):
         self,
         title: str,
         description: str = "",
-        prompt_template: str = "",
+        template: str = "",
         framework: Optional[str] = None,
         dependencies: Optional[List[str]] = None,
         ui_components: Optional[List[str]] = None,
@@ -103,7 +103,7 @@ class BoltTask(Task):
         super().__init__(
             title=title,
             description=description,
-            prompt_template=prompt_template,
+            template=template,
             priority=priority,
             status=status,
             notes=notes,
@@ -115,7 +115,7 @@ class BoltTask(Task):
 
     def generate_prompt(self) -> str:
         """Generate a prompt using the template and task details."""
-        prompt = self.prompt_template.format(
+        prompt = self.template.format(
             framework=self.framework, description=self.description
         )
 
@@ -167,29 +167,27 @@ class BoltTask(Task):
                     f"- {endpoint['method']} {endpoint['path']}: {endpoint.get('description', '')}"
                 )
 
-        prompt.append(f"\nPrompt Template:\n{self.prompt_template}")
+        prompt.append(f"\nTemplate:\n{self.template}")
         return "\n".join(prompt)
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert task to dictionary for serialization."""
+        """Convert task to dictionary format."""
         data = super().to_dict()
-        data.update(
-            {
-                "framework": self.framework,
-                "dependencies": self.dependencies,
-                "ui_components": self.ui_components,
-                "api_endpoints": self.api_endpoints,
-            }
-        )
+        data.update({
+            "framework": self.framework,
+            "dependencies": self.dependencies,
+            "ui_components": self.ui_components,
+            "api_endpoints": self.api_endpoints,
+        })
         return data
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "BoltTask":
+    def from_dict(cls, data: Dict[str, Any]) -> 'BoltTask':
         """Create task from dictionary."""
         task = cls(
             title=data["title"],
             description=data.get("description", ""),
-            prompt_template=data.get("prompt_template", ""),
+            template=data.get("template", ""),
             framework=data.get("framework"),
             dependencies=data.get("dependencies", []),
             ui_components=data.get("ui_components", []),
@@ -198,6 +196,4 @@ class BoltTask(Task):
             status=TaskStatus(data.get("status", "pending")),
             notes=data.get("notes", []),
         )
-        task.created_at = datetime.datetime.fromisoformat(data["created_at"])
-        task.updated_at = datetime.datetime.fromisoformat(data["updated_at"])
         return task
