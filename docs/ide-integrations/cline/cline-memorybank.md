@@ -49,7 +49,7 @@ pip install -e .[dev]
 The Memory Bank maintains the following structure:
 
 ```
-cline_docs/
+memory/
 ├── productContext.md   # Project goals and requirements
 ├── activeContext.md    # Current development state
 ├── systemPatterns.md   # Architectural patterns and decisions
