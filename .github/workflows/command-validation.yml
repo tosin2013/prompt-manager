@@ -126,7 +126,7 @@ jobs:
         # Initialize test environment
         mkdir -p test_project
         cd test_project
-        prompt-manager init .
+        prompt-manager init --path .
         
         # Create test files
         echo "def test():" > test_file.py
@@ -185,7 +185,7 @@ jobs:
         # Initialize test project
         mkdir test_project
         cd test_project
-        prompt-manager init .
+        prompt-manager init --path .
         
         # Verify memory files are created
         for file in memory/tasks.json memory/prompts.json memory/context.json; do
