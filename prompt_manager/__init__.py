@@ -29,13 +29,19 @@ class Task:
     title: str
     description: str
     status: TaskStatus
-    created_at: datetime
-    updated_at: datetime
-    completed_at: Optional[datetime] = None
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+    completed_at: Optional[datetime.datetime] = None
     dependencies: List[str] = None
     tags: List[str] = None
     priority: int = 0
     notes: List[str] = None
+
+    def __post_init__(self):
+        """Initialize default values for lists."""
+        self.dependencies = self.dependencies or []
+        self.tags = self.tags or []
+        self.notes = self.notes or []
 
 class PromptManager:
     """Manages prompts and tasks for a project."""
