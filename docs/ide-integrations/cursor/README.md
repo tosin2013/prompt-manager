@@ -9,20 +9,10 @@ This directory contains documentation and resources for integrating the CLI tool
 Since Prompt Manager is currently in development, you'll need to install it directly from the Git repository:
 
 ```bash
-# Clone the repository
-git clone https://github.com/tosin2013/prompt-manager.git
-cd prompt-manager
-
-# Create and activate a virtual environment (recommended)
-python -m venv venv
-source venv/bin/activate  # On Windows, use: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Install in development mode
-pip install -e .
-
+```bash
+% python3 -m venv venv
+% source venv/bin/activate
+% pip install git+https://github.com/tosin2013/prompt-manager.git@main
 # Verify installation
 prompt-manager --version
 ```

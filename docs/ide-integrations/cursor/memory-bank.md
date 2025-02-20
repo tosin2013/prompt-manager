@@ -6,7 +6,9 @@ This guide explains how to use the Memory Bank feature with Cursor IDE, allowing
 
 1. Install the CLI tool:
 ```bash
-pip install prompt-manager
+% python3 -m venv venv
+% source venv/bin/activate
+% pip install git+https://github.com/tosin2013/prompt-manager.git@main
 ```
 
 2. Configure Cursor settings:

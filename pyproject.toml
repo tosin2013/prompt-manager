@@ -13,6 +13,10 @@ dependencies = [
     "pyyaml>=6.0.1",
     "typing-extensions>=4.7.1",
     "click>=8.0.0",
+    "gitpython>=3.1.40",
+    "pathlib>=1.0.1",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
 ]
 
 [project.scripts]
@@ -20,8 +24,6 @@ prompt-manager = "prompt_manager.cli.__init__:cli"
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
     "black",
     "flake8",
     "mypy",
