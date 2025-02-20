@@ -134,6 +134,17 @@ fi
 # Test debug commands with prompt validation
 echo -e "\n${YELLOW}Testing debug commands with prompts...${NC}"
 
+# Create test files
+echo "def test_function():
+    print('Hello World')
+    return True" > test_file.py
+
+echo "Error: Something went wrong
+Traceback (most recent call last):
+  File 'test_file.py', line 2
+    print('Hello World')
+TypeError: str object is not callable" > test_error.log
+
 # Test analyze-file
 output=$(prompt-manager debug analyze-file "test_file.py")
 if ! validate_prompt_display "$output" "analyze-file"; then
