@@ -18,7 +18,6 @@ setup(
         "pytest-cov>=4.0.0",
         "click>=8.0.0",
         "gitpython>=3.1.0",
-        "uuid>=1.30",
     ],
     extras_require={
         'dev': [
