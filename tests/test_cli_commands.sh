@@ -158,7 +158,7 @@ if ! validate_prompt_display "$output" "find-root-cause"; then
 fi
 
 # Test test-roadmap
-output=$(prompt-manager debug test-roadmap)
+output=$(prompt-manager debug test-roadmap "test_file.py")
 if ! validate_prompt_display "$output" "test-roadmap"; then
   exit 1
 fi
