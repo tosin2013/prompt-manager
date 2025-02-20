@@ -16,6 +16,7 @@ from tests.constants import (
     TASK_ADDED_MSG,
     TASK_STATUS_UPDATED_MSG,
     DEFAULT_EXPORT_PATH,
+    PROJECT_INITIALIZED_MSG,
 )
 
 pytestmark = [pytest.mark.cli, pytest.mark.cli_base]
@@ -32,21 +33,39 @@ def test_data_dir():
     """Create a temporary directory for testing."""
     with tempfile.TemporaryDirectory() as tmpdir:
         path = Path(tmpdir)
-        os.makedirs(path / "prompt_manager_data", exist_ok=True)
+        # Create required directories
+        data_dir = path / "prompt_manager_data"
+        data_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Create required files
+        for required_file in ["productContext.md", "activeContext.md", "systemPatterns.md", "techContext.md", "progress.md"]:
+            file_path = data_dir / required_file
+            if not file_path.exists():
+                file_path.touch()
+        
+        # Create tasks directory
+        tasks_dir = path / "tasks"
+        tasks_dir.mkdir(parents=True, exist_ok=True)
+        
         yield path
 
 
 def test_add_task(cli_runner, test_data_dir):
     """Test adding a new task."""
     # First initialize the project
-    cli_runner.invoke(cli, ['--project-dir', str(test_data_dir), 'init'])
+    result = cli_runner.invoke(cli, ['--project-dir', str(test_data_dir), 'init'])
+    assert result.exit_code == 0
+    assert PROJECT_INITIALIZED_MSG in result.output
     
-    # Then add a task
-    result = cli_runner.invoke(cli, ['--project-dir', str(test_data_dir), 'add-task',
-                                   '--title', TASK_TITLE,
-                                   '--description', TASK_DESCRIPTION,
-                                   '--template', TASK_TEMPLATE,
-                                   '--priority', TASK_PRIORITY])
+    # Then add a task using the base command
+    result = cli_runner.invoke(
+        cli,
+        ['--project-dir', str(test_data_dir), 'base', 'add-task',
+         '--title', TASK_TITLE,
+         '--description', TASK_DESCRIPTION,
+         '--template', TASK_TEMPLATE,
+         '--priority', TASK_PRIORITY]
+    )
     assert result.exit_code == 0
     assert TASK_ADDED_MSG in result.output
 
@@ -63,10 +82,10 @@ def test_update_progress(cli_runner, test_data_dir):
                           '--template', TASK_TEMPLATE,
                           '--priority', TASK_PRIORITY])
     
-    # Then update its status
+    # Then update its status using the task title
     result = cli_runner.invoke(cli, ['--project-dir', str(test_data_dir), 'update-progress',
-                                   '--title', TASK_TITLE,
-                                   '--status', TASK_STATUS_IN_PROGRESS])
+                                   TASK_TITLE,  # Use title directly as argument
+                                   TASK_STATUS_IN_PROGRESS])
     assert result.exit_code == 0
     assert TASK_STATUS_UPDATED_MSG in result.output
 

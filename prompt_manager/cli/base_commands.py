@@ -14,21 +14,23 @@ def base():
 
 
 @base.command()
-@click.argument('name')
-@click.argument('description')
+@click.option('--title', required=True, help='Task title')
+@click.option('--description', required=True, help='Task description')
 @click.option('--template', help='Task template')
-@click.option('--priority', type=int, default=2, help='Task priority (1=high, 2=medium, 3=low)')
-def add_task(name, description, template=None, priority=2):
+@click.option('--priority', type=click.Choice(['high', 'medium', 'low']), default='medium', help='Task priority')
+def add_task(title, description, template=None, priority='medium'):
     """Add a new task."""
     try:
         manager = get_manager()
-        priority_map = {1: 'high', 2: 'medium', 3: 'low'}
-        task = manager.add_task(name, description=description, template=template, priority=priority_map[priority])
-        click.echo(f"Added task: {task.title}")
+        task = manager.add_task(title, description=description, template=template, priority=priority)
+        click.echo(f"Task '{task.title}' added successfully")
         return 0
+    except ValueError as e:
+        click.echo(f"Error adding task: {str(e)}", err=True)
+        return 2
     except Exception as e:
         click.echo(f"Error adding task: {str(e)}", err=True)
-        return 1
+        return 2
 
 
 @base.command()
@@ -58,14 +60,14 @@ def list_tasks(status=None):
 
 
 @base.command()
-@click.argument('task_id')
+@click.argument('title')
 @click.argument('status', type=click.Choice(['todo', 'in_progress', 'done', 'blocked']))
-def update_progress(task_id, status):
+def update_progress(title, status):
     """Update task progress."""
     try:
         manager = get_manager()
-        manager.update_task_status(task_id, TaskStatus(status))
-        click.echo(f"Updated task {task_id} to {status}")
+        manager.update_task_status(title, TaskStatus(status))
+        click.echo(f"Updated task '{title}' to {status}")
         return 0
     except Exception as e:
         click.echo(f"Error updating task: {str(e)}", err=True)

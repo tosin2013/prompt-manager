@@ -2,7 +2,7 @@
 
 import click
 from pathlib import Path
-from prompt_manager import PromptManager, TaskStatus
+from prompt_manager import PromptManager, TaskStatus, Task
 from typing import Optional
 import sys
 from prompt_manager.cli.base_commands import base
@@ -15,13 +15,15 @@ from prompt_manager.cli.utils import get_manager
 @click.group()
 @click.version_option(version="0.3.18")
 @click.option('--project-dir', type=click.Path(exists=True), help='Project directory')
-def cli(project_dir=None):
+@click.pass_context
+def cli(ctx, project_dir=None):
     """Prompt Manager CLI - Development workflow management system."""
-    ctx = click.get_current_context()
     if not hasattr(ctx, 'obj') or not ctx.obj:
         ctx.obj = {}
     if project_dir:
         ctx.obj['project_dir'] = project_dir
+    elif 'project_dir' not in ctx.obj:
+        ctx.obj['project_dir'] = str(Path.cwd())
 
 
 # Import and register commands
@@ -42,11 +44,27 @@ def init(ctx, path: str):
             click.echo(f"Error: Path '{path}' does not exist", err=True)
             sys.exit(1)
             
+        # Create required directories
+        data_dir = project_path / "prompt_manager_data"
+        data_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Create required files
+        for required_file in ["productContext.md", "activeContext.md", "systemPatterns.md", "techContext.md", "progress.md"]:
+            file_path = data_dir / required_file
+            if not file_path.exists():
+                file_path.touch()
+            
+        # Set project directory in context
+        if not hasattr(ctx, 'obj') or not ctx.obj:
+            ctx.obj = {}
+        ctx.obj['project_dir'] = str(project_path)
+            
         manager = PromptManager(
-            "", memory_path=project_path / "prompt_manager_data"
+            str(project_path),  # Use project path as name
+            memory_path=data_dir
         )
         manager.initialize()
-        click.echo("Project initialized successfully")
+        click.echo(f"Initialized project at {project_path}")
         return 0
     except Exception as e:
         click.echo(f"Error initializing project: {str(e)}", err=True)
@@ -62,13 +80,24 @@ def init(ctx, path: str):
 def add_task(ctx, title: str, description: Optional[str] = None, template: Optional[str] = None, priority: str = 'medium'):
     """Add a new task."""
     try:
+        click.echo(f"Debug: Getting manager with project_dir={ctx.obj.get('project_dir')}")
         manager = get_manager()
-        priority_map = {'low': 1, 'medium': 2, 'high': 3}
-        task = manager.add_task(title, description, template, priority_map[priority])
+        click.echo(f"Debug: Creating task with title={title}, description={description}, template={template}, priority={priority}")
+        # Create a Task object first to validate the data
+        task = Task(
+            title=title,
+            description=description or "",
+            template=template or "",
+            priority=priority.lower()
+        )
+        click.echo(f"Debug: Task object created successfully")
+        # Add the task using the manager
+        task = manager.add_task(task)
         click.echo(f"Task '{title}' added successfully")
         return 0
     except Exception as e:
         click.echo(f"Error adding task: {str(e)}", err=True)
+        click.echo(f"Debug: Exception type: {type(e)}")
         sys.exit(2)
 
 

@@ -13,8 +13,8 @@ TASK_STATUS_DONE = "done"
 TASK_STATUS_BLOCKED = "blocked"
 
 # Success Messages
-TASK_ADDED_MSG = f"Task {TASK_TITLE} added successfully"
-TASK_STATUS_UPDATED_MSG = f"Task {TASK_TITLE} status updated to {TASK_STATUS_IN_PROGRESS}"
+TASK_ADDED_MSG = f"Task '{TASK_TITLE}' added successfully"
+TASK_STATUS_UPDATED_MSG = f"Task '{TASK_TITLE}' status updated to {TASK_STATUS_IN_PROGRESS}"
 PROJECT_INITIALIZED_MSG = "Initialized project at"
 
 # Error Messages
