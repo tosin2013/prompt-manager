@@ -213,9 +213,9 @@ def init(path: str):
     """
     try:
         path = str(Path(path).resolve())
-        manager = PromptManager(path)
-        if manager.init_project(path):
-            click.echo(f"Initialized project at {path}")
+        manager = get_manager()  # Use the utility function
+        manager.initialize()  # Initialize once
+        click.echo(f"Initialized project at {path}")
     except Exception as e:
         click.echo(f"Error initializing project: {e}", err=True)
         sys.exit(1)

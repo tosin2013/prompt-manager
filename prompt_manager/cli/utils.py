@@ -52,7 +52,6 @@ def get_manager() -> PromptManager:
     memory_path = Path(project_dir) / "prompt_manager_data"
     memory_path.mkdir(parents=True, exist_ok=True)
     
-    # Initialize manager
+    # Initialize manager without auto-initialization
     manager = PromptManager(project_dir, memory_path=memory_path)
-    manager.initialize()
     return manager
