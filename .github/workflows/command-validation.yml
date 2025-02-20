@@ -61,7 +61,9 @@ jobs:
     - name: Test CLI Commands
       run: |
         chmod +x ./tests/test_cli_commands.sh
+        chmod +x ./tests/test_advanced_commands.sh
         ./tests/test_cli_commands.sh
+        ./tests/test_advanced_commands.sh
 
   test-prompt-validation:
     name: Validate Prompt Templates
@@ -138,6 +140,16 @@ jobs:
         prompt-manager base update-progress "test-task" "in_progress" --show-prompt
         prompt-manager base list-tasks --show-prompt
         prompt-manager base export-tasks --output tasks.json --show-prompt
+        prompt-manager base generate-bolt-tasks "Create a React dashboard" --framework react --show-prompt
+        prompt-manager base generate-bolt-tasks "Create an API endpoint" --output bolt_tasks.json --show-prompt
+        
+        # Test advanced commands
+        echo "Testing advanced commands..."
+        prompt-manager base add-task "frontend-task" "Frontend implementation" --priority 2 --show-prompt
+        prompt-manager base add-task "backend-task" "Backend implementation" --priority 1 --show-prompt
+        prompt-manager base add-dependency frontend-task backend-task --show-prompt
+        prompt-manager base list-dependencies frontend-task --show-prompt
+        prompt-manager base list-tasks --status in_progress --sort-by priority --show-prompt
         
         # Test debug commands
         echo "Testing debug commands..."
