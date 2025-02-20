@@ -177,12 +177,13 @@ def export_tasks(output: str):
     try:
         manager = get_manager()
         
-        # Get export context if showing prompt
+        # Get tasks and metadata
+        tasks = manager.list_tasks()
+        project_metadata = manager.get_project_metadata()
+        historical_exports = manager.get_historical_exports()
+        
+        # Format context for prompt if needed
         if get_prompt_for_command("export-tasks"):
-            tasks = manager.list_tasks()
-            project_metadata = manager.get_project_metadata()
-            historical_exports = manager.get_historical_exports()
-            
             context = {
                 "tasks": "\n".join(str(task) for task in tasks),
                 "export_format": output.split('.')[-1],
@@ -213,7 +214,7 @@ def init(path: str):
             click.echo(f"Initialized project at {path}")
     except Exception as e:
         click.echo(f"Error initializing project: {e}", err=True)
-        raise click.Abort()
+        sys.exit(1)
 
 @base.command()
 @click.argument('description')
