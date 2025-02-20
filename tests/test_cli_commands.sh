@@ -120,7 +120,7 @@ if ! prompt-manager base list-tasks | grep -q "not_started: test-task"; then
 fi
 
 # Test update-progress
-output=$(prompt-manager base update-progress "test-task" "in_progress" "Started working")
+output=$(prompt-manager base update-progress "test-task" "in_progress" --note "Started working")
 if ! validate_prompt_display "$output" "update-progress"; then
   exit 1
 fi
