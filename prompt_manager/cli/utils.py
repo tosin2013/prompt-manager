@@ -45,4 +45,14 @@ def with_prompt_option(command_name):
 
 def get_manager() -> PromptManager:
     """Get a PromptManager instance for the current directory."""
-    return PromptManager(Path.cwd())
+    ctx = click.get_current_context()
+    project_dir = ctx.obj.get('project_dir', str(Path.cwd()))
+    
+    # Create memory directory if it doesn't exist
+    memory_path = Path(project_dir) / "prompt_manager_data"
+    memory_path.mkdir(parents=True, exist_ok=True)
+    
+    # Initialize manager
+    manager = PromptManager(project_dir, memory_path=memory_path)
+    manager.initialize()
+    return manager
