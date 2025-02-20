@@ -204,10 +204,14 @@ def export_tasks(output: str):
         sys.exit(1)
 
 @base.command()
-@click.option('--path', default='.', help='Path to initialize project at')
+@click.argument('path', type=click.Path(), default='.')
 @with_prompt_option('init')
 def init(path: str):
-    """Initialize a new project."""
+    """Initialize a new project.
+    
+    Args:
+        path: Path to initialize project at (defaults to current directory)
+    """
     try:
         manager = PromptManager(path)
         if manager.init_project(path):
