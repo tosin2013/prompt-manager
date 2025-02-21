@@ -12,7 +12,14 @@ A development workflow management system with memory tracking and LLM enhancemen
 - Transparent prompt inspection with `--show-prompt`
 
 ## Installation
+### Recommened currently still in development 
+```
+% python3 -m venv venv
+% source venv/bin/activate
+% pip install git+https://github.com/tosin2013/prompt-manager.git@main
+```
 
+### Using pip
 ```bash
 pip install tosins-prompt-manager
 ```
