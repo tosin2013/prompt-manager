@@ -111,8 +111,6 @@ pm.memory_bank.update_context("customCommands.md", "Generated Command", generate
 ```
 ### To install the prompt manager tool 
 ```bash
-% python3 -m venv venv
-% source venv/bin/activate
 % pip install git+https://github.com/tosin2013/prompt-manager.git@main
 ```
 
