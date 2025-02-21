@@ -1,249 +1,113 @@
-# Prompt Manager CLI Commands
+Usage: prompt-manager [OPTIONS] COMMAND [ARGS]...
 
-The Prompt Manager CLI provides a comprehensive set of commands for managing your development workflow. Here's a complete reference of all available commands.
+  Prompt Manager CLI - Development workflow management system.
 
-## Basic Commands
+Options:
+  --version           Show the version and exit.
+  --project-dir PATH  Project directory
+  --help              Show this message and exit.
 
-### Initialize Project
-```bash
-prompt-manager init [--path PATH]
-```
-Initialize a new project in the specified directory (defaults to current directory).
+Commands:
+  add-task         Add a new task.
+  base             Base commands.
+  debug            Debug commands.
+  improve          Self-improvement commands.
+  init             Initialize a new project.
+  list-tasks       List all tasks.
+  llm              LLM commands.
+  memory           Memory commands.
+  repo             Repository commands.
+  update-progress  Update task progress status.
+Usage: prompt-manager add-task [OPTIONS] TITLE [DESCRIPTION]
 
-### Analyze Repository
-```bash
-prompt-manager analyze-repo PATH
-```
-Analyze a repository to gather project context and setup the memory bank.
+  Add a new task.
 
-## Task Management
+Options:
+  -t, --template TEXT             Task template
+  -p, --priority [low|medium|high]
+                                  Task priority
+  --help                          Show this message and exit.
+Usage: prompt-manager base [OPTIONS] COMMAND [ARGS]...
 
-### Add Task
-```bash
-prompt-manager add-task --title NAME --description DESC --template PROMPT [--priority PRIORITY]
-```
-Add a new task to the project.
-- `--title`: Name/title of the task
-- `--description`: Description of what the task does
-- `--template`: Template/prompt for generating the task's output
-- `--priority`: Task priority (low/medium/high, default: medium)
+  Base commands.
 
-### Update Progress
-```bash
-prompt-manager update-progress NAME STATUS
-```
-Update the status of a task.
-- `NAME`: Name of the task
-- `STATUS`: New status (pending/in_progress/completed/failed)
+Options:
+  --help  Show this message and exit.
 
-### List Tasks
-```bash
-prompt-manager list-tasks [--status STATUS] [--sort-by FIELD]
-```
-List all tasks with optional filtering and sorting.
-- `--status`: Filter by status (pending/in_progress/completed/failed)
-- `--sort-by`: Sort by field (priority/created/updated)
+Commands:
+  add-dependency       Add a dependency between tasks.
+  add-task             Add a new task.
+  backup-memory        Create a backup of memory files.
+  export-tasks         Export tasks to a file.
+  generate-bolt-tasks  Generate tasks for a bolt.new project.
+  init                 Initialize a new project.
+  list-dependencies    List task dependencies.
+  list-tasks           List tasks with filtering and sorting.
+  restore-memory       Restore memory from a backup.
+  update-context       Update project context with a message.
+  update-progress      Update task progress status.
+Usage: prompt-manager debug [OPTIONS] COMMAND [ARGS]...
 
-### Export Tasks
-```bash
-prompt-manager export-tasks --output PATH
-```
-Export tasks to a JSON file.
-- `--output`: Path to the output file
+  Debug commands.
 
-## Bolt.new Integration
+Options:
+  --help  Show this message and exit.
 
-### Generate Bolt Tasks
-```bash
-prompt-manager generate-bolt-tasks PROJECT_DESCRIPTION [--framework FRAMEWORK]
-```
-Generate a sequence of development tasks for bolt.new projects.
-- `PROJECT_DESCRIPTION`: Description of the project
-- `--framework`: Target framework (default: Next.js)
+Commands:
+  analyze-dependencies  Analyze dependencies of a file.
+  analyze-file          Analyze a file for potential issues.
+  find-root-cause       Find root cause from error log.
+  test-roadmap          Generate test roadmap for a file.
+  trace-error           Trace error through the codebase.
+Usage: prompt-manager improve [OPTIONS] COMMAND [ARGS]...
 
-## LLM Enhancement
+  Self-improvement commands.
 
-The LLM Enhancement module provides advanced capabilities for code improvement and automation:
+Options:
+  --help  Show this message and exit.
 
-### Start Learning Session
-```bash
-prompt-manager llm learn-session [--duration MINUTES]
-```
-Start an autonomous learning session to analyze code patterns.
-- `--duration`: Duration in minutes (default: continuous)
+Commands:
+  enhance  Enhance system components.
+Usage: prompt-manager llm [OPTIONS] COMMAND [ARGS]...
 
-### Analyze Impact
-```bash
-prompt-manager llm analyze-impact [--files FILE...]
-```
-Analyze the potential impact of changes.
-- `--files`: Files to analyze
-- Provides detailed impact analysis including:
-  * Code complexity changes
-  * Test coverage impact
-  * Performance implications
-  * Cross-component dependencies
+  LLM commands.
 
-### Create Pull Request
-```bash
-prompt-manager llm create-pr [--title TITLE] [--description DESC] [--changes FILE...]
-```
-Create a pull request from suggestions.
-- `--title`: Pull request title
-- `--description`: Pull request description
-- `--changes`: Files to include in the pull request
-- Automatically:
-  * Validates changes
-  * Generates meaningful commit messages
-  * Adds relevant reviewers
-  * Includes test coverage information
+Options:
+  --help  Show this message and exit.
 
-### Generate Custom Commands
-```bash
-prompt-manager llm generate-commands [--output PATH]
-```
-Generate custom CLI commands based on usage patterns.
-- `--output`: Path to save generated commands
-- Features:
-  * Pattern recognition from command history
-  * Optimization suggestions
-  * Documentation generation
-  * Test case creation
+Commands:
+  analyze-impact        Analyze impact of changes in a file.
+  analyze-repo          Analyze repository changes.
+  create-pr             Create a pull request.
+  generate-commands     Generate CLI commands from file.
+  list-templates        List all available prompt templates.
+  suggest-improvements  Suggest code improvements.
+Usage: prompt-manager memory [OPTIONS] COMMAND [ARGS]...
 
-### Suggest Improvements
-```bash
-prompt-manager llm suggest-improvements [--path PATH] [--max-suggestions NUM]
-```
-Generate code improvement suggestions.
-- `--path`: Path to analyze (default: current directory)
-- `--max-suggestions`: Maximum number of suggestions (default: 10)
-- Provides:
-  * Code quality improvements
-  * Performance optimizations
-  * Security enhancements
-  * Best practice recommendations
+  Memory commands.
 
-### Debug Commands
-```bash
-prompt-manager llm debug [--issue-type TYPE]
-```
-Get debugging guidance and analyze issues.
-- `--issue-type`: Type of issue (performance/integration/configuration/reliability/complexity)
-- Provides:
-  * Systematic debugging approach
-  * Targeted guidance based on issue type
-  * Performance analysis
-  * Pattern recognition
-  * Solution validation
+Options:
+  --help  Show this message and exit.
 
-## Advanced Features
+Commands:
+  list-all  List all stored memories.
+  retrieve  Retrieve value from memory.
+  store     Store value in memory.
+Usage: prompt-manager repo [OPTIONS] COMMAND [ARGS]...
 
-### Startup
-```bash
-prompt-manager startup [--interactive]
-```
-Start the prompt manager with optional interactive mode.
-- `--interactive`: Start in interactive mode with a menu-driven interface
+  Repository commands.
 
-### Reflect
-```bash
-prompt-manager reflect
-```
-Analyze LLM's interaction patterns and effectiveness to improve future responses.
+Options:
+  --help  Show this message and exit.
 
-### Learn Mode
-```bash
-prompt-manager learn-mode
-```
-Enable autonomous learning mode for continuous improvement.
+Commands:
+  analyze-repo   Analyze repository changes.
+  learn-session  Start a learning session for repository understanding.
+Usage: prompt-manager update-progress [OPTIONS] TITLE {not_started|in_progress
+                                      |completed|blocked|cancelled}
 
-### Meta Program
-```bash
-prompt-manager meta-program
-```
-Allow the system to modify and improve its own tooling based on usage patterns.
+  Update task progress status.
 
-## Environment Variables
-
-The following environment variables can be used to configure the Prompt Manager:
-
-- `PROMPT_MANAGER_PATH`: Default project path
-- `PROMPT_MANAGER_CONFIG`: Path to custom configuration file
-- `PROMPT_MANAGER_DEBUG`: Enable debug mode (set to "1" or "true")
-- `PROMPT_MANAGER_LLM_MODE`: LLM Enhancement mode (learning/suggesting/auto)
-
-## Examples
-
-1. Initialize a new project:
-```bash
-prompt-manager init --path ./my-project
-```
-
-2. Add a new high-priority task:
-```bash
-prompt-manager add-task --title "Setup Auth" --description "Implement user authentication" --template "Create authentication system using {framework}" --priority high
-```
-
-3. List all in-progress tasks sorted by priority:
-```bash
-prompt-manager list-tasks --status in_progress --sort-by priority
-```
-
-4. Generate tasks for a new Next.js project:
-```bash
-prompt-manager generate-bolt-tasks "Create a blog with user authentication" --framework Next.js
-```
-
-5. Export tasks to a file:
-```bash
-prompt-manager export-tasks --output tasks-backup.json
-```
-
-6. Start a learning session and create pull requests:
-```bash
-# Start learning session
-prompt-manager llm learn-session --duration 30
-
-# Generate and apply improvements
-prompt-manager llm suggest-improvements --path ./src
-prompt-manager llm create-pr --title "Code Improvements" --description "Enhance error handling" --changes src/core.py
-```
-
-7. Analyze impact of changes:
-```bash
-prompt-manager llm analyze-impact --files src/core.py tests/test_core.py
-```
-
-## Error Handling
-
-The CLI will exit with a non-zero status code if an error occurs. Common error codes:
-- `1`: General error
-- `2`: Invalid arguments
-- `3`: File system error
-- `4`: Configuration error
-- `5`: LLM Enhancement error
-
-## Configuration
-
-The Prompt Manager can be configured using a `prompt_manager.yaml` file in your project directory. Example configuration:
-
-```yaml
-output_dir: ./outputs
-memory_path: ./prompt_manager_data
-debug_mode: false
-max_tokens: 2000000
-llm_enhancement:
-  learning_mode: auto
-  max_suggestions: 10
-  protected_paths:
-    - config/
-    - .env
-    - secrets/
-```
-
-## Getting Help
-
-For detailed information about any command, use the `--help` option:
-```bash
-prompt-manager --help
-prompt-manager COMMAND --help
+Options:
+  -n, --note TEXT  Progress note
+  --help           Show this message and exit.
